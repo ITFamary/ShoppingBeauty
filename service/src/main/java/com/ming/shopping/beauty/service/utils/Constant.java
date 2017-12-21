@@ -1,4 +1,4 @@
-package com.it.shopping.beauty.service.utils;
+package com.ming.shopping.beauty.service.utils;
 
 /**
  * 常量定义

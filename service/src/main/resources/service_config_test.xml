@@ -25,7 +25,7 @@
         <property name="persistenceUnitName" value="entityManager"/>
         <property name="packagesToScan">
             <array>
-                <value>com.it.shopping.beauty.service.entity</value>
+                <value>com.ming.shopping.beauty.service.entity</value>
                 <value>org.springframework.data.jpa.convert.threeten</value>
             </array>
         </property>

@@ -1,7 +1,7 @@
-package com.it.shopping.beauty;
+package com.ming.shopping.beauty;
 
-import com.it.shopping.beauty.service.utils.Constant;
-import com.it.shopping.beauty.config.MVCConfig;
+import com.ming.shopping.beauty.service.utils.Constant;
+import com.ming.shopping.beauty.config.MVCConfig;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.filter.HttpPutFormContentFilter;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;

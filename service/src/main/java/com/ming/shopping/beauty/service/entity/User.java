@@ -1,4 +1,4 @@
-package com.it.shopping.beauty.service.entity;
+package com.ming.shopping.beauty.service.entity;
 
 import lombok.Getter;
 import lombok.Setter;

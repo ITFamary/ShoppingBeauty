@@ -1,4 +1,4 @@
-package com.it.shopping.beauty.service.config;
+package com.ming.shopping.beauty.service.config;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -11,8 +11,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  */
 @Configuration
 @EnableTransactionManagement
-@ComponentScan({"com.it.shopping.beauty.service.service"})
-@EnableJpaRepositories(basePackages = "com.it.shopping.beauty.service.repository")
+@ComponentScan({"com.ming.shopping.beauty.service.service"})
+@EnableJpaRepositories(basePackages = "com.ming.shopping.beauty.service.repository")
 @ImportResource({"classpath:service_config_prod.xml","classpath:service_config_test.xml"})
 public class ServiceConfig {
 }

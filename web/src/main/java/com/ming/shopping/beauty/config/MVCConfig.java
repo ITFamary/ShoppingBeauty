@@ -1,6 +1,6 @@
-package com.it.shopping.beauty.config;
+package com.ming.shopping.beauty.config;
 
-import com.it.shopping.beauty.service.config.ServiceConfig;
+import com.ming.shopping.beauty.service.config.ServiceConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +18,7 @@ import java.util.List;
  * Created by helloztt on 2017/12/20.
  */
 @Configuration
-@ComponentScan("com.it.shopping.beauty.controller")
+@ComponentScan("com.ming.shopping.beauty.controller")
 @EnableWebMvc
 @Import({ServiceConfig.class})
 public class MVCConfig extends WebMvcConfigurerAdapter {
