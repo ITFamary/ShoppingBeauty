@@ -50,7 +50,7 @@ public class Store {
      * TODO 我还不太清楚是什么.
      */
     @OneToMany
-    private List<User> users;
+    private List<Represent> represents;
 
     /**
      * 添加时间

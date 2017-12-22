@@ -1,5 +1,6 @@
 package com.ming.shopping.beauty.service.service;
 
+import com.ming.shopping.beauty.service.entity.Represent;
 import com.ming.shopping.beauty.service.entity.User;
 import me.jiangcai.jpa.entity.support.Address;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,9 +36,15 @@ public interface StoreService {
 
     /**
      * @param id
-     * @param user 添加门店代表,门店代表应该是
+     * @param represent 添加门店代表,门店代表应该是
      */
     @Transactional
-    void addRepresent(long id,User user);
+    void addRepresent(long id,Represent represent);
 
+    /**
+     * @param id
+     * @param represent 冻结或启用的门店代表
+     */
+    @Transactional
+    void freezeOrEnableRepresent(long id ,Represent represent,boolean enable);
 }

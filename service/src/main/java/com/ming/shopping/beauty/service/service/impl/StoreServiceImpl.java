@@ -1,7 +1,9 @@
 package com.ming.shopping.beauty.service.service.impl;
 
+import com.ming.shopping.beauty.service.entity.Represent;
 import com.ming.shopping.beauty.service.entity.Store;
 import com.ming.shopping.beauty.service.entity.User;
+import com.ming.shopping.beauty.service.repository.RepresentRepository;
 import com.ming.shopping.beauty.service.repository.StoreRepository;
 import com.ming.shopping.beauty.service.service.StoreService;
 import me.jiangcai.jpa.entity.support.Address;
@@ -17,6 +19,8 @@ import java.util.List;
 public class StoreServiceImpl implements StoreService {
     @Autowired
     private StoreRepository storeRepository;
+    @Autowired
+    private RepresentRepository representRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -44,13 +48,23 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     @Transactional
-    public void addRepresent(long id ,User user) {
+    public void addRepresent(long id ,Represent represent) {
         Store store = storeRepository.getOne(id);
-        List<User> users = store.getUsers();
-        if(users == null){
-            users = new ArrayList<>();
+        List<Represent> represents = store.getRepresents();
+        if(represents == null){
+            represents = new ArrayList<>();
         }
-        users.add(user);
-        store.setUsers(users);
+        represents.add(represent);
+        store.setRepresents(represents);
+    }
+
+    @Override
+    public void freezeOrEnableRepresent(long id ,Represent represent, boolean enable) {
+        Store store = storeRepository.getOne(id);
+        List<Represent> represents = store.getRepresents();
+        if(represents.contains(represent)){
+            Represent represent1 = representRepository.getOne(represent.getId());
+            represent1.setEnable(enable);
+        };
     }
 }
