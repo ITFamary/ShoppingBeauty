@@ -42,9 +42,9 @@ public interface StoreService {
     void addRepresent(long id,Represent represent);
 
     /**
-     * @param id
-     * @param represent 冻结或启用的门店代表
+     * @param representId 冻结或启用的门店代表
+     * @param enable 是否启用
      */
     @Transactional
-    void freezeOrEnableRepresent(long id ,Represent represent,boolean enable);
+    void freezeOrEnableRepresent(long representId,boolean enable);
 }

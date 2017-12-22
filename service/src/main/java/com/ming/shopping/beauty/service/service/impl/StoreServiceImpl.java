@@ -41,17 +41,17 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     @Transactional
-    public void freezeOrEnable(long id ,boolean enable) {
+    public void freezeOrEnable(long id, boolean enable) {
         Store store = storeRepository.getOne(id);
         store.setEnable(enable);
     }
 
     @Override
     @Transactional
-    public void addRepresent(long id ,Represent represent) {
+    public void addRepresent(long id, Represent represent) {
         Store store = storeRepository.getOne(id);
         List<Represent> represents = store.getRepresents();
-        if(represents == null){
+        if (represents == null) {
             represents = new ArrayList<>();
         }
         represents.add(represent);
@@ -59,12 +59,10 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
-    public void freezeOrEnableRepresent(long id ,Represent represent, boolean enable) {
-        Store store = storeRepository.getOne(id);
-        List<Represent> represents = store.getRepresents();
-        if(represents.contains(represent)){
-            Represent represent1 = representRepository.getOne(represent.getId());
-            represent1.setEnable(enable);
-        };
+    @Transactional
+    public void freezeOrEnableRepresent(long representId, boolean enable) {
+        Represent represent = representRepository.getOne(representId);
+        represent.setEnable(enable);
     }
+
 }
