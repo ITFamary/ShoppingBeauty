@@ -1,6 +1,6 @@
 package com.ming.shopping.beauty.service.service.impl;
 
-import com.ming.shopping.beauty.service.entity.Merchant;
+import com.ming.shopping.beauty.service.entity.login.Merchant;
 import com.ming.shopping.beauty.service.repository.MerchantRepository;
 import com.ming.shopping.beauty.service.service.MerchantService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * @author lxf
@@ -30,7 +29,7 @@ public class MerchantServiceImpl implements MerchantService{
     @Transactional
     public void addMerchant(String merchantName, String password) {
         Merchant merchant = new Merchant();
-        merchant.setMerchantName(merchantName);
+        merchant.setLoginName(merchantName);
         merchant.setPassword(password);
         merchant.setCreateTime(LocalDateTime.now());
         merchantRepository.save(merchant);
@@ -47,6 +46,6 @@ public class MerchantServiceImpl implements MerchantService{
     @Transactional
     public void freezeOrEnable(long id,boolean enable) {
         Merchant merchant = merchantRepository.getOne(id);
-        merchant.setEnable(enable);
+        merchant.setEnabled(enable);
     }
 }

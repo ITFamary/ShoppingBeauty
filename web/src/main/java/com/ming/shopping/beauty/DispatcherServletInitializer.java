@@ -30,7 +30,7 @@ public class DispatcherServletInitializer extends AbstractAnnotationConfigDispat
     @Override
     protected Filter[] getServletFilters() {
         return new Filter[]{
-                new CharacterEncodingFilter(Constant.ENCODIND)
+                new CharacterEncodingFilter(Constant.UTF8_ENCODIND)
                 ,new HttpPutFormContentFilter()
         };
     }

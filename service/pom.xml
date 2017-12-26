@@ -27,6 +27,11 @@
             <version>${eclipselink.version}</version>
         </dependency>
         <dependency>
+            <groupId>me.jiangcai.wx</groupId>
+            <artifactId>weixin-web</artifactId>
+            <version>${wx.version}</version>
+        </dependency>
+        <dependency>
             <groupId>me.jiangcai.lib</groupId>
             <artifactId>resource</artifactId>
             <version>${jiangcai.version}</version>

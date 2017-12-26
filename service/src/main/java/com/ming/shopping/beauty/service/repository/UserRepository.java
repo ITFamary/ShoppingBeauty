@@ -1,6 +1,6 @@
 package com.ming.shopping.beauty.service.repository;
 
-import com.ming.shopping.beauty.service.entity.User;
+import com.ming.shopping.beauty.service.entity.login.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**

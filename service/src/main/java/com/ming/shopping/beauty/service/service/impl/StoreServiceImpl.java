@@ -1,8 +1,7 @@
 package com.ming.shopping.beauty.service.service.impl;
 
-import com.ming.shopping.beauty.service.entity.Represent;
-import com.ming.shopping.beauty.service.entity.Store;
-import com.ming.shopping.beauty.service.entity.User;
+import com.ming.shopping.beauty.service.entity.login.Represent;
+import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.repository.RepresentRepository;
 import com.ming.shopping.beauty.service.repository.StoreRepository;
 import com.ming.shopping.beauty.service.service.StoreService;
@@ -32,7 +31,7 @@ public class StoreServiceImpl implements StoreService {
     @Transactional
     public void addStore(String storeName, Address address, String telephone) {
         Store store = new Store();
-        store.setStoreName(storeName);
+        store.setLoginName(storeName);
         store.setAddress(address);
         store.setTelephone(telephone);
         store.setCreateTime(LocalDateTime.now());
@@ -43,7 +42,7 @@ public class StoreServiceImpl implements StoreService {
     @Transactional
     public void freezeOrEnable(long id, boolean enable) {
         Store store = storeRepository.getOne(id);
-        store.setEnable(enable);
+        store.setEnabled(enable);
     }
 
     @Override
@@ -62,7 +61,7 @@ public class StoreServiceImpl implements StoreService {
     @Transactional
     public void freezeOrEnableRepresent(long representId, boolean enable) {
         Represent represent = representRepository.getOne(representId);
-        represent.setEnable(enable);
+        represent.setEnabled(enable);
     }
 
 }

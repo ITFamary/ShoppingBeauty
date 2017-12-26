@@ -1,7 +1,6 @@
 package com.ming.shopping.beauty.service.service;
 
-import com.ming.shopping.beauty.service.entity.Represent;
-import com.ming.shopping.beauty.service.entity.User;
+import com.ming.shopping.beauty.service.entity.login.Represent;
 import me.jiangcai.jpa.entity.support.Address;
 import org.springframework.transaction.annotation.Transactional;
 
