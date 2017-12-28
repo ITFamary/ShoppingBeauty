@@ -12,4 +12,9 @@ import javax.persistence.Entity;
 @Getter
 @Setter
 public class Manager extends Login {
+
+    @Override
+    public boolean isManageable() {
+        return true;
+    }
 }
