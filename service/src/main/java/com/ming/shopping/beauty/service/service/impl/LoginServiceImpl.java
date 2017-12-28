@@ -58,4 +58,10 @@ public class LoginServiceImpl implements LoginService {
         Login login = byLoginName(loginName);
         return login != null && login.isManageable();
     }
+
+    @Override
+    public void freezeOrEnable(long id, boolean enable) {
+        Login login = loginRepository.findOne(id);
+        login.setEnabled(enable);
+    }
 }

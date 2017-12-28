@@ -67,4 +67,12 @@ public interface LoginService {
      */
     @Transactional(readOnly = true)
     boolean isManager(String loginName);
+
+    /**
+     * 冻结或启用用户
+     * @param id
+     * @param enable 是否启用
+     */
+    @Transactional
+    void freezeOrEnable(long id,boolean enable);
 }
