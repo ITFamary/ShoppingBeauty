@@ -8,6 +8,7 @@ import javax.persistence.*;
 import java.util.List;
 
 /**
+ * 商户
  * @author lxf
  */
 @Entity

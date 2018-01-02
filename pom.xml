@@ -11,10 +11,11 @@
     <modules>
         <module>web</module>
         <module>service</module>
+        <module>manage-service</module>
+        <module>client-service</module>
     </modules>
 
     <properties>
-        <shopping.beauty.version>1.0-SNAPSHOT</shopping.beauty.version>
         <eclipselink.version>2.6.2</eclipselink.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -69,6 +70,12 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-instrument</artifactId>
             <version>${spring.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-web-api</artifactId>
+            <version>${javaee.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

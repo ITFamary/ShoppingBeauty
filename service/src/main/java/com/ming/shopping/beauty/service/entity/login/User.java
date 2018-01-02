@@ -8,6 +8,7 @@ import javax.persistence.*;
 import java.math.BigDecimal;
 
 /**
+ * 用户
  * Created by helloztt on 2017/12/21.
  */
 @Entity

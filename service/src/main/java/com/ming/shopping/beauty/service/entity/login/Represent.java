@@ -7,7 +7,7 @@ import me.jiangcai.wx.model.Gender;
 import javax.persistence.*;
 
 /**
- * 门店代表
+ * 门店代表：其实就是门店的收营员，负责帮用户下单
  * @author lxf
  */
 @Entity

@@ -15,8 +15,13 @@
     <dependencies>
         <dependency>
             <groupId>com.it.shopping-beauty</groupId>
-            <artifactId>service</artifactId>
-            <version>${shopping.beauty.version}</version>
+            <artifactId>client-service</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.it.shopping-beauty</groupId>
+            <artifactId>manage-service</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>javax</groupId>

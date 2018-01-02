@@ -1,5 +1,7 @@
 package com.ming.shopping.beauty.config;
 
+import com.ming.shopping.beauty.client.config.ClientConfig;
+import com.ming.shopping.beauty.manage.config.ManageConfig;
 import com.ming.shopping.beauty.service.config.ServiceConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -20,8 +22,8 @@ import java.util.List;
 @Configuration
 @ComponentScan("com.ming.shopping.beauty.controller")
 @EnableWebMvc
-@Import({ServiceConfig.class})
-public class MVCConfig extends WebMvcConfigurerAdapter {
+@Import({ServiceConfig.class, ClientConfig.class, ManageConfig.class})
+public class MvcConfig extends WebMvcConfigurerAdapter {
 
     @Override
     public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
