@@ -15,4 +15,9 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableJpaRepositories(basePackages = "com.ming.shopping.beauty.service.repository")
 @ImportResource({"classpath:service_config_prod.xml","classpath:service_config_test.xml"})
 public class ServiceConfig {
+    public static final String PROFILE_UNIT_TEST = "unit_test";
+    public static final String PROFILE_TEST = "test";
+
+    public static final String PROFILE_MYSQL = "mysql";
+    public static final String PROFILE_JDBC = "jdbcProfile";
 }

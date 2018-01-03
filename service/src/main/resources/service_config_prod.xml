@@ -26,6 +26,7 @@
         <property name="packagesToScan" >
             <array>
                 <value>com.ming.shopping.beauty.service.entity</value>
+                <value>me.jiangcai.jpa.entity</value>
                 <value>org.springframework.data.jpa.convert.threeten</value>
             </array>
         </property>
