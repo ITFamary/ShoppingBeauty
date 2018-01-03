@@ -1,5 +1,6 @@
 package com.ming.shopping.beauty.service.entity.login;
 
+import com.ming.shopping.beauty.service.utils.Constant;
 import lombok.Getter;
 import lombok.Setter;
 import me.jiangcai.wx.model.Gender;
@@ -22,7 +23,7 @@ public class User extends Login {
     /**
      * 当前余额
      */
-    @Column(scale = 2, precision = 20)
+    @Column(scale = Constant.FLOAT_COLUMN_SCALE, precision = Constant.FLOAT_COLUMN_PRECISION)
     private BigDecimal currentAmount = BigDecimal.ZERO;
 
     // TODO: 2017/12/26 引导人需求未确定
