@@ -15,7 +15,10 @@ import java.math.BigDecimal;
 @Entity
 @Getter
 @Setter
-public class User extends Login {
+public class User {
+    @Id
+    @ManyToOne
+    private Login login;
     /**
      * 性别
      */
@@ -25,6 +28,9 @@ public class User extends Login {
      */
     @Column(scale = Constant.FLOAT_COLUMN_SCALE, precision = Constant.FLOAT_COLUMN_PRECISION)
     private BigDecimal currentAmount = BigDecimal.ZERO;
-
-    // TODO: 2017/12/26 引导人需求未确定
+    /**
+     * 推荐人
+     */
+    @ManyToOne
+    private User guideUser;
 }

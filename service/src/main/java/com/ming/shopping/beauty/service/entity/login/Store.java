@@ -14,10 +14,22 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-public class Store extends Login {
+public class Store {
 
+    @Id
+    @ManyToOne
+    private Login login;
     /**
-     * 门店电话.
+     * 所属门店
+     */
+    private Store store;
+    /**
+     * 门店名称
+     */
+    @Column(length = 50)
+    private String name;
+    /**
+     * 门店电话
      */
     @Column(length = 20)
     private String telephone;

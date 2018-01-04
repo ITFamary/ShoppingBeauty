@@ -13,7 +13,10 @@ import javax.persistence.*;
 @Entity
 @Setter
 @Getter
-public class Represent extends Login {
+public class Represent {
+    @Id
+    @ManyToOne
+    private Login login;
     /**
      * 性别
      */

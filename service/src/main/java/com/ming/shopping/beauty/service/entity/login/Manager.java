@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 
 /**
  * 平台管理员
@@ -12,5 +14,8 @@ import javax.persistence.Entity;
 @Entity
 @Getter
 @Setter
-public class Manager extends Login {
+public class Manager {
+    @Id
+    @ManyToOne
+    private Login login;
 }

@@ -36,6 +36,27 @@ public class Login implements UserDetails {
 
     @Column
     private String nickName;
+    /**
+     * 可推荐
+     */
+    private boolean guidable;
+    /**
+     * 可能是个商户或商户管理员
+     */
+    @ManyToOne
+    private Merchant merchant;
+    /**
+     * 可能是个门店或门店管理员
+     */
+    @ManyToOne
+    private Store store;
+    /**
+     * 可能是个用户
+     */
+    @ManyToOne
+    private User user;
+
+
 
     @Column(columnDefinition = DATE_COLUMN_DEFINITION)
     private LocalDateTime createTime;

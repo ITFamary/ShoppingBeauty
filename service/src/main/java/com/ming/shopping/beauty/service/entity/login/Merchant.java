@@ -14,7 +14,20 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-public class Merchant extends Login {
+public class Merchant {
+    @Id
+    @ManyToOne
+    private Login login;
+    /**
+     * 所属商户
+     */
+    @ManyToOne
+    private Merchant merchant;
+    /**
+     * 商户名称
+     */
+    @Column(length = 50)
+    private String name;
 
     /**
      * 联系电话
@@ -32,6 +45,10 @@ public class Merchant extends Login {
      * 地址
      */
     private Address address;
+    /**
+     * 是否是个超级管理员
+     */
+    private boolean admin;
 
     /**
      * 商户拥有的门店.
