@@ -5,7 +5,10 @@ import lombok.Setter;
 import me.jiangcai.jpa.entity.support.Address;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.List;
+
+import static com.ming.shopping.beauty.service.utils.Constant.DATE_COLUMN_DEFINITION;
 
 /**
  * 门店
@@ -17,7 +20,12 @@ import java.util.List;
 public class Store {
 
     @Id
-    @ManyToOne
+    private Long id;
+    /**
+     * share primary key
+     */
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, optional = false)
+    @PrimaryKeyJoinColumn(name = "id",referencedColumnName = "id")
     private Login login;
     /**
      * 所属门店
@@ -42,9 +50,18 @@ public class Store {
      */
     private Address address;
 
+
+    /**
+     * 是否是个超级管理员
+     */
+    private boolean manageable;
+
     /**
      * 门店代表
      */
     @OneToMany
     private List<Represent> represents;
+
+    @Column(columnDefinition = DATE_COLUMN_DEFINITION)
+    private LocalDateTime createTime;
 }

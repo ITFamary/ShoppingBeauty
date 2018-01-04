@@ -5,7 +5,10 @@ import lombok.Setter;
 import me.jiangcai.jpa.entity.support.Address;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.List;
+
+import static com.ming.shopping.beauty.service.utils.Constant.DATE_COLUMN_DEFINITION;
 
 /**
  * 商户
@@ -16,7 +19,12 @@ import java.util.List;
 @Setter
 public class Merchant {
     @Id
-    @ManyToOne
+    private Long id;
+    /**
+     * share primary key
+     */
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, optional = false)
+    @PrimaryKeyJoinColumn(name = "id",referencedColumnName = "id")
     private Login login;
     /**
      * 所属商户
@@ -48,7 +56,7 @@ public class Merchant {
     /**
      * 是否是个超级管理员
      */
-    private boolean admin;
+    private boolean manageable;
 
     /**
      * 商户拥有的门店.
@@ -56,4 +64,7 @@ public class Merchant {
     @OneToMany
     @OrderBy("createTime desc")
     private List<Store> Stores;
+
+    @Column(columnDefinition = DATE_COLUMN_DEFINITION)
+    private LocalDateTime createTime;
 }

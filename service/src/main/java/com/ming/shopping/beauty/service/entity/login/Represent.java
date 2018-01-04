@@ -15,7 +15,12 @@ import javax.persistence.*;
 @Getter
 public class Represent {
     @Id
-    @ManyToOne
+    private Long id;
+    /**
+     * share primary key
+     */
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, optional = false)
+    @PrimaryKeyJoinColumn(name = "id",referencedColumnName = "id")
     private Login login;
     /**
      * 性别

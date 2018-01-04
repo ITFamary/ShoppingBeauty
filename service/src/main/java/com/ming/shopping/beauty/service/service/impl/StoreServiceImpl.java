@@ -30,38 +30,38 @@ public class StoreServiceImpl implements StoreService {
     @Override
     @Transactional
     public void addStore(String storeName, Address address, String telephone) {
-        Store store = new Store();
-        store.setLoginName(storeName);
-        store.setAddress(address);
-        store.setTelephone(telephone);
-        store.setCreateTime(LocalDateTime.now());
-        storeRepository.save(store);
+//        Store store = new Store();
+//        store.setLoginName(storeName);
+//        store.setAddress(address);
+//        store.setTelephone(telephone);
+//        store.setCreateTime(LocalDateTime.now());
+//        storeRepository.save(store);
     }
 
     @Override
     @Transactional
     public void freezeOrEnable(long id, boolean enable) {
-        Store store = storeRepository.getOne(id);
-        store.setEnabled(enable);
+//        Store store = storeRepository.getOne(id);
+//        store.setEnabled(enable);
     }
 
     @Override
     @Transactional
     public void addRepresent(long id, Represent represent) {
-        Store store = storeRepository.getOne(id);
-        List<Represent> represents = store.getRepresents();
-        if (represents == null) {
-            represents = new ArrayList<>();
-        }
-        represents.add(represent);
-        store.setRepresents(represents);
+//        Store store = storeRepository.getOne(id);
+//        List<Represent> represents = store.getRepresents();
+//        if (represents == null) {
+//            represents = new ArrayList<>();
+//        }
+//        represents.add(represent);
+//        store.setRepresents(represents);
     }
 
     @Override
     @Transactional
     public void freezeOrEnableRepresent(long representId, boolean enable) {
-        Represent represent = representRepository.getOne(representId);
-        represent.setEnabled(enable);
+//        Represent represent = representRepository.getOne(representId);
+//        represent.setEnabled(enable);
     }
 
 }

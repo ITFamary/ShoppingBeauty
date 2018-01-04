@@ -1,19 +1,21 @@
 package com.ming.shopping.beauty.service.config;
 
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.annotation.*;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * Created by helloztt on 2017/12/21.
  */
 @Configuration
+@Import(CommonConfig.class)
 @EnableTransactionManagement
 @ComponentScan({"com.ming.shopping.beauty.service.service"})
 @EnableJpaRepositories(basePackages = "com.ming.shopping.beauty.service.repository")
 @ImportResource({"classpath:service_config_prod.xml","classpath:service_config_test.xml"})
+@EnableAspectJAutoProxy
+@EnableScheduling
 public class ServiceConfig {
     public static final String PROFILE_UNIT_TEST = "unit_test";
     public static final String PROFILE_TEST = "test";

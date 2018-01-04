@@ -27,6 +27,11 @@
             <version>${eclipselink.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.huotu.verification-code</groupId>
+            <artifactId>vc-service</artifactId>
+            <version>${vc.version}</version>
+        </dependency>
+        <dependency>
             <groupId>me.jiangcai.wx</groupId>
             <artifactId>weixin-web</artifactId>
             <version>${wx.version}</version>
@@ -45,6 +50,18 @@
             <groupId>me.jiangcai.lib</groupId>
             <artifactId>test</artifactId>
             <version>${jiangcai.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>me.jiangcai.wx</groupId>
+            <artifactId>weixin-test</artifactId>
+            <version>${wx.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.huotu.verification-code</groupId>
+            <artifactId>vc-test</artifactId>
+            <version>${vc.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

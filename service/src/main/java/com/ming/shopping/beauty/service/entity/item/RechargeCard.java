@@ -1,6 +1,6 @@
 package com.ming.shopping.beauty.service.entity.item;
 
-import com.ming.shopping.beauty.service.entity.login.Manager;
+import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.utils.Constant;
 import lombok.Getter;
@@ -27,6 +27,7 @@ public class RechargeCard {
      * 卡密，需要唯一
      * TODO 算法待定
      */
+    @Column(length = 30)
     private String code;
     /**
      * 是否已被兑换
@@ -37,7 +38,10 @@ public class RechargeCard {
     private User user;
 
     @ManyToOne
-    private Manager manager;
+    private Login guideUser;
+
+    @ManyToOne
+    private Login manager;
 
     /**
      * 金额

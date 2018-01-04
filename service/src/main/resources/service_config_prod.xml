@@ -25,8 +25,11 @@
         <property name="persistenceUnitName" value="hbmEntity"/>
         <property name="packagesToScan" >
             <array>
-                <value>com.ming.shopping.beauty.service.entity</value>
                 <value>me.jiangcai.jpa.entity</value>
+                <value>me.jiangcai.wx.standard.entity</value>
+                <value>com.huotu.verification.entity</value>
+                <value>me.jiangcai.lib.sys.entity</value>
+                <value>com.ming.shopping.beauty.service.entity</value>
                 <value>org.springframework.data.jpa.convert.threeten</value>
             </array>
         </property>

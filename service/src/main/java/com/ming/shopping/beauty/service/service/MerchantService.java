@@ -1,5 +1,6 @@
 package com.ming.shopping.beauty.service.service;
 
+import com.ming.shopping.beauty.service.entity.login.Login;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -16,26 +17,29 @@ public interface MerchantService {
 
     /**
      * 添加商户
+     *
      * @param merchantName 商户名称
-     * @param password 密码
+     * @param password     密码
      */
     @Transactional
-    void addMerchant(String merchantName,String password);
+    void addMerchant(Login login, String merchantName, String password);
 
     /**
      * 重置密码
-     * @param id 需要重置的用户id
+     *
+     * @param id       需要重置的用户id
      * @param password 新密码
      */
     @Transactional
-    void resetPassword(long id,String password);
+    void resetPassword(long id, String password);
 
     /**
      * 冻结或启用商户
+     *
      * @param id
      * @param enable 是否启用
      */
     @Transactional
-    void freezeOrEnable(long id,boolean enable);
+    void freezeOrEnable(long id, boolean enable);
 
 }

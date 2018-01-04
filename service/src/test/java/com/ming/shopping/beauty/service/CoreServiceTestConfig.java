@@ -1,8 +1,10 @@
 package com.ming.shopping.beauty.service;
 
+import com.huotu.vefification.test.VerificationCodeTestConfig;
 import com.ming.shopping.beauty.service.config.ServiceConfig;
 import com.ming.shopping.beauty.service.utils.TestDataSource;
 import me.jiangcai.lib.test.config.H2DataSourceConfig;
+import me.jiangcai.wx.test.WeixinTestConfig;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +30,7 @@ import java.util.List;
 @Configuration
 @ImportResource("classpath:/datasource_local.xml")
 @PropertySource({"classpath:/test_wx.properties"})
-@Import(ServiceConfig.class)
+@Import({WeixinTestConfig.class, VerificationCodeTestConfig.class, ServiceConfig.class})
 public class CoreServiceTestConfig extends H2DataSourceConfig implements WebMvcConfigurer {
     private static final Log log = LogFactory.getLog(CoreServiceTestConfig.class);
     @Autowired
