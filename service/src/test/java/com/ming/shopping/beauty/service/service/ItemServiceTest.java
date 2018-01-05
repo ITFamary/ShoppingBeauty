@@ -9,6 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+/**
+ * @author lxf
+ */
 public class ItemServiceTest extends CoreServiceTest {
 
     @Autowired
@@ -23,8 +28,7 @@ public class ItemServiceTest extends CoreServiceTest {
         //添加一个项目
         Item item = itemService.addItem(randomString(10), null, "测试添加项目", "测试", new BigDecimal(0.01),
                 new BigDecimal(0.01), new BigDecimal(0.01), "测试添加一个项目", "这个项目用来测试", false);
-        Long id = item.getId();
-        Item byId = itemService.findById(id);
-        System.out.println(byId.getName());
+        Item byId = itemService.findById(item.getId());
+        assertThat(byId).isNotNull();
     }
 }
