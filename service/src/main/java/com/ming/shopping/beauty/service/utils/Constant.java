@@ -14,7 +14,14 @@ import java.util.Map;
 public class Constant {
     public static final String UTF8_ENCODIND = "UTF-8";
 
+    /**
+     * 非空时间类型
+     */
     public static final String DATE_COLUMN_DEFINITION = "timestamp";
+    /**
+     * 可为空的时间类型
+     */
+    public static final String DATE_NULLABLE_COLUMN_DEFINITION = "datetime";
     public static final int FLOAT_COLUMN_SCALE = 2;
     public static final int FLOAT_COLUMN_PRECISION = 12;
     /**

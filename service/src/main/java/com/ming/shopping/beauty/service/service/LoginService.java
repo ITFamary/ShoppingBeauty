@@ -12,8 +12,8 @@ import me.jiangcai.wx.model.Gender;
 public interface LoginService {
 
     /**
-     * 根据openId 查找用户，如果查到了就查找这个用户，如果没查到就创建用户
-     * 创建一个用户，如果有卡密，那就激活这个用户
+     * 根据openId 查找用户，如果查到了就返回这个用户，如果没查到就创建用户
+     * 创建用户，如果有卡密，那就激活这个用户
      *
      * @param openId      微信唯一标示
      * @param mobile      手机号

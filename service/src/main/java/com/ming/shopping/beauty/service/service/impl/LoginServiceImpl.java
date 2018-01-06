@@ -3,13 +3,9 @@ package com.ming.shopping.beauty.service.service.impl;
 import com.huotu.verification.IllegalVerificationCodeException;
 import com.huotu.verification.service.VerificationCodeService;
 import com.ming.shopping.beauty.service.aop.BusinessSafe;
-import com.ming.shopping.beauty.service.config.ServiceConfig;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Login_;
 import com.ming.shopping.beauty.service.entity.login.User;
-import com.ming.shopping.beauty.service.exception.ApiResultException;
-import com.ming.shopping.beauty.service.model.ApiResult;
-import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import com.ming.shopping.beauty.service.repository.LoginRepository;
 import com.ming.shopping.beauty.service.repository.UserRepository;
 import com.ming.shopping.beauty.service.service.LoginService;
@@ -63,6 +59,7 @@ public class LoginServiceImpl implements LoginService {
         login.setCreateTime(LocalDateTime.now());
         loginRepository.saveAndFlush(login);
         User user = new User();
+        login.setUser(user);
         user.setId(login.getId());
         user.setLogin(login);
         user.setFamilyName(familyName);
@@ -72,7 +69,7 @@ public class LoginServiceImpl implements LoginService {
         }
         if (!StringUtils.isEmpty(cardNo)) {
             //使用这张充值卡，如果不存在或者已经用过了，就抛出异常
-            rechargeCardService.useCard(cardNo, login);
+            rechargeCardService.useCard(cardNo, login.getId());
             user.setCardNo(cardNo);
             user.setActive(true);
         }

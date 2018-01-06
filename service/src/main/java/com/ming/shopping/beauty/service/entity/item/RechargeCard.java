@@ -56,6 +56,6 @@ public class RechargeCard {
     /**
      * 兑换时间
      */
-    @Column(columnDefinition = Constant.DATE_COLUMN_DEFINITION)
+    @Column(columnDefinition = Constant.DATE_NULLABLE_COLUMN_DEFINITION,nullable = true)
     private LocalDateTime usedTime;
 }

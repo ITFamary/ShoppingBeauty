@@ -54,14 +54,16 @@ public class Login implements UserDetails {
     @OneToOne
     private Store store;
     /**
-     * 可能是个用户
+     * 必定有 user ，但可能没激活
      */
     @OneToOne
     private User user;
 
     @Column(columnDefinition = DATE_COLUMN_DEFINITION)
     private LocalDateTime createTime;
-
+    /**
+     * 冻结或删除都应设置为 false
+     */
     private boolean enabled = true;
 
     private boolean delete;
