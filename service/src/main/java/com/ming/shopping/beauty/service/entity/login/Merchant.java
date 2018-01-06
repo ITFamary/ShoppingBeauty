@@ -7,11 +7,13 @@ import me.jiangcai.jpa.entity.support.Address;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 import static com.ming.shopping.beauty.service.utils.Constant.DATE_COLUMN_DEFINITION;
 
 /**
  * 商户
+ *
  * @author lxf
  */
 @Entity
@@ -23,8 +25,8 @@ public class Merchant {
     /**
      * share primary key
      */
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, optional = false)
-    @PrimaryKeyJoinColumn(name = "id",referencedColumnName = "id")
+    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH,CascadeType.MERGE,CascadeType.PERSIST}, optional = false)
+    @PrimaryKeyJoinColumn(name = "id", referencedColumnName = "id")
     private Login login;
     /**
      * 所属商户
@@ -51,12 +53,17 @@ public class Merchant {
 
     /**
      * 地址
+     * TODO 要用新的一套
      */
     private Address address;
     /**
      * 是否是个超级管理员
      */
     private boolean manageable;
+    /**
+     * 冻结或删除都应设置为 false
+     */
+    private boolean enabled = true;
 
     /**
      * 商户拥有的门店.
@@ -67,4 +74,23 @@ public class Merchant {
 
     @Column(columnDefinition = DATE_COLUMN_DEFINITION)
     private LocalDateTime createTime;
+
+    /**
+     * 商户是否可用
+     *
+     * @return
+     */
+    public boolean isMerchantUsable() {
+        return (manageable && enabled)
+                || (!manageable && merchant.enabled);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Merchant)) return false;
+        Merchant merchant = (Merchant) o;
+        return Objects.equals(id, merchant.id) &&
+                Objects.equals(manageable, merchant.isMerchantUsable());
+    }
 }

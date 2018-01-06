@@ -38,9 +38,9 @@ public class RechargeCardServiceImpl implements RechargeCardService {
         RechargeCard rechargeCard = rechargeCardRepository.findOne((root, cq, cb)
                 -> cb.equal(root.get(RechargeCard_.code), cardNo));
         if (rechargeCard == null)
-            throw new ApiResultException(ApiResult.withError(HttpStatusCustom.SC_EXPECTATION_FAILED, "充值卡无效"));
+            throw new ApiResultException(ApiResult.withError("充值卡无效"));
         if (rechargeCard.isUsed())
-            throw new ApiResultException(ApiResult.withError(HttpStatusCustom.SC_EXPECTATION_FAILED, "充值卡已失效"));
+            throw new ApiResultException(ApiResult.withError("充值卡已失效"));
         return rechargeCard;
     }
 
@@ -50,8 +50,8 @@ public class RechargeCardServiceImpl implements RechargeCardService {
     public void useCard(String cardNo, Long userId) {
         RechargeCard rechargeCard = verify(cardNo);
         User user = userRepository.findOne(userId);
-        if(user == null  || !user.getLogin().isEnabled()){
-            throw new ApiResultException(ApiResult.withError(HttpStatusCustom.SC_EXPECTATION_FAILED,"用户不存在或不可用"));
+        if (user == null || !user.getLogin().isEnabled()) {
+            throw new ApiResultException(ApiResult.withError("用户不存在或不可用"));
         }
         rechargeCard.setUsed(true);
         rechargeCard.setUser(user);

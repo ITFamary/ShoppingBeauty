@@ -2,9 +2,11 @@ package com.ming.shopping.beauty.service.service;
 
 import com.huotu.verification.VerificationType;
 import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.utils.Constant;
 import me.jiangcai.lib.notice.Content;
 import me.jiangcai.wx.model.Gender;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Created by helloztt on 2018/1/4.
@@ -35,6 +37,23 @@ public interface LoginService {
      */
     Login asWechat(String openId);
 
+    /**
+     * 查找角色，并校验角色是否可用，若不可用则抛出异常
+     *
+     * @param id
+     * @return
+     * @throws ApiResultException 校验失败返回结果
+     */
+    Login findOne(long id) throws ApiResultException;
+
+    /**
+     * 冻结或启用用户
+     *
+     * @param id
+     * @param enable 是否启用
+     */
+    @Transactional(rollbackFor = RuntimeException.class)
+    void freezeOrEnable(long id, boolean enable);
 
     /**
      * @return 用于登录的验证码

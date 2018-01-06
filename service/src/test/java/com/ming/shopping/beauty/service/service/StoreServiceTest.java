@@ -20,11 +20,5 @@ public class StoreServiceTest extends CoreServiceTest {
     @Test
     public void testAddStore(){
         // TODO: 2018-01-03 随便写写的，需要重新写过
-        String storeName = randomString();
-        storeService.addStore(storeName,null,null);
-
-        List storeList = storeService.getAllStores();
-        assertThat(storeList).isNotNull();
-        assertThat(storeList.size()).isGreaterThanOrEqualTo(1);
     }
 }

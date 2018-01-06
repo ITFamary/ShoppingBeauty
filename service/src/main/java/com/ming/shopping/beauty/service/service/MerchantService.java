@@ -1,45 +1,84 @@
 package com.ming.shopping.beauty.service.service;
 
-import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.entity.login.Merchant;
+import com.ming.shopping.beauty.service.exception.ApiResultException;
+import me.jiangcai.jpa.entity.support.Address;
+import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 
 /**
  * @author
  */
 public interface MerchantService {
     /**
-     * @return 所有商户的List集合
+     * @param name     商户名称
+     * @param pageNo   页码
+     * @param pageSize 页面大小
+     * @return 所有商户的集合
      */
-    @Transactional(readOnly = true)
-    List getAllMerchant();
+    Page<Merchant> findAll(String name, int pageNo, int pageSize);
 
     /**
-     * 添加商户
+     * 把某个角色设置为商户的超级管理员
      *
-     * @param merchantName 商户名称
-     * @param password     密码
+     * @param loginId   一个可登录的角色
+     * @param name      商户名称
+     * @param telephone 商户电话
+     * @param contact   商户联系人
+     * @param address   商户地址
+     * @return
+     * @throws ApiResultException
      */
-    @Transactional
-    void addMerchant(Login login, String merchantName, String password);
+    @Transactional(rollbackFor = RuntimeException.class)
+    Merchant addMerchant(long loginId, String name, String telephone, String contact, Address address) throws ApiResultException;
 
     /**
-     * 重置密码
+     * 添加商户的管理员
      *
-     * @param id       需要重置的用户id
-     * @param password 新密码
+     * @param loginId
+     * @param merchantId
+     * @return
+     * @throws ApiResultException
      */
-    @Transactional
-    void resetPassword(long id, String password);
+    @Transactional(rollbackFor = RuntimeException.class)
+    Merchant addMerchant(long loginId, long merchantId) throws ApiResultException;
 
     /**
      * 冻结或启用商户
      *
      * @param id
      * @param enable 是否启用
+     * @throws ApiResultException
      */
-    @Transactional
-    void freezeOrEnable(long id, boolean enable);
+    @Transactional(rollbackFor = RuntimeException.class)
+    void freezeOrEnable(long id, boolean enable) throws ApiResultException;
+
+    /**
+     * 删除角色与商户的关联
+     *
+     * @param managerId 商户管理员
+     * @throws ApiResultException
+     */
+    @Transactional(rollbackFor = RuntimeException.class)
+    void removeMerchantManage(long managerId) throws ApiResultException;
+
+    /**
+     * 查找商户或商户管理员，同时检查商户或商户管理员是否可用，如果不可用就抛出异常
+     *
+     * @param merchantId 商户或商户管理员
+     * @return
+     * @throws ApiResultException
+     */
+    Merchant findOne(long merchantId) throws ApiResultException;
+
+    /**
+     * 查找商户，同时检查商户是否可用，如果不可用就抛出异常
+     *
+     * @param merchantId
+     * @return
+     * @throws ApiResultException
+     */
+    Merchant findMerchant(long merchantId) throws ApiResultException;
 
 }

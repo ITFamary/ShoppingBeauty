@@ -1,67 +1,132 @@
 package com.ming.shopping.beauty.service.service.impl;
 
-import com.ming.shopping.beauty.service.entity.login.Represent;
+import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.entity.login.Merchant;
 import com.ming.shopping.beauty.service.entity.login.Store;
-import com.ming.shopping.beauty.service.repository.RepresentRepository;
+import com.ming.shopping.beauty.service.entity.login.Store_;
+import com.ming.shopping.beauty.service.exception.ApiResultException;
+import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.repository.StoreRepository;
+import com.ming.shopping.beauty.service.service.LoginService;
+import com.ming.shopping.beauty.service.service.MerchantService;
 import com.ming.shopping.beauty.service.service.StoreService;
 import me.jiangcai.jpa.entity.support.Address;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+
 
 @Service
 public class StoreServiceImpl implements StoreService {
     @Autowired
     private StoreRepository storeRepository;
     @Autowired
-    private RepresentRepository representRepository;
+    private LoginService loginService;
+    @Autowired
+    private MerchantService merchantService;
 
     @Override
     @Transactional(readOnly = true)
-    public List getAllStores() {
-        return storeRepository.findAll();
+    public Page<Store> findAll(String name, int pageNo, int pageSize) {
+        return storeRepository.findAll(
+                (root, cq, cb) -> StringUtils.isEmpty(name) ? null : cb.equal(root.get(Store_.name), name)
+                , new PageRequest(pageNo, pageSize, new Sort(Sort.Direction.DESC, "id")));
     }
 
     @Override
-    @Transactional
-    public void addStore(String storeName, Address address, String telephone) {
-//        Store store = new Store();
-//        store.setLoginName(storeName);
-//        store.setAddress(address);
-//        store.setTelephone(telephone);
-//        store.setCreateTime(LocalDateTime.now());
-//        storeRepository.save(store);
+    @Transactional(rollbackFor = RuntimeException.class)
+    public void addStore(long loginId, long merchantId, String name, String telephone, String contact, Address address) {
+        Login login = loginService.findOne(loginId);
+        if (login.getStore() != null) {
+            throw new ApiResultException(ApiResult.withError("该用户已是门店管理员"));
+        }
+        Merchant merchant = merchantService.findMerchant(merchantId);
+        Store store = new Store();
+        store.setId(loginId);
+        store.setLogin(login);
+        store.setName(name);
+        store.setTelephone(telephone);
+        store.setMerchant(merchant);
+        store.setAddress(address);
+        store.setManageable(true);
+        store.setCreateTime(LocalDateTime.now());
+        storeRepository.save(store);
+        login.setStore(store);
+        merchant.getStores().add(store);
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = RuntimeException.class)
+    public void addStore(long loginId, long storeId) {
+        Login login = loginService.findOne(loginId);
+        if (login.getStore() != null) {
+            throw new ApiResultException(ApiResult.withError("该用户已是门店管理员"));
+        }
+        Store store = findStore(storeId);
+        Store manage = new Store();
+        manage.setId(loginId);
+        manage.setLogin(login);
+        manage.setStore(store);
+        manage.setCreateTime(LocalDateTime.now());
+        login.setStore(store);
+        storeRepository.save(manage);
+    }
+
+    @Override
+    @Transactional(rollbackFor = RuntimeException.class)
     public void freezeOrEnable(long id, boolean enable) {
-//        Store store = storeRepository.getOne(id);
-//        store.setEnabled(enable);
+        Store store = storeRepository.findOne(id);
+        if (store == null) {
+            throw new ApiResultException(ApiResult.withError("门店不存在"));
+        }
+        store.setEnabled(enable);
     }
 
     @Override
-    @Transactional
-    public void addRepresent(long id, Represent represent) {
-//        Store store = storeRepository.getOne(id);
-//        List<Represent> represents = store.getRepresents();
-//        if (represents == null) {
-//            represents = new ArrayList<>();
-//        }
-//        represents.add(represent);
-//        store.setRepresents(represents);
+    @Transactional(rollbackFor = RuntimeException.class)
+    public void removeStoreManage(long managerId) {
+        Store store = storeRepository.findOne(managerId);
+        if (store == null) {
+            throw new ApiResultException(ApiResult.withError("门店不存在"));
+        }
+        if (store.isManageable()) {
+            throw new ApiResultException(ApiResult.withError("商户不可删除"));
+        }
+        storeRepository.delete(store);
     }
 
     @Override
-    @Transactional
-    public void freezeOrEnableRepresent(long representId, boolean enable) {
-//        Represent represent = representRepository.getOne(representId);
-//        represent.setEnabled(enable);
+    public Store findOne(long id) throws ApiResultException {
+        Store store = storeRepository.findOne(id);
+        if (store == null) {
+            throw new ApiResultException(ApiResult.withError("门店不存在"));
+        }
+        if (!store.isStoreUsable()) {
+            throw new ApiResultException(ApiResult.withError("门店已冻结"));
+        }
+        if (!store.isManageable() && !store.isEnabled()) {
+            throw new ApiResultException(ApiResult.withError("管理员已冻结"));
+        }
+        return store;
     }
 
+    @Override
+    public Store findStore(long storeId) {
+        Store store = storeRepository.findOne((root, cq, cb) ->
+                cb.and(cb.equal(root.get("id"), storeId), cb.isTrue(root.get(Store_.manageable)))
+        );
+        if (store == null) {
+            throw new ApiResultException(ApiResult.withError("门店不存在"));
+        }
+        if (!store.isStoreUsable()) {
+            throw new ApiResultException(ApiResult.withError("门店已冻结"));
+        }
+        return store;
+    }
 }

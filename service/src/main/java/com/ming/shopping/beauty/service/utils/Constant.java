@@ -28,6 +28,11 @@ public class Constant {
      * 银行家舍入发
      */
     public static final int ROUNDING_MODE = BigDecimal.ROUND_HALF_EVEN;
+    /**
+     * 管理后台分页大小默认为20,前端暂定为10
+     */
+    public static final int MANAGE_PAGE_SIZE = 20;
+    public static final int CLIENT_PAGE_SIZE = 10;
 
     /**
      * 短信签名；理论上来讲应该是依赖配置的

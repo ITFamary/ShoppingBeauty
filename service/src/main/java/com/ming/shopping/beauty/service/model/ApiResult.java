@@ -32,6 +32,10 @@ public class ApiResult {
         return withOk(null);
     }
 
+    public static ApiResult withError(String message) {
+        return withCodeAndMessage(HttpStatusCustom.SC_EXPECTATION_FAILED, message, null);
+    }
+
     public static ApiResult withError(int code, String message) {
         return withCodeAndMessage(code, message, null);
     }

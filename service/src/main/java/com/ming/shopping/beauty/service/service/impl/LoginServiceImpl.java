@@ -3,9 +3,12 @@ package com.ming.shopping.beauty.service.service.impl;
 import com.huotu.verification.IllegalVerificationCodeException;
 import com.huotu.verification.service.VerificationCodeService;
 import com.ming.shopping.beauty.service.aop.BusinessSafe;
+import com.ming.shopping.beauty.service.config.ServiceConfig;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Login_;
 import com.ming.shopping.beauty.service.entity.login.User;
+import com.ming.shopping.beauty.service.exception.ApiResultException;
+import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.repository.LoginRepository;
 import com.ming.shopping.beauty.service.repository.UserRepository;
 import com.ming.shopping.beauty.service.service.LoginService;
@@ -43,7 +46,7 @@ public class LoginServiceImpl implements LoginService {
     @BusinessSafe
     public Login getLogin(String openId, String mobile, String verifyCode
             , String familyName, Gender gender, String cardNo, Long guideUserId) {
-        if (!StringUtils.isEmpty(verifyCode)) {
+        if (!env.acceptsProfiles(ServiceConfig.PROFILE_UNIT_TEST) && !StringUtils.isEmpty(verifyCode)) {
             verificationCodeService.verify(mobile, verifyCode, loginVerificationType());
         }
         if (!StringUtils.isEmpty(cardNo)) {
@@ -83,6 +86,26 @@ public class LoginServiceImpl implements LoginService {
         return loginRepository.findOne((root, query, cb)
                 -> cb.equal(root.get(Login_.wechatUser).get("openId"), openId)
         );
+    }
+
+    @Override
+    public Login findOne(long id) throws ApiResultException {
+        Login login = loginRepository.findOne(id);
+        if (login == null) {
+            throw new ApiResultException(ApiResult.withError("角色不存在"));
+        }
+        if (!login.isEnabled()) {
+            throw new ApiResultException(ApiResult.withError("角色不可用"));
+        }
+        return login;
+    }
+
+    @Override
+    @Transactional(rollbackFor = RuntimeException.class)
+    public void freezeOrEnable(long id, boolean enable) {
+        if (loginRepository.updateLoginEnabled(id, enable) == 0) {
+            throw new ApiResultException(ApiResult.withError("角色不存在"));
+        }
     }
 
 

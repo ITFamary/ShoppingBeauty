@@ -12,6 +12,7 @@ import static com.ming.shopping.beauty.service.utils.Constant.DATE_COLUMN_DEFINI
 
 /**
  * 门店
+ *
  * @author lxf
  */
 @Entity
@@ -24,8 +25,8 @@ public class Store {
     /**
      * share primary key
      */
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, optional = false)
-    @PrimaryKeyJoinColumn(name = "id",referencedColumnName = "id")
+    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.PERSIST}, optional = false)
+    @PrimaryKeyJoinColumn(name = "id", referencedColumnName = "id")
     private Login login;
     /**
      * 所属门店
@@ -64,4 +65,16 @@ public class Store {
 
     @Column(columnDefinition = DATE_COLUMN_DEFINITION)
     private LocalDateTime createTime;
+    /**
+     * 冻结或删除都应设置为 false
+     */
+    private boolean enabled = true;
+
+    /**
+     * 门店是否可用
+     */
+    public boolean isStoreUsable() {
+        return (manageable && enabled)
+                || (!manageable && store.enabled);
+    }
 }
