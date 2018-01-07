@@ -93,10 +93,10 @@ public class StoreServiceImpl implements StoreService {
     public void removeStoreManage(long managerId) {
         Store store = storeRepository.findOne(managerId);
         if (store == null) {
-            throw new ApiResultException(ApiResult.withError("门店不存在"));
+            throw new ApiResultException(ApiResult.withError(ErrorMessage.STORE_NOT_EXIST.getMessage()));
         }
         if (store.isManageable()) {
-            throw new ApiResultException(ApiResult.withError("商户不可删除"));
+            throw new ApiResultException(ApiResult.withError(ErrorMessage.STORE_CANNOT_DELETE.getMessage()));
         }
         storeRepository.delete(store);
     }
@@ -105,13 +105,13 @@ public class StoreServiceImpl implements StoreService {
     public Store findOne(long id) throws ApiResultException {
         Store store = storeRepository.findOne(id);
         if (store == null) {
-            throw new ApiResultException(ApiResult.withError("门店不存在"));
+            throw new ApiResultException(ApiResult.withError(ErrorMessage.STORE_NOT_EXIST.getMessage()));
         }
         if (!store.isStoreUsable()) {
-            throw new ApiResultException(ApiResult.withError("门店已冻结"));
+            throw new ApiResultException(ApiResult.withError(ErrorMessage.STORE_NOT_ENABLE.getMessage()));
         }
         if (!store.isManageable() && !store.isEnabled()) {
-            throw new ApiResultException(ApiResult.withError("管理员已冻结"));
+            throw new ApiResultException(ApiResult.withError(ErrorMessage.MANAGE_NOT_ENABLE.getMessage()));
         }
         return store;
     }
@@ -119,13 +119,13 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public Store findStore(long storeId) {
         Store store = storeRepository.findOne((root, cq, cb) ->
-                cb.and(cb.equal(root.get("id"), storeId), cb.isTrue(root.get(Store_.manageable)))
+                cb.and(cb.equal(root.get(Store_.id), storeId), cb.isTrue(root.get(Store_.manageable)))
         );
         if (store == null) {
-            throw new ApiResultException(ApiResult.withError("门店不存在"));
+            throw new ApiResultException(ApiResult.withError(ErrorMessage.STORE_NOT_EXIST.getMessage()));
         }
         if (!store.isStoreUsable()) {
-            throw new ApiResultException(ApiResult.withError("门店已冻结"));
+            throw new ApiResultException(ApiResult.withError(ErrorMessage.STORE_NOT_ENABLE.getMessage()));
         }
         return store;
     }

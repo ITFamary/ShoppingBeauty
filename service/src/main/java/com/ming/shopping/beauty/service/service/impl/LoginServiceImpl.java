@@ -92,10 +92,10 @@ public class LoginServiceImpl implements LoginService {
     public Login findOne(long id) throws ApiResultException {
         Login login = loginRepository.findOne(id);
         if (login == null) {
-            throw new ApiResultException(ApiResult.withError("角色不存在"));
+            throw new ApiResultException(ApiResult.withError(ErrorMessage.LOGIN_NOT_EXIST.getMessage()));
         }
         if (!login.isEnabled()) {
-            throw new ApiResultException(ApiResult.withError("角色不可用"));
+            throw new ApiResultException(ApiResult.withError(ErrorMessage.LOGIN_NOT_ENABLE.getMessage()));
         }
         return login;
     }
@@ -104,7 +104,7 @@ public class LoginServiceImpl implements LoginService {
     @Transactional(rollbackFor = RuntimeException.class)
     public void freezeOrEnable(long id, boolean enable) {
         if (loginRepository.updateLoginEnabled(id, enable) == 0) {
-            throw new ApiResultException(ApiResult.withError("角色不存在"));
+            throw new ApiResultException(ApiResult.withError(ErrorMessage.LOGIN_NOT_EXIST.getMessage()));
         }
     }
 

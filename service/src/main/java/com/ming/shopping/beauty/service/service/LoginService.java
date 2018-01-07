@@ -4,6 +4,8 @@ import com.huotu.verification.VerificationType;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.utils.Constant;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import me.jiangcai.lib.notice.Content;
 import me.jiangcai.wx.model.Gender;
 import org.springframework.transaction.annotation.Transactional;
@@ -107,5 +109,16 @@ public interface LoginService {
                 return Constant.generateCodeContent(this, code, "SMS_94310017");
             }
         };
+    }
+
+    @AllArgsConstructor
+    @Getter
+    enum ErrorMessage{
+        LOGIN_NOT_EXIST("账号不存在"),
+        LOGIN_NOT_ENABLE("账号不可用");
+
+        private String message;
+
+
     }
 }

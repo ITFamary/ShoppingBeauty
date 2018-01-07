@@ -2,6 +2,8 @@ package com.ming.shopping.beauty.service.service;
 
 import com.ming.shopping.beauty.service.entity.login.Merchant;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import me.jiangcai.jpa.entity.support.Address;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +19,7 @@ public interface MerchantService {
      * @param pageSize 页面大小
      * @return 所有商户的集合
      */
-    Page<Merchant> findAll(String name, int pageNo, int pageSize);
+    Page<Merchant> findAll(String name, Boolean manageable, int pageNo, int pageSize);
 
     /**
      * 把某个角色设置为商户的超级管理员
@@ -80,5 +82,17 @@ public interface MerchantService {
      * @throws ApiResultException
      */
     Merchant findMerchant(long merchantId) throws ApiResultException;
+
+    @AllArgsConstructor
+    @Getter
+    enum ErrorMessage{
+        MERCHANT_OR_MANAGE_NOT_EXIST("商户或管理员不存在"),
+        MERCHANT_NOT_EXIST("商户不存在"),
+        MERCHANT_NOT_ENABLE("商户已冻结"),
+        MANAGE_NOT_ENABLE("管理员已冻结"),
+        MERCHANT_EXIST("该账号已是商户"),
+        MERCHANT_CANNOT_DELETE("商户不可删除");
+        private String message;
+    }
 
 }

@@ -2,6 +2,8 @@ package com.ming.shopping.beauty.service.service;
 
 import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import me.jiangcai.jpa.entity.support.Address;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
@@ -77,6 +79,16 @@ public interface StoreService {
      * @return
      */
     Store findStore(long storeId);
+
+    @AllArgsConstructor
+    @Getter
+    enum ErrorMessage{
+        STORE_NOT_EXIST("门店不存在"),
+        STORE_NOT_ENABLE("门店已冻结"),
+        MANAGE_NOT_ENABLE("管理员已冻结"),
+        STORE_CANNOT_DELETE("门店不可删除");
+        private String message;
+    }
 
 
 }
