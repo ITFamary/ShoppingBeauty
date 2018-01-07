@@ -21,7 +21,7 @@ import java.util.function.Function;
 @Entity
 @Setter
 @Getter
-public class Order {
+public class MainOrder {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,7 +42,7 @@ public class Order {
     @ManyToOne
     private Represent represent;
 
-    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "mainOrder", fetch = FetchType.LAZY)
     private List<OrderItem> orderItemList;
     /**
      * 总金额

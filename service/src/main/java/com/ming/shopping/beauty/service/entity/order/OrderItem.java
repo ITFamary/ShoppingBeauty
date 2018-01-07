@@ -21,7 +21,7 @@ public class OrderItem {
     private Long itemId;
 
     @ManyToOne
-    private Order order;
+    private MainOrder mainOrder;
 
     @ManyToOne
     private Item item;

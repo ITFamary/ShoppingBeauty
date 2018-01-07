@@ -15,17 +15,11 @@ import java.math.BigDecimal;
 @Entity
 @Getter
 @Setter
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"merchant", "code"})})
 public class Item {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    /**
-     * 项目编码
-     */
-    @Column(length = 20)
-    private String code;
     /**
      * 商户
      */

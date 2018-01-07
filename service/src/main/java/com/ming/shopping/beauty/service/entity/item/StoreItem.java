@@ -15,7 +15,6 @@ import java.math.BigDecimal;
 @Entity
 @Getter
 @Setter
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"store", "item"})})
 public class StoreItem {
 
     @Id

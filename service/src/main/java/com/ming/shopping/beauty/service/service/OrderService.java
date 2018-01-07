@@ -4,7 +4,8 @@ import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.login.Represent;
 import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.login.User;
-import com.ming.shopping.beauty.service.entity.order.Order;
+import com.ming.shopping.beauty.service.entity.order.MainOrder;
+import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.order.OrderItem;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,13 +20,13 @@ public interface OrderService {
     /**
      * @return 所有订单
      */
-    List<Order> findAll();
+    List<MainOrder> findAll();
 
     /**
      * @param id 订单id
      * @return 某个订单
      */
-    Order findById(long id);
+    MainOrder findById(long id);
 
     /**
      * 生成订单
@@ -36,7 +37,7 @@ public interface OrderService {
      * @return
      */
     @Transactional
-    Order newOrder(Store store, User user, Represent represent, List<OrderItem> itemList);
+    MainOrder newOrder(Store store, User user, Represent represent, List<OrderItem> itemList);
 
     /**
      * 生成订单
@@ -47,7 +48,7 @@ public interface OrderService {
      * @return
      */
     @Transactional
-    Order newOrder(Store store, User user, Represent represent, OrderItem orderItem);
+    MainOrder newOrder(Store store, User user, Represent represent, OrderItem orderItem);
 
     /**
      * 支付订单

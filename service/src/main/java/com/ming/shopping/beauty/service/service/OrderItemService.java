@@ -1,7 +1,7 @@
 package com.ming.shopping.beauty.service.service;
 
 import com.ming.shopping.beauty.service.entity.item.Item;
-import com.ming.shopping.beauty.service.entity.order.Order;
+import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.order.OrderItem;
 
 import java.util.List;

@@ -4,7 +4,8 @@ import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.login.Represent;
 import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.login.User;
-import com.ming.shopping.beauty.service.entity.order.Order;
+import com.ming.shopping.beauty.service.entity.order.MainOrder;
+import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.order.OrderItem;
 import com.ming.shopping.beauty.service.entity.support.OrderStatus;
 import com.ming.shopping.beauty.service.repository.OrderRepository;
@@ -28,34 +29,34 @@ public class OrderServiceImpl implements OrderService {
     private OrderRepository orderRepository;
 
     @Override
-    public List<Order> findAll() {
+    public List<MainOrder> findAll() {
         return orderRepository.findAll();
     }
 
     @Override
-    public Order findById(long id) {
+    public MainOrder findById(long id) {
         return orderRepository.findOne(id);
     }
 
     @Override
     @Transactional
-    public Order newOrder(Store store, User user, Represent represent, List<OrderItem> itemList) {
-        Order order = new Order();
+    public MainOrder newOrder(Store store, User user, Represent represent, List<OrderItem> itemList) {
+        MainOrder mainOrder = new MainOrder();
         //order.setCreateTime(LocalDateTime.now());
-        order.setStore(store);
-        order.setUser(user);
-        order.setRepresent(represent);
-        order.setOrderItemList(itemList);
+        mainOrder.setStore(store);
+        mainOrder.setUser(user);
+        mainOrder.setRepresent(represent);
+        mainOrder.setOrderItemList(itemList);
         //待付款
-        order.setOrderStatus(OrderStatus.forPay);
+        mainOrder.setOrderStatus(OrderStatus.forPay);
         //未结算
-        order.setSettled(false);
-        return orderRepository.save(order);
+        mainOrder.setSettled(false);
+        return orderRepository.save(mainOrder);
     }
 
     @Override
     @Transactional
-    public Order newOrder(Store store, User user, Represent represent, OrderItem orderItem) {
+    public MainOrder newOrder(Store store, User user, Represent represent, OrderItem orderItem) {
         List<OrderItem> list = new ArrayList<>();
         list.add(orderItem);
         return newOrder(store,user,represent,list);
@@ -64,9 +65,9 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public boolean payOrder(long id) {
         //TODO 还不知道怎么写
-        Order order = findById(id);
-        order.setPayTime(LocalDateTime.now());
-        order.setOrderStatus(OrderStatus.success);
+        MainOrder mainOrder = findById(id);
+        mainOrder.setPayTime(LocalDateTime.now());
+        mainOrder.setOrderStatus(OrderStatus.success);
         return false;
     }
 }

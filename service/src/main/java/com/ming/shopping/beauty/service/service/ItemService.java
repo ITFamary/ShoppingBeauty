@@ -25,7 +25,6 @@ public interface ItemService {
 
     /**
      * 添加新的项目
-     * @param code 项目编号
      * @param merchant 所属的商家
      * @param name 项目名称
      * @param itemType 项目类型
@@ -38,7 +37,7 @@ public interface ItemService {
      * @return
      */
     @Transactional
-    Item addItem(String code,Merchant merchant,String name,String itemType,BigDecimal price,
+    Item addItem(Merchant merchant,String name,String itemType,BigDecimal price,
                  BigDecimal salesPrice,BigDecimal costPrice,String description,String richDescription,boolean recommended);
 
     /**

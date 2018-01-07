@@ -1,7 +1,7 @@
 package com.ming.shopping.beauty.service.service.impl;
 
 import com.ming.shopping.beauty.service.entity.item.Item;
-import com.ming.shopping.beauty.service.entity.order.Order;
+import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.order.OrderItem;
 import com.ming.shopping.beauty.service.repository.OrderItemRepository;
 import com.ming.shopping.beauty.service.repository.OrderRepository;
@@ -28,8 +28,8 @@ public class OrderItemServiceImpl implements OrderItemService {
     @Override
     @Transactional(readOnly = true)
     public List<OrderItem> findByOrderId(long id) {
-        Order order = orderRepository.findOne(id);
-        List<OrderItem> byOrder = orderItemRepository.findByOrder(order);
+        MainOrder mainOrder = orderRepository.findOne(id);
+        List<OrderItem> byOrder = orderItemRepository.findByMainOrder(mainOrder);
         return byOrder;
     }
 
