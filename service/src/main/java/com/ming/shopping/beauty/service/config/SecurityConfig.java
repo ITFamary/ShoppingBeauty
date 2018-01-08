@@ -1,4 +1,4 @@
-package com.ming.shopping.beauty.config;
+package com.ming.shopping.beauty.service.config;
 
 import com.ming.shopping.beauty.service.service.LoginService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +29,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private LoginService loginService;
 
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+    @Autowired
+    public void registerSharedAuthentication(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(loginService).passwordEncoder(passwordEncoder);
     }
 
@@ -61,6 +61,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         // TODO: 2018/1/8 一下地址都需要与接口核对
         registry
+                //登录前的校验
+                .antMatchers("/isExist","/isRegister").permitAll()
                 // 登录跳转页面
                 .antMatchers("/wechatJoin**", "/wechatRegister").permitAll()
                 .antMatchers("/toLoginWechat", "/wechatLogin").permitAll()

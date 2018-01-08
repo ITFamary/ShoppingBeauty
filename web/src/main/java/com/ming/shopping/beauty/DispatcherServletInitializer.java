@@ -1,8 +1,8 @@
 package com.ming.shopping.beauty;
 
-import com.ming.shopping.beauty.config.SecurityConfig;
+import com.ming.shopping.beauty.service.config.SecurityConfig;
 import com.ming.shopping.beauty.service.utils.Constant;
-import com.ming.shopping.beauty.config.MvcConfig;
+import com.ming.shopping.beauty.service.config.MvcConfig;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.filter.HttpPutFormContentFilter;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
