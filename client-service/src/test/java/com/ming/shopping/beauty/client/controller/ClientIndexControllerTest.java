@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author helloztt
  */
-public class IndexControllerTest extends ClientConfigTest {
+public class ClientIndexControllerTest extends ClientConfigTest {
 
     @Test
     public void indexTest() throws Exception {

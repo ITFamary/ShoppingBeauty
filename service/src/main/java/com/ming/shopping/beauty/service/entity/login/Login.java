@@ -1,5 +1,6 @@
 package com.ming.shopping.beauty.service.entity.login;
 
+import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import lombok.Getter;
 import lombok.Setter;
 import me.jiangcai.wx.standard.entity.StandardWeixinUser;
@@ -11,6 +12,8 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import static com.ming.shopping.beauty.service.utils.Constant.DATE_COLUMN_DEFINITION;
 
@@ -24,6 +27,19 @@ import static com.ming.shopping.beauty.service.utils.Constant.DATE_COLUMN_DEFINI
 @Getter
 @Inheritance(strategy = InheritanceType.JOINED)
 public class Login implements UserDetails {
+    /**
+     * 商户超管
+     */
+    public static final String ROLE_MERCHANT_ROOT = "MERCHANT_ROOT";
+    /**
+     * 门店超管
+     */
+    public static final String ROLE_STORE_ROOT = "STORE_ROOT";
+    /**
+     * 审核门店
+     */
+    public static final String ROLE_AUDIT_ITEM = "AUDIT_ITEM";
+    public static final String ROLE_MANAGE_ITEM = "MANAGE_ITEM";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -58,6 +74,10 @@ public class Login implements UserDetails {
      */
     @OneToOne
     private User user;
+
+    @ElementCollection
+    @Enumerated(EnumType.STRING)
+    private Set<ManageLevel> levelSet;
 
     @Column(columnDefinition = DATE_COLUMN_DEFINITION)
     private LocalDateTime createTime;
@@ -100,5 +120,12 @@ public class Login implements UserDetails {
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
+    }
+
+    public Set<ManageLevel> getLevelSet(){
+        if(levelSet == null){
+            return new HashSet<>();
+        }
+        return levelSet;
     }
 }

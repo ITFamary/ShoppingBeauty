@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author helloztt
  */
 @Controller
-public class IndexController {
+public class ClientIndexController {
 
     @RequestMapping(value = {"", "/"})
     @ResponseBody

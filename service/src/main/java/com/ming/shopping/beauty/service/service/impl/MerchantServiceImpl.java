@@ -3,6 +3,7 @@ package com.ming.shopping.beauty.service.service.impl;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Merchant;
 import com.ming.shopping.beauty.service.entity.login.Merchant_;
+import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.repository.MerchantRepository;
@@ -62,6 +63,7 @@ public class MerchantServiceImpl implements MerchantService {
         }
         Merchant merchant = new Merchant();
         login.setMerchant(merchant);
+        login.getLevelSet().add(ManageLevel.merchantRoot);
         merchant.setId(login.getId());
         merchant.setLogin(login);
         merchant.setName(name);
@@ -83,6 +85,7 @@ public class MerchantServiceImpl implements MerchantService {
         Merchant merchant = findMerchant(merchantId);
         Merchant manage = new Merchant();
         login.setMerchant(manage);
+        login.getLevelSet().add(ManageLevel.merchantManager);
         manage.setId(login.getId());
         manage.setLogin(login);
         manage.setMerchant(merchant);

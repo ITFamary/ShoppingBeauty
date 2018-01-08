@@ -4,6 +4,7 @@ import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Merchant;
 import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.login.Store_;
+import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.repository.StoreRepository;
@@ -22,6 +23,9 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 
 
+/**
+ * @author helloztt
+ */
 @Service
 public class StoreServiceImpl implements StoreService {
     @Autowired
@@ -44,7 +48,7 @@ public class StoreServiceImpl implements StoreService {
     public void addStore(long loginId, long merchantId, String name, String telephone, String contact, Address address) {
         Login login = loginService.findOne(loginId);
         if (login.getStore() != null) {
-            throw new ApiResultException(ApiResult.withError("该用户已是门店管理员"));
+            throw new ApiResultException(ApiResult.withError(ErrorMessage.ALREADY_MANAGE.getMessage()));
         }
         Merchant merchant = merchantService.findMerchant(merchantId);
         Store store = new Store();
@@ -58,6 +62,7 @@ public class StoreServiceImpl implements StoreService {
         store.setCreateTime(LocalDateTime.now());
         storeRepository.save(store);
         login.setStore(store);
+        login.getLevelSet().add(ManageLevel.storeRoot);
         merchant.getStores().add(store);
     }
 
@@ -66,7 +71,7 @@ public class StoreServiceImpl implements StoreService {
     public void addStore(long loginId, long storeId) {
         Login login = loginService.findOne(loginId);
         if (login.getStore() != null) {
-            throw new ApiResultException(ApiResult.withError("该用户已是门店管理员"));
+            throw new ApiResultException(ApiResult.withError(ErrorMessage.ALREADY_MANAGE.getMessage()));
         }
         Store store = findStore(storeId);
         Store manage = new Store();
@@ -75,6 +80,7 @@ public class StoreServiceImpl implements StoreService {
         manage.setStore(store);
         manage.setCreateTime(LocalDateTime.now());
         login.setStore(store);
+        login.getLevelSet().add(ManageLevel.storeRoot);
         storeRepository.save(manage);
     }
 
@@ -83,7 +89,7 @@ public class StoreServiceImpl implements StoreService {
     public void freezeOrEnable(long id, boolean enable) {
         Store store = storeRepository.findOne(id);
         if (store == null) {
-            throw new ApiResultException(ApiResult.withError("门店不存在"));
+            throw new ApiResultException(ApiResult.withError(ErrorMessage.STORE_NOT_EXIST.getMessage()));
         }
         store.setEnabled(enable);
     }

@@ -1,5 +1,6 @@
 package com.ming.shopping.beauty;
 
+import com.ming.shopping.beauty.config.SecurityConfig;
 import com.ming.shopping.beauty.service.utils.Constant;
 import com.ming.shopping.beauty.config.MvcConfig;
 import org.springframework.web.filter.CharacterEncodingFilter;
@@ -9,11 +10,14 @@ import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatche
 import javax.servlet.Filter;
 
 
+/**
+ * @author helloztt
+ */
 public class DispatcherServletInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
     @Override
     protected Class<?>[] getRootConfigClasses() {
         return new Class<?>[]{
-                MvcConfig.class
+                MvcConfig.class, SecurityConfig.class
         };
     }
 

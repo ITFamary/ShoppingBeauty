@@ -1,12 +1,12 @@
 package com.ming.shopping.beauty.service.service.impl;
 
-import com.huotu.verification.IllegalVerificationCodeException;
 import com.huotu.verification.service.VerificationCodeService;
 import com.ming.shopping.beauty.service.aop.BusinessSafe;
 import com.ming.shopping.beauty.service.config.ServiceConfig;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Login_;
 import com.ming.shopping.beauty.service.entity.login.User;
+import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.repository.LoginRepository;
@@ -17,14 +17,17 @@ import me.jiangcai.wx.model.Gender;
 import me.jiangcai.wx.standard.repository.StandardWeixinUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 /**
- * Created by helloztt on 2018/1/4.
+ * @author helloztt
  */
 @Service
 public class LoginServiceImpl implements LoginService {
@@ -40,6 +43,15 @@ public class LoginServiceImpl implements LoginService {
     private StandardWeixinUserRepository standardWeixinUserRepository;
     @Autowired
     private Environment env;
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        Login login = loginRepository.findByLoginName(username);
+        if (login == null) {
+            throw new UsernameNotFoundException(username);
+        }
+        return login;
+    }
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
@@ -108,5 +120,16 @@ public class LoginServiceImpl implements LoginService {
         }
     }
 
-
+    @Override
+    @Transactional(rollbackFor = RuntimeException.class)
+    public Login upOrDowngradeToRoot(long id, boolean manageAble) {
+        Login login = findOne(id);
+        login.setManageable(manageAble);
+        if(manageAble){
+            login.getLevelSet().add(ManageLevel.root);
+        }else{
+            login.getLevelSet().remove(ManageLevel.root);
+        }
+        return loginRepository.save(login);
+    }
 }
