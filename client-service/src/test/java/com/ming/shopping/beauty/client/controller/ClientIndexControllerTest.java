@@ -17,14 +17,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class ClientIndexControllerTest extends ClientConfigTest {
 
     @Test
-    public void indexTest() throws Exception {
-        String result = mockMvc.perform(get("/"))
-                .andDo(print())
-                .andReturn().getResponse().getContentAsString();
-        assertThat(result).isEqualTo("client index");
-    }
-
-    @Test
     public void isExistTest() throws Exception{
         final String isExistUrl = "/isExist";
         mockWeixinUser = nextCurrentWechatAccount();

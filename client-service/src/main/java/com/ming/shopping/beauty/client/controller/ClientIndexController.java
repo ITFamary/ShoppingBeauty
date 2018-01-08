@@ -17,12 +17,6 @@ public class ClientIndexController {
     @Autowired
     private LoginService loginService;
 
-    @RequestMapping(value = {"", "/"})
-    @ResponseBody
-    public String indexTest() {
-        return "client index";
-    }
-
     /**
      * 检查用户是否已经注册，返回200
      * <p>若已注册，在 {@link ApiResult#data} 中返回登录名</p>

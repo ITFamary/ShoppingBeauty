@@ -10,10 +10,4 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 @RequestMapping("/manage")
 public class ManageIndexController {
-
-    @RequestMapping(value = {"", "/"})
-    @ResponseBody
-    public String indexTest() {
-        return "manage index";
-    }
 }
