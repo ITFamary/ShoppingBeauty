@@ -25,7 +25,7 @@ public class ApiResult {
     }
 
     public static ApiResult withOk(Object data) {
-        return withCode(HttpStatusCustom.SC_ACCEPTED, data);
+        return withCode(HttpStatusCustom.SC_OK, data);
     }
 
     public static ApiResult withOk() {

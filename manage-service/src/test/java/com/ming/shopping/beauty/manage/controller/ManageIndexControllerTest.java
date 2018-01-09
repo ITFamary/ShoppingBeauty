@@ -12,10 +12,6 @@ public class ManageIndexControllerTest extends ManageConfigTest {
 
     @Test
     public void testManageIndex() throws Exception {
-        String result = mockMvc.perform(get(MANAGE_BASE_URL + "/"))
-                .andDo(print())
-                .andReturn().getResponse().getContentAsString();
-        assertThat(result).isEqualTo("manage index");
     }
 
 }

@@ -6,16 +6,14 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
- * Created by helloztt on 2017/12/21.
+ *
+ * @author helloztt
+ * @date 2017/12/21
  */
 @Configuration
-@Import(CommonConfig.class)
-@EnableTransactionManagement
+@Import({CommonConfig.class, DataSupportConfig.class})
 @ComponentScan({"com.ming.shopping.beauty.service.service"})
 @EnableJpaRepositories(basePackages = "com.ming.shopping.beauty.service.repository")
-@ImportResource({"classpath:service_config_prod.xml","classpath:service_config_test.xml"})
-@EnableAspectJAutoProxy
-@EnableScheduling
 public class ServiceConfig {
     public static final String PROFILE_UNIT_TEST = "unit_test";
     public static final String PROFILE_TEST = "test";

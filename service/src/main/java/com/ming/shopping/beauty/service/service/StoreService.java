@@ -86,7 +86,8 @@ public interface StoreService {
         STORE_NOT_EXIST("门店不存在"),
         STORE_NOT_ENABLE("门店已冻结"),
         MANAGE_NOT_ENABLE("管理员已冻结"),
-        STORE_CANNOT_DELETE("门店不可删除");
+        STORE_CANNOT_DELETE("门店不可删除"),
+        ALREADY_MANAGE("该用户已是门店管理员");
         private String message;
     }
 

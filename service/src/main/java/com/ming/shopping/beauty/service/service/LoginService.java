@@ -8,12 +8,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import me.jiangcai.lib.notice.Content;
 import me.jiangcai.wx.model.Gender;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Created by helloztt on 2018/1/4.
+ * @author helloztt
  */
-public interface LoginService {
+public interface LoginService extends UserDetailsService {
 
     /**
      * 根据openId 查找用户，如果查到了就返回这个用户，如果没查到就创建用户
@@ -56,6 +57,16 @@ public interface LoginService {
      */
     @Transactional(rollbackFor = RuntimeException.class)
     void freezeOrEnable(long id, boolean enable);
+
+    /**
+     * 将某个角色设置或取消超级管理员
+     *
+     * @param id
+     * @param manageAble 是否为超管
+     * @return
+     */
+    @Transactional(rollbackFor = RuntimeException.class)
+    Login upOrDowngradeToRoot(long id, boolean manageAble);
 
     /**
      * @return 用于登录的验证码
@@ -113,9 +124,10 @@ public interface LoginService {
 
     @AllArgsConstructor
     @Getter
-    enum ErrorMessage{
+    enum ErrorMessage {
         LOGIN_NOT_EXIST("账号不存在"),
-        LOGIN_NOT_ENABLE("账号不可用");
+        LOGIN_NOT_ENABLE("账号不可用"),
+        ALREADY_MANAGEABLE("请勿重复操作");
 
         private String message;
 
