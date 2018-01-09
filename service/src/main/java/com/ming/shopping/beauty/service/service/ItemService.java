@@ -58,6 +58,12 @@ public interface ItemService {
     @Transactional
     Item showOrHidden(long id,boolean deleted);
 
+    /**
+     * 设置项目所属商户
+     * @param id 项目id
+     * @param merchant  所属商户
+     * @return
+     */
     @Transactional
     Item setMerchant(long id,Merchant merchant);
 }
