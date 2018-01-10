@@ -1,21 +1,18 @@
 package com.ming.shopping.beauty.service.service;
 
-import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.login.Represent;
 import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
-import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.order.OrderItem;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 /**
  * @author lxf
  */
-public interface OrderService {
+public interface MainOrderService {
 
     /**
      * @return 所有订单
@@ -57,4 +54,13 @@ public interface OrderService {
      */
     @Transactional
     boolean payOrder(long id);
+
+    /**
+     * 根据登录用户查询订单列表
+     * @param entity 身份
+     * @param page 页码
+     * @param page_size 每页多少
+     * @return MainOrder集合
+     */
+    List<MainOrder> search(Object entity , int page , int page_size);
 }

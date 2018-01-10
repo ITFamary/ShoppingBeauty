@@ -4,7 +4,7 @@ import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.order.OrderItem;
 import com.ming.shopping.beauty.service.repository.OrderItemRepository;
-import com.ming.shopping.beauty.service.repository.OrderRepository;
+import com.ming.shopping.beauty.service.repository.MainOrderRepository;
 import com.ming.shopping.beauty.service.service.OrderItemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,12 +23,12 @@ public class OrderItemServiceImpl implements OrderItemService {
     @Autowired
     private OrderItemRepository orderItemRepository;
     @Autowired
-    private OrderRepository orderRepository;
+    private MainOrderRepository mainOrderRepository;
 
     @Override
     @Transactional(readOnly = true)
     public List<OrderItem> findByOrderId(long id) {
-        MainOrder mainOrder = orderRepository.findOne(id);
+        MainOrder mainOrder = mainOrderRepository.findOne(id);
         List<OrderItem> byOrder = orderItemRepository.findByMainOrder(mainOrder);
         return byOrder;
     }
