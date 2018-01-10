@@ -44,7 +44,7 @@ public class IndexController {
      * @param openId 微信返回的openId
      * @return
      */
-    @RequestMapping(value = "/isExist", method = RequestMethod.GET)
+    @GetMapping(value = "/isExist")
     @ResponseBody
     public ApiResult isExist(@OpenId String openId) {
         Login login = loginService.asWechat(openId);
@@ -63,7 +63,7 @@ public class IndexController {
      * @param mobile 手机号
      * @return
      */
-    @RequestMapping(value = "/isRegister/{mobile}", method = RequestMethod.GET)
+    @GetMapping(value = "/isRegister/{mobile}")
     @ResponseBody
     public ApiResult isRegister(@PathVariable String mobile) {
         loginService.mobileVerify(mobile);

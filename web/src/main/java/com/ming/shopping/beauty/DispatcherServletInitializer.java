@@ -1,8 +1,7 @@
 package com.ming.shopping.beauty;
 
-import com.ming.shopping.beauty.service.config.SecurityConfig;
+import com.ming.shopping.beauty.config.WebConfig;
 import com.ming.shopping.beauty.service.utils.Constant;
-import com.ming.shopping.beauty.service.config.MvcConfig;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.filter.HttpPutFormContentFilter;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
@@ -17,7 +16,7 @@ public class DispatcherServletInitializer extends AbstractAnnotationConfigDispat
     @Override
     protected Class<?>[] getRootConfigClasses() {
         return new Class<?>[]{
-                MvcConfig.class, SecurityConfig.class
+                WebConfig.class
         };
     }
 
