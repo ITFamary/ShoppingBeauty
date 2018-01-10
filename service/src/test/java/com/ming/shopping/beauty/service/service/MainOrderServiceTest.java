@@ -2,11 +2,8 @@ package com.ming.shopping.beauty.service.service;
 
 import com.ming.shopping.beauty.service.CoreServiceTest;
 import com.ming.shopping.beauty.service.entity.item.Item;
-import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.order.OrderItem;
-import com.ming.shopping.beauty.service.repository.StoreRepository;
-import me.jiangcai.jpa.entity.support.Address;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -19,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class MainOrderServiceTest extends CoreServiceTest {
     @Autowired
-    private OrderService orderService;
+    private MainOrderService mainOrderService;
     @Autowired
     private OrderItemService orderItemService;
     @Autowired
@@ -36,6 +33,6 @@ public class MainOrderServiceTest extends CoreServiceTest {
         OrderItem orderItem = orderItemService.newOrderItem(item, 1);
         assertThat(orderItem).isNotNull();
         //TODO 为啥不好使啊...
-        MainOrder order = orderService.newOrder(null, null, null, orderItem);
+        MainOrder order = mainOrderService.newOrder(null, null, null, orderItem);
     }
 }

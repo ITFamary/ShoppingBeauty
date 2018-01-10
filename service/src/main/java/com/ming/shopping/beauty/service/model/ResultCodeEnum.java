@@ -33,6 +33,7 @@ public enum ResultCodeEnum {
     /**
      * 项目、门店：[3000,3999]
      */
+    MAINORDER_NOT_EXIST(3001,"订单不存在"),
     /**
      * 订单相关：[4000,4999]
      */

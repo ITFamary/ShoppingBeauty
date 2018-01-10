@@ -1,5 +1,6 @@
 package com.ming.shopping.beauty.service.service;
 
+import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import lombok.AllArgsConstructor;
@@ -70,5 +71,10 @@ public interface StoreService {
      */
     Store findStore(long storeId);
 
-
+    /**
+     * 根据登录角色查找其门店
+     * @param login 登录角色
+     * @return
+     */
+    Store findByLogin(Login login);
 }

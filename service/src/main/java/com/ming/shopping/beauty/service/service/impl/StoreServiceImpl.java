@@ -128,4 +128,10 @@ public class StoreServiceImpl implements StoreService {
         }
         return store;
     }
+
+    @Override
+    public Store findByLogin(Login login) throws ApiResultException {
+        Store store = storeRepository.findOne(((root, query, cb) -> cb.and(cb.equal(root.get(Store_.login),login))));
+        return store;
+    }
 }
