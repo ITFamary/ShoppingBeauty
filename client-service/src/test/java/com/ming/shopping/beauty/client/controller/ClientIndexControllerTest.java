@@ -39,6 +39,8 @@ public class ClientIndexControllerTest extends ClientConfigTest {
             assertThat(ex.getMessage()).contains("NoWeixinClientException");
         }
 
+        mockWeixinUser = nextCurrentWechatAccount();
+
         //没注册时，期望返回空数据
         mockMvc.perform(makeWechat(get(isExistUrl)))
                 .andExpect(status().isOk())

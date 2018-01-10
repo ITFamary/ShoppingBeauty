@@ -74,6 +74,11 @@ public class Login implements UserDetails {
      */
     @OneToOne
     private User user;
+    /**
+     * 门店代表
+     */
+    @OneToOne
+    private Represent represent;
 
     @ElementCollection
     @Enumerated(EnumType.STRING)

@@ -1,6 +1,7 @@
 package com.ming.shopping.beauty.service.config;
 
 import com.huotu.verification.VerificationCodeConfig;
+import me.jiangcai.crud.CrudConfig;
 import me.jiangcai.lib.jdbc.JdbcSpringConfig;
 import me.jiangcai.lib.resource.ResourceSpringConfig;
 import me.jiangcai.lib.spring.logging.LoggingConfig;
@@ -18,6 +19,7 @@ import org.springframework.context.annotation.Import;
 @Configuration
 @Import({ResourceSpringConfig.class, JdbcSpringConfig.class
         , VerificationCodeConfig.class
+        , CrudConfig.class
         , WeixinSpringConfig.class, StandardWeixinConfig.class
         , ThreadConfig.class
         , SystemStringConfig.class
