@@ -9,6 +9,7 @@ import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
+import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.repository.LoginRepository;
 import com.ming.shopping.beauty.service.repository.UserRepository;
 import com.ming.shopping.beauty.service.service.LoginService;
@@ -58,6 +59,7 @@ public class LoginServiceImpl implements LoginService {
     @BusinessSafe
     public Login getLogin(String openId, String mobile, String verifyCode
             , String familyName, Gender gender, String cardNo, Long guideUserId) {
+        mobileVerify(mobile);
         if (!env.acceptsProfiles(ServiceConfig.PROFILE_UNIT_TEST) && !StringUtils.isEmpty(verifyCode)) {
             verificationCodeService.verify(mobile, verifyCode, loginVerificationType());
         }
@@ -66,7 +68,14 @@ public class LoginServiceImpl implements LoginService {
         }
         Login login = asWechat(openId);
         if (login != null) {
-            return login;
+            if (login.getUsername().equals(mobile)) {
+                return login;
+            } else {
+                throw new ApiResultException(ApiResult.withError(ResultCodeEnum.USERNAME_ERROR));
+            }
+        }
+        if (StringUtils.isEmpty(familyName) || gender == null) {
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.MESSAGE_NOT_FULL));
         }
         login = new Login();
         login.setLoginName(mobile);
@@ -104,19 +113,26 @@ public class LoginServiceImpl implements LoginService {
     public Login findOne(long id) throws ApiResultException {
         Login login = loginRepository.findOne(id);
         if (login == null) {
-            throw new ApiResultException(ApiResult.withError(ErrorMessage.LOGIN_NOT_EXIST.getMessage()));
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.LOGIN_NOT_EXIST));
         }
         if (!login.isEnabled()) {
-            throw new ApiResultException(ApiResult.withError(ErrorMessage.LOGIN_NOT_ENABLE.getMessage()));
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.LOGIN_NOT_ENABLE));
         }
         return login;
+    }
+
+    @Override
+    public void mobileVerify(String mobile) throws ApiResultException {
+        if (loginRepository.countByLoginName(mobile) > 0) {
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.MOBILE_EXIST));
+        }
     }
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
     public void freezeOrEnable(long id, boolean enable) {
         if (loginRepository.updateLoginEnabled(id, enable) == 0) {
-            throw new ApiResultException(ApiResult.withError(ErrorMessage.LOGIN_NOT_EXIST.getMessage()));
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.LOGIN_NOT_EXIST));
         }
     }
 
@@ -125,9 +141,9 @@ public class LoginServiceImpl implements LoginService {
     public Login upOrDowngradeToRoot(long id, boolean manageAble) {
         Login login = findOne(id);
         login.setManageable(manageAble);
-        if(manageAble){
+        if (manageAble) {
             login.getLevelSet().add(ManageLevel.root);
-        }else{
+        } else {
             login.getLevelSet().remove(ManageLevel.root);
         }
         return loginRepository.save(login);

@@ -14,7 +14,7 @@ public class TestController {
     @Autowired
     private UserRepository userRepository;
 
-    @RequestMapping("/")
+    @RequestMapping("/test")
     @ResponseBody
     public String index(){
         return "helloztt!" + userRepository.count();

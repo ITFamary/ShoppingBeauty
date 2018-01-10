@@ -4,6 +4,7 @@ import com.ming.shopping.beauty.service.CoreServiceTest;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Merchant;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
+import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.utils.Constant;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,7 +50,7 @@ public class MerchantServiceTest extends CoreServiceTest {
             merchantService.findMerchant(mockMerchant.getId());
             throw new Exception();
         } catch (ApiResultException ex) {
-            assertThat(ex.getApiResult().getMessage()).isEqualTo(MerchantService.ErrorMessage.MERCHANT_NOT_ENABLE.getMessage());
+            assertThat(ex.getApiResult().getCode()).isEqualTo(ResultCodeEnum.MERCHANT_NOT_ENABLE.getCode());
         }
         merchantService.freezeOrEnable(mockMerchant.getId(), mockMerchant.isEnabled());
     }
@@ -61,24 +62,10 @@ public class MerchantServiceTest extends CoreServiceTest {
         try {
             merchantService.findOne(removeManage.getId());
         } catch (ApiResultException ex) {
-            assertThat(ex.getApiResult().getMessage()).isEqualTo(MerchantService.ErrorMessage.MERCHANT_OR_MANAGE_NOT_EXIST.getMessage());
+            assertThat(ex.getApiResult().getCode()).isEqualTo(ResultCodeEnum.LOGIN_NOT_EXIST.getCode());
         }
         Login login = loginService.findOne(removeManage.getId());
         assertThat(login.getMerchant()).isNull();
-    }
-
-    @Test
-    public void findAll() throws Exception {
-        Page<Merchant> allMerchant = merchantService.findAll(null, null, 0, Constant.MANAGE_PAGE_SIZE);
-        Page<Merchant> merchantPage = merchantService.findAll(null, true, 0, Constant.MANAGE_PAGE_SIZE);
-        Page<Merchant> managePage = merchantService.findAll(null, false, 0, Constant.MANAGE_PAGE_SIZE);
-        assertThat(allMerchant);
-        assertThat(merchantPage);
-        assertThat(managePage);
-        assertThat(allMerchant.getTotalElements())
-                .isGreaterThan(0L)
-                .isEqualTo(merchantPage.getTotalElements() + managePage.getTotalElements());
-
     }
 
 }

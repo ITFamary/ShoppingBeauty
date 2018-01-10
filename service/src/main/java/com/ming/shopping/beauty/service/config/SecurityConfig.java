@@ -1,6 +1,7 @@
 package com.ming.shopping.beauty.service.config;
 
 import com.ming.shopping.beauty.service.service.LoginService;
+import com.ming.shopping.beauty.service.utils.Constant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -62,9 +63,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         // TODO: 2018/1/8 一下地址都需要与接口核对
         registry
                 //登录前的校验
-                .antMatchers("/isExist","/isRegister").permitAll()
+                .antMatchers("/isExist","/isRegister",Constant.LOGIN).permitAll()
                 // 登录跳转页面
-                .antMatchers("/wechatJoin**", "/wechatRegister").permitAll()
+                .antMatchers("/wechatJoin**", "/wechatRegister/**").permitAll()
                 .antMatchers("/toLoginWechat", "/wechatLogin").permitAll()
                 // 微信绑定
                 .antMatchers("/wechat/bindTo**").permitAll()

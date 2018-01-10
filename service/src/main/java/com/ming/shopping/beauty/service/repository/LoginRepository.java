@@ -13,6 +13,14 @@ import org.springframework.transaction.annotation.Transactional;
 public interface LoginRepository extends JpaRepository<Login, Long>, JpaSpecificationExecutor<Login> {
 
     /**
+     * 统计登录名个数
+     *
+     * @param loginName 手机号
+     * @return
+     */
+    int countByLoginName(String loginName);
+
+    /**
      * 根据登录名查找用户
      *
      * @param loginName 手机号

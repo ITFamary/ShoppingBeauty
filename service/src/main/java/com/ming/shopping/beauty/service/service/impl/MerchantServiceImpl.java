@@ -6,6 +6,7 @@ import com.ming.shopping.beauty.service.entity.login.Merchant_;
 import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
+import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.repository.MerchantRepository;
 import com.ming.shopping.beauty.service.service.LoginService;
 import com.ming.shopping.beauty.service.service.MerchantService;
@@ -35,31 +36,11 @@ public class MerchantServiceImpl implements MerchantService {
     private LoginService loginService;
 
     @Override
-    @Transactional(readOnly = true)
-    public Page<Merchant> findAll(String name, Boolean manageable, int pageNo, int pageSize) {
-        return merchantRepository.findAll(
-                (root, cq, cb) -> {
-                    List<Predicate> condition = new ArrayList<>();
-                    if (!StringUtils.isEmpty(name)) {
-                        condition.add(cb.like(root.get(Merchant_.name), "%" + name + "%"));
-                    }
-                    if (manageable != null) {
-                        condition.add(cb.equal(root.get(Merchant_.manageable), manageable));
-                    }
-                    if (condition.size() == 0) {
-                        return null;
-                    }
-                    return cb.and(condition.toArray(new Predicate[condition.size()]));
-                }
-                , new PageRequest(pageNo, pageSize, new Sort(Sort.Direction.DESC, "id")));
-    }
-
-    @Override
     @Transactional(rollbackFor = RuntimeException.class)
     public Merchant addMerchant(long loginId, String name, String telephone, String contact, Address address) throws ApiResultException {
         Login login = loginService.findOne(loginId);
         if (login.getMerchant() != null) {
-            throw new ApiResultException(ApiResult.withError(ErrorMessage.MERCHANT_EXIST.getMessage()));
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.LOGIN_MERCHANT_EXIST));
         }
         Merchant merchant = new Merchant();
         login.setMerchant(merchant);
@@ -80,7 +61,7 @@ public class MerchantServiceImpl implements MerchantService {
     public Merchant addMerchant(long loginId, long merchantId) throws ApiResultException {
         Login login = loginService.findOne(loginId);
         if (login.getMerchant() != null) {
-            throw new ApiResultException(ApiResult.withError(ErrorMessage.MERCHANT_EXIST.getMessage()));
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.LOGIN_MERCHANT_EXIST));
         }
         Merchant merchant = findMerchant(merchantId);
         Merchant manage = new Merchant();
@@ -98,7 +79,7 @@ public class MerchantServiceImpl implements MerchantService {
     public void freezeOrEnable(long id, boolean enable) throws ApiResultException {
         Merchant merchant = merchantRepository.findOne(id);
         if (merchant == null) {
-            throw new ApiResultException(ApiResult.withError(ErrorMessage.MERCHANT_NOT_EXIST.getMessage()));
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.MERCHANT_NOT_EXIST));
         }
         merchant.setEnabled(enable);
         merchantRepository.save(merchant);
@@ -109,7 +90,7 @@ public class MerchantServiceImpl implements MerchantService {
     public void removeMerchantManage(long managerId) throws ApiResultException {
         Merchant merchant = merchantRepository.findOne(managerId);
         if (merchant.isManageable()) {
-            throw new ApiResultException(ApiResult.withError(ErrorMessage.MERCHANT_CANNOT_DELETE.getMessage()));
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.MERCHANT_CANNOT_DELETE));
         }
         merchant.getLogin().setMerchant(null);
         merchantRepository.delete(merchant);
@@ -119,13 +100,13 @@ public class MerchantServiceImpl implements MerchantService {
     public Merchant findOne(long merchantId) throws ApiResultException {
         Merchant merchant = merchantRepository.findOne(merchantId);
         if (merchant == null) {
-            throw new ApiResultException(ApiResult.withError(ErrorMessage.MERCHANT_OR_MANAGE_NOT_EXIST.getMessage()));
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.LOGIN_NOT_EXIST));
         }
         if (merchant.isMerchantUsable()) {
-            throw new ApiResultException(ApiResult.withError(ErrorMessage.MERCHANT_NOT_ENABLE.getMessage()));
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.MERCHANT_NOT_ENABLE));
         }
         if (!merchant.isManageable() && !merchant.isEnabled()) {
-            throw new ApiResultException(ApiResult.withError(ErrorMessage.MANAGE_NOT_ENABLE.getMessage()));
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.MANAGE_NOT_ENABLE));
         }
         return merchant;
     }
@@ -135,10 +116,10 @@ public class MerchantServiceImpl implements MerchantService {
         Merchant merchant = merchantRepository.findOne((root, cq, cb) ->
                 cb.and(cb.equal(root.get(Merchant_.id), merchantId), cb.isTrue(root.get(Merchant_.manageable))));
         if (merchant == null) {
-            throw new ApiResultException(ApiResult.withError(ErrorMessage.MERCHANT_NOT_EXIST.getMessage()));
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.MERCHANT_NOT_EXIST));
         }
         if (!merchant.isMerchantUsable()) {
-            throw new ApiResultException(ApiResult.withError(ErrorMessage.MERCHANT_NOT_ENABLE.getMessage()));
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.MERCHANT_NOT_ENABLE));
         }
         return merchant;
     }
