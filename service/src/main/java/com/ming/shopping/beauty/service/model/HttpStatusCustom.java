@@ -20,10 +20,10 @@ public interface HttpStatusCustom extends HttpStatus {
     /**
      * {@code 210 请求不合规}
      */
-    public static final int SC_DATA_NOT_VALIDATE = 210;
+    int SC_DATA_NOT_VALIDATE = 210;
 
     /**
      * {@code 508 系统维护中}
      */
-    public static final int SC_SYSTEM_MAINTENANCE = 508;
+    int SC_SYSTEM_MAINTENANCE = 508;
 }

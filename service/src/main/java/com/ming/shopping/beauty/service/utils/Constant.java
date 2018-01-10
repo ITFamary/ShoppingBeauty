@@ -73,4 +73,5 @@ public class Constant {
      * 一些请求地址
      */
     public static final String LOGIN = "/login";
+    public static final String TO_LOGIN = "/toLogin";
 }

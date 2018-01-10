@@ -10,6 +10,14 @@ import lombok.Getter;
 @Getter
 public enum ResultCodeEnum {
     /**
+     * 调用第三方接口返回的错误，就不定义每种错误了，主要返回错误信息
+     */
+    THIRD_ERROR(333,""),
+    /**
+     * 数据格式错误，具体哪个格式错误需要根据场景返回
+     */
+    REQUEST_DATA_ERROR(999,"{0}格式错误"),
+    /**
      * 注册、登录、权限相关：[1000,1999]
      */
     MOBILE_EXIST(1001,"手机号已经注册"),
@@ -42,7 +50,7 @@ public enum ResultCodeEnum {
     CARD_NOT_EXIST(5000,"充值卡无效"),
     CARD_ALREADY_USED(5001,"充值卡失效"),
 
-
+    
     ;
     private int code;
     private String message;
