@@ -37,7 +37,7 @@ public class Constant {
     /**
      * 短信签名；理论上来讲应该是依赖配置的
      */
-    private static final String SMS_SignName = "利每家";
+    private static final String SMS_SignName = "尚锋莱美";
 
     /**
      * @param code     验证码
@@ -68,4 +68,9 @@ public class Constant {
             }
         };
     }
+
+    /**
+     * 一些请求地址
+     */
+    public static final String LOGIN = "/login";
 }

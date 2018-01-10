@@ -8,6 +8,7 @@ import me.jiangcai.lib.sys.SystemStringConfig;
 import me.jiangcai.lib.thread.ThreadConfig;
 import me.jiangcai.wx.WeixinSpringConfig;
 import me.jiangcai.wx.standard.StandardWeixinConfig;
+import me.jiangcai.wx.web.WeixinWebSpringConfig;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
@@ -21,5 +22,5 @@ import org.springframework.context.annotation.Import;
         , ThreadConfig.class
         , SystemStringConfig.class
         , LoggingConfig.class})
-public class CommonConfig {
+public class CommonConfig extends WeixinWebSpringConfig {
 }

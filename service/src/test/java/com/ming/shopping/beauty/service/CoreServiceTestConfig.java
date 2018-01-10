@@ -6,6 +6,7 @@ import com.ming.shopping.beauty.service.config.SecurityConfig;
 import com.ming.shopping.beauty.service.config.ServiceConfig;
 import com.ming.shopping.beauty.service.utils.TestDataSource;
 import me.jiangcai.lib.test.config.H2DataSourceConfig;
+import me.jiangcai.wx.WeixinSpringConfig;
 import me.jiangcai.wx.test.WeixinTestConfig;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

@@ -13,13 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
  * @author
  */
 public interface MerchantService {
-    /**
-     * @param name     商户名称
-     * @param pageNo   页码
-     * @param pageSize 页面大小
-     * @return 所有商户的集合
-     */
-    Page<Merchant> findAll(String name, Boolean manageable, int pageNo, int pageSize);
 
     /**
      * 把某个角色设置为商户的超级管理员
@@ -82,17 +75,5 @@ public interface MerchantService {
      * @throws ApiResultException
      */
     Merchant findMerchant(long merchantId) throws ApiResultException;
-
-    @AllArgsConstructor
-    @Getter
-    enum ErrorMessage{
-        MERCHANT_OR_MANAGE_NOT_EXIST("商户或管理员不存在"),
-        MERCHANT_NOT_EXIST("商户不存在"),
-        MERCHANT_NOT_ENABLE("商户已冻结"),
-        MANAGE_NOT_ENABLE("管理员已冻结"),
-        MERCHANT_EXIST("该账号已是商户"),
-        MERCHANT_CANNOT_DELETE("商户不可删除");
-        private String message;
-    }
 
 }

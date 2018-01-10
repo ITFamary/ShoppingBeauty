@@ -13,16 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
  * @author lxf
  */
 public interface StoreService {
-    /**
-     * 门店列表
-     *
-     * @param name
-     * @param pageNo
-     * @param pageSize
-     * @return
-     */
-    @Transactional(readOnly = true)
-    Page<Store> findAll(String name, int pageNo, int pageSize);
 
     /**
      * 添加门店
@@ -79,17 +69,6 @@ public interface StoreService {
      * @return
      */
     Store findStore(long storeId);
-
-    @AllArgsConstructor
-    @Getter
-    enum ErrorMessage{
-        STORE_NOT_EXIST("门店不存在"),
-        STORE_NOT_ENABLE("门店已冻结"),
-        MANAGE_NOT_ENABLE("管理员已冻结"),
-        STORE_CANNOT_DELETE("门店不可删除"),
-        ALREADY_MANAGE("该用户已是门店管理员");
-        private String message;
-    }
 
 
 }

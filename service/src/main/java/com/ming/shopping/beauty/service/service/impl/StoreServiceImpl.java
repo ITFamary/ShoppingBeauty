@@ -7,6 +7,7 @@ import com.ming.shopping.beauty.service.entity.login.Store_;
 import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
+import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.repository.StoreRepository;
 import com.ming.shopping.beauty.service.service.LoginService;
 import com.ming.shopping.beauty.service.service.MerchantService;
@@ -36,19 +37,11 @@ public class StoreServiceImpl implements StoreService {
     private MerchantService merchantService;
 
     @Override
-    @Transactional(readOnly = true)
-    public Page<Store> findAll(String name, int pageNo, int pageSize) {
-        return storeRepository.findAll(
-                (root, cq, cb) -> StringUtils.isEmpty(name) ? null : cb.equal(root.get(Store_.name), name)
-                , new PageRequest(pageNo, pageSize, new Sort(Sort.Direction.DESC, "id")));
-    }
-
-    @Override
     @Transactional(rollbackFor = RuntimeException.class)
     public void addStore(long loginId, long merchantId, String name, String telephone, String contact, Address address) {
         Login login = loginService.findOne(loginId);
         if (login.getStore() != null) {
-            throw new ApiResultException(ApiResult.withError(ErrorMessage.ALREADY_MANAGE.getMessage()));
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.LOGIN_STORE_EXIST));
         }
         Merchant merchant = merchantService.findMerchant(merchantId);
         Store store = new Store();
@@ -71,7 +64,7 @@ public class StoreServiceImpl implements StoreService {
     public void addStore(long loginId, long storeId) {
         Login login = loginService.findOne(loginId);
         if (login.getStore() != null) {
-            throw new ApiResultException(ApiResult.withError(ErrorMessage.ALREADY_MANAGE.getMessage()));
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.LOGIN_STORE_EXIST));
         }
         Store store = findStore(storeId);
         Store manage = new Store();
@@ -89,7 +82,7 @@ public class StoreServiceImpl implements StoreService {
     public void freezeOrEnable(long id, boolean enable) {
         Store store = storeRepository.findOne(id);
         if (store == null) {
-            throw new ApiResultException(ApiResult.withError(ErrorMessage.STORE_NOT_EXIST.getMessage()));
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.STORE_NOT_EXIST));
         }
         store.setEnabled(enable);
     }
@@ -99,10 +92,10 @@ public class StoreServiceImpl implements StoreService {
     public void removeStoreManage(long managerId) {
         Store store = storeRepository.findOne(managerId);
         if (store == null) {
-            throw new ApiResultException(ApiResult.withError(ErrorMessage.STORE_NOT_EXIST.getMessage()));
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.STORE_NOT_EXIST));
         }
         if (store.isManageable()) {
-            throw new ApiResultException(ApiResult.withError(ErrorMessage.STORE_CANNOT_DELETE.getMessage()));
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.STORE_CANNOT_DELETE));
         }
         storeRepository.delete(store);
     }
@@ -111,13 +104,13 @@ public class StoreServiceImpl implements StoreService {
     public Store findOne(long id) throws ApiResultException {
         Store store = storeRepository.findOne(id);
         if (store == null) {
-            throw new ApiResultException(ApiResult.withError(ErrorMessage.STORE_NOT_EXIST.getMessage()));
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.STORE_NOT_EXIST));
         }
         if (!store.isStoreUsable()) {
-            throw new ApiResultException(ApiResult.withError(ErrorMessage.STORE_NOT_ENABLE.getMessage()));
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.STORE_NOT_ENABLE));
         }
         if (!store.isManageable() && !store.isEnabled()) {
-            throw new ApiResultException(ApiResult.withError(ErrorMessage.MANAGE_NOT_ENABLE.getMessage()));
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.MANAGE_NOT_ENABLE));
         }
         return store;
     }
@@ -128,10 +121,10 @@ public class StoreServiceImpl implements StoreService {
                 cb.and(cb.equal(root.get(Store_.id), storeId), cb.isTrue(root.get(Store_.manageable)))
         );
         if (store == null) {
-            throw new ApiResultException(ApiResult.withError(ErrorMessage.STORE_NOT_EXIST.getMessage()));
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.STORE_NOT_EXIST));
         }
         if (!store.isStoreUsable()) {
-            throw new ApiResultException(ApiResult.withError(ErrorMessage.STORE_NOT_ENABLE.getMessage()));
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.STORE_NOT_ENABLE));
         }
         return store;
     }

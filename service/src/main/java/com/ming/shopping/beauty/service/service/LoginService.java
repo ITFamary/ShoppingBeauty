@@ -50,6 +50,14 @@ public interface LoginService extends UserDetailsService {
     Login findOne(long id) throws ApiResultException;
 
     /**
+     * 校验手机号是否已被注册，若被注册则抛出异常
+     *
+     * @param mobile
+     * @throws ApiResultException
+     */
+    void mobileVerify(String mobile) throws ApiResultException;
+
+    /**
      * 冻结或启用用户
      *
      * @param id
@@ -69,7 +77,9 @@ public interface LoginService extends UserDetailsService {
     Login upOrDowngradeToRoot(long id, boolean manageAble);
 
     /**
-     * @return 用于登录的验证码
+     * 用于登录的验证码
+     *
+     * @return
      */
     default VerificationType loginVerificationType() {
         return new VerificationType() {
@@ -85,7 +95,7 @@ public interface LoginService extends UserDetailsService {
 
             @Override
             public String message(String code) {
-                return "登录短信验证码为：" + code + "；请勿泄露。";
+                return "短信验证码为：" + code + "；请勿泄露。";
             }
 
             @Override
@@ -93,44 +103,5 @@ public interface LoginService extends UserDetailsService {
                 return Constant.generateCodeContent(this, code, "SMS_94310019");
             }
         };
-    }
-
-    /**
-     * @return 用于注册的验证码
-     */
-    default VerificationType registerVerificationType() {
-        return new VerificationType() {
-            @Override
-            public int id() {
-                return 2;
-            }
-
-            @Override
-            public boolean allowMultiple() {
-                return true;
-            }
-
-            @Override
-            public String message(String code) {
-                return "注册短信验证码为：" + code + "；请勿泄露。";
-            }
-
-            @Override
-            public Content generateContent(String code) {
-                return Constant.generateCodeContent(this, code, "SMS_94310017");
-            }
-        };
-    }
-
-    @AllArgsConstructor
-    @Getter
-    enum ErrorMessage {
-        LOGIN_NOT_EXIST("账号不存在"),
-        LOGIN_NOT_ENABLE("账号不可用"),
-        ALREADY_MANAGEABLE("请勿重复操作");
-
-        private String message;
-
-
     }
 }
