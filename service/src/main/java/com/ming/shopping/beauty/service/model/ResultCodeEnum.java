@@ -41,10 +41,11 @@ public enum ResultCodeEnum {
     /**
      * 项目、门店：[3000,3999]
      */
-    MAINORDER_NOT_EXIST(3001,"订单不存在"),
+    Item_Not_EXIST(3001,"项目不存在,或deleted = false"),
     /**
      * 订单相关：[4000,4999]
      */
+    MAINORDER_NOT_EXIST(4001,"订单不存在"),
     /**
      * 支付、充值：[5000,5999]
      */

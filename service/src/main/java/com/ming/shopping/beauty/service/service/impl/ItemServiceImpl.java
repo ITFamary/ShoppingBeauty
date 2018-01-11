@@ -1,7 +1,11 @@
 package com.ming.shopping.beauty.service.service.impl;
 
 import com.ming.shopping.beauty.service.entity.item.Item;
+import com.ming.shopping.beauty.service.entity.item.Item_;
 import com.ming.shopping.beauty.service.entity.login.Merchant;
+import com.ming.shopping.beauty.service.exception.ApiResultException;
+import com.ming.shopping.beauty.service.model.ApiResult;
+import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.repository.ItemRepository;
 import com.ming.shopping.beauty.service.service.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +28,12 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Item findById(long id) {
-        return itemRepository.findOne(id);
+        Item item = itemRepository.findOne(((root, query, cb) ->
+                cb.and(cb.equal(root.get(Item_.id), id), cb.isFalse(root.get(Item_.deleted)))));
+        if(item == null){
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.Item_Not_EXIST));
+        }
+        return item;
     }
 
     @Override

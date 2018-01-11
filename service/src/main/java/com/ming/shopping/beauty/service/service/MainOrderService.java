@@ -14,10 +14,6 @@ import java.util.List;
  */
 public interface MainOrderService {
 
-    /**
-     * @return 所有订单
-     */
-    List<MainOrder> findAll();
 
     /**
      * @param id 订单id

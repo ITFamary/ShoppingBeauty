@@ -35,14 +35,14 @@ public class MainOrder {
      * 付款用户
      */
     @ManyToOne
-    private User user;
+    private User payer;
     /**
      * 下单门店代表
      */
     @ManyToOne
     private Represent represent;
 
-    @OneToMany(mappedBy = "mainOrder", fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.EAGER)
     private List<OrderItem> orderItemList;
     /**
      * 总金额
@@ -68,6 +68,12 @@ public class MainOrder {
      */
     @Column(columnDefinition = Constant.DATE_COLUMN_DEFINITION)
     private LocalDateTime payTime;
+
+    /**
+     * 完成时间
+     */
+    @Column(columnDefinition = Constant.DATE_COLUMN_DEFINITION)
+    private LocalDateTime completeTime;
     /**
      * 是否结算
      */

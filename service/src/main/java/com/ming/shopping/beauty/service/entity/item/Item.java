@@ -75,4 +75,8 @@ public class Item {
      * 含义上跟enable完全不同；该值为true 则该货品不会在系统中可见！
      */
     private boolean deleted = false;
+    /**
+     * 缩略图
+     */
+    private String thumbnailUrl;
 }

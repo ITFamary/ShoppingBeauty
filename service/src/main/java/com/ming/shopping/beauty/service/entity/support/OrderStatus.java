@@ -4,6 +4,7 @@ package com.ming.shopping.beauty.service.entity.support;
  * @author helloztt
  */
 public enum  OrderStatus {
+    //TODO
     EMPTY("E"),
     /**
      * 等待支付
