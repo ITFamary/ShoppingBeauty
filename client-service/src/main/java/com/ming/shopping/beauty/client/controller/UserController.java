@@ -2,6 +2,7 @@ package com.ming.shopping.beauty.client.controller;
 
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Login_;
+import com.ming.shopping.beauty.service.entity.login.Represent;
 import com.ming.shopping.beauty.service.entity.login.User_;
 import com.ming.shopping.beauty.service.service.LoginService;
 import me.jiangcai.crud.row.FieldDefinition;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;
 import java.util.Arrays;
 import java.util.List;
@@ -62,6 +64,12 @@ public class UserController {
                                 .addSelect(loginRoot -> loginRoot.join(Login_.user, JoinType.LEFT).get(User_.active))
                                 .build()
                         , FieldBuilder.asName(Login.class, "isRepresent")
+//                                .addBiSelect((loginRoot, criteriaBuilder) -> {
+//                                    // 此处就可以使用←关联
+//                                    Join<?,Represent> representJoin = loginRoot.join(Login_.represent,JoinType.LEFT);
+//                                    // Predicate 本身就是一个Expression<Boolean> 自然可以直接用于查询
+//                                    return criteriaBuilder.isNotNull(representJoin);
+//                                })
                                 .addBiSelect((loginRoot, cb) -> cb.<Boolean>selectCase().when(cb.isNull(loginRoot.get(Login_.represent)),Boolean.FALSE)
                                         .otherwise(Boolean.TRUE) )
                                 .build()
