@@ -22,6 +22,15 @@ public interface MainOrderService {
     MainOrder findById(long id);
 
     /**
+     * 给用户增加一个空的订单
+     * @param user
+     * @return
+     */
+    @Transactional
+    MainOrder newEmptyOrder(User user);
+
+    /**
+     *
      * 生成订单
      * @param store 产生订单的门店
      * @param user 下单用户

@@ -2,14 +2,20 @@ package com.ming.shopping.beauty.client.controller;
 
 import com.ming.shopping.beauty.client.ClientConfigTest;
 import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.model.HttpStatusCustom;
+import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.model.request.LoginOrRegisterBody;
+import com.ming.shopping.beauty.service.service.SystemService;
 import com.ming.shopping.beauty.service.utils.Constant;
 import me.jiangcai.wx.model.Gender;
 import org.junit.Test;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
+import java.math.BigDecimal;
+
 import static org.junit.Assert.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -17,27 +23,38 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 public class UserControllerTest extends ClientConfigTest {
     private static final String BASE_URL = "/user";
+
     @Test
     public void userBaseInfo() throws Exception {
-        //造一个未激活的用户
-        //先登录，然后看看信息
-        LoginOrRegisterBody registerBody = new LoginOrRegisterBody();
-        registerBody.setMobile(randomMobile());
-        registerBody.setAuthCode("1234");
-        registerBody.setSurname(randomChinese(1) );
-        registerBody.setGender(randomEnum(Gender.class));
+        //未登录的情况下请求，跳转到未登录接口
+        mockMvc.perform(makeWechat(get(BASE_URL)))
+                .andExpect(status().isFound());
 
-        mockMvc.perform(makeWechat(get("/sendAuthCode/" + registerBody.getMobile())))
-                .andExpect(status().isOk());
-
-        MockHttpSession session = (MockHttpSession)mockMvc.perform(makeWechat(post(Constant.LOGIN)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registerBody))))
+        //未激活用户的数据
+        mockMvc.perform(get(BASE_URL)
+                .session(unActiveUserSession))
                 .andExpect(status().isOk())
-                .andReturn().getRequest().getSession();
+                .andExpect(jsonPath("$.balance").value(0D))
+                .andExpect(jsonPath("$.isMember").value(Boolean.FALSE))
+                .andExpect(jsonPath("$.isRepresent").value(0));
 
+        //激活用户的数据
+        mockMvc.perform(get(BASE_URL)
+                .session(activeUserSession))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.isMember").value(Boolean.TRUE));
 
-        mockMvc.perform(makeWechat(get(BASE_URL).session(session))).andDo(print());
+        final String vipCardUrl = BASE_URL + "/vipCard";
+        //未激活用户请求会员卡
+        mockMvc.perform(get(vipCardUrl)
+                .session(unActiveUserSession))
+                .andExpect(status().is(HttpStatusCustom.SC_DATA_NOT_VALIDATE))
+                .andExpect(jsonPath(RESULT_CODE_PATH).value(ResultCodeEnum.USER_NOT_ACTIVE.getCode()));
+
+        //激活用户请求会员卡
+        mockMvc.perform(get(vipCardUrl).session(activeUserSession))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.qrcode").isNotEmpty());
 
     }
 

@@ -32,7 +32,7 @@ import java.util.List;
  * @author lxf
  */
 @Service
-public class MainMainOrderServiceImpl implements MainOrderService {
+public class MainOrderServiceImpl implements MainOrderService {
 
     @Autowired
     private MainOrderRepository mainOrderRepository;
@@ -48,8 +48,25 @@ public class MainMainOrderServiceImpl implements MainOrderService {
     }
 
     @Override
+    @Transactional(rollbackFor = RuntimeException.class)
+    public MainOrder newEmptyOrder(User user) {
+        //先看看这个用户有没有空的订单
+        MainOrder mainOrder = mainOrderRepository.findEmptyOrderByPayer(user.getId());
+        if(mainOrder != null){
+            return mainOrder;
+        }
+        mainOrder = new MainOrder();
+        mainOrder.setPayer(user);
+        //空的订单
+        mainOrder.setOrderStatus(OrderStatus.EMPTY);
+        return mainOrderRepository.save(mainOrder);
+    }
+
+    @Override
     @Transactional
     public MainOrder newOrder(Store store, User user, Represent represent, List<OrderItem> itemList) {
+        // TODO: 2018/1/12 这里其实应该是补充订单而不是新增订单，在会员卡页面的二维码已经生成了一个空的订单
+        //，门店代表扫码后，把List<OrderItem>塞到了这个订单里，并修改MainOrder
         MainOrder mainOrder = new MainOrder();
         //order.setCreateTime(LocalDateTime.now());
         mainOrder.setStore(store);

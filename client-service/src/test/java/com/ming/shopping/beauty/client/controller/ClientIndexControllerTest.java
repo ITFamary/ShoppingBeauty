@@ -5,6 +5,7 @@ import com.ming.shopping.beauty.client.ClientConfigTest;
 import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.model.request.LoginOrRegisterBody;
+import com.ming.shopping.beauty.service.service.SystemService;
 import com.ming.shopping.beauty.service.utils.Constant;
 import me.jiangcai.wx.model.Gender;
 import org.junit.Test;
@@ -32,7 +33,7 @@ public class ClientIndexControllerTest extends ClientConfigTest {
             assertThat(ex.getMessage()).contains("NoWeixinClientException");
         }
 
-        mockWeixinUser = nextCurrentWechatAccount();
+        nextCurrentWechatAccount();
 
         //没注册时，期望返回空数据
         mockMvc.perform(makeWechat(get(isExistUrl)))
@@ -53,7 +54,7 @@ public class ClientIndexControllerTest extends ClientConfigTest {
 
         //手机号格式不对
         registerBody.setMobile(mobile.substring(1));
-        mockMvc.perform(makeWechat(post(Constant.LOGIN)
+        mockMvc.perform(makeWechat(post(SystemService.LOGIN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerBody))))
                 .andExpect(status().is(HttpStatusCustom.SC_DATA_NOT_VALIDATE))
@@ -63,7 +64,7 @@ public class ClientIndexControllerTest extends ClientConfigTest {
         //验证码格式不对
         registerBody.setMobile(mobile);
         registerBody.setAuthCode("12345");
-        mockMvc.perform(makeWechat(post(Constant.LOGIN)
+        mockMvc.perform(makeWechat(post(SystemService.LOGIN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerBody))))
                 .andExpect(status().is(HttpStatusCustom.SC_DATA_NOT_VALIDATE))
@@ -73,7 +74,7 @@ public class ClientIndexControllerTest extends ClientConfigTest {
         //没有姓名,期望提示 1002,"注册信息不完成"
         registerBody.setAuthCode("1234");
         registerBody.setSurname(null);
-        mockMvc.perform(makeWechat(post(Constant.LOGIN)
+        mockMvc.perform(makeWechat(post(SystemService.LOGIN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerBody))))
                 .andExpect(status().is(HttpStatusCustom.SC_DATA_NOT_VALIDATE))
@@ -81,7 +82,7 @@ public class ClientIndexControllerTest extends ClientConfigTest {
 
         //好了，来个正常的注册
         registerBody.setSurname(randomChinese(1));
-        mockMvc.perform(makeWechat(post(Constant.LOGIN)
+        mockMvc.perform(makeWechat(post(SystemService.LOGIN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerBody))))
                 .andExpect(status().isOk());
@@ -98,7 +99,7 @@ public class ClientIndexControllerTest extends ClientConfigTest {
                 .andExpect(jsonPath(RESULT_CODE_PATH).value(ResultCodeEnum.MOBILE_EXIST.getCode()));
 
         //没用注册后的session，此时还不是登录状态，再去执行一下登录
-        mockMvc.perform(makeWechat(post(Constant.LOGIN)
+        mockMvc.perform(makeWechat(post(SystemService.LOGIN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerBody))))
                 .andExpect(status().isOk());

@@ -12,6 +12,7 @@ import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.repository.RechargeCardRepository;
 import com.ming.shopping.beauty.service.repository.UserRepository;
 import com.ming.shopping.beauty.service.service.RechargeCardService;
+import me.jiangcai.lib.sys.service.SystemStringService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,10 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by helloztt on 2018/1/4.
@@ -31,6 +36,31 @@ public class RechargeCardServiceImpl implements RechargeCardService {
     private RechargeCardRepository rechargeCardRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private SystemStringService systemStringService;
+
+    @Override
+    @Transactional(rollbackFor = RuntimeException.class)
+    public List<RechargeCard> newCard(int num, Login guide, Login manage) {
+        List<RechargeCard> cardList = new ArrayList<>(num);
+        RechargeCard rechargeCard = new RechargeCard();
+        rechargeCard.setGuideUser(guide);
+        rechargeCard.setManager(manage);
+        rechargeCard.setCreateTime(LocalDateTime.now());
+        Integer defaultAmount = systemStringService.getCustomSystemString("shopping.service.card.amount", null, true, Integer.class, 500);
+        rechargeCard.setAmount(BigDecimal.valueOf(defaultAmount));
+        for (int i = 0; i < num; i++) {
+            cardList.add((RechargeCard) rechargeCard.clone());
+        }
+        rechargeCardRepository.save(cardList);
+        rechargeCardRepository.flush();
+        // TODO: 2018/1/12 由于卡密的生成方式还不确定，目前暂时格式化id来作为卡密
+        cardList.forEach(card -> {
+            card.setCode(String.format("%20d", card.getId()));
+        });
+        rechargeCardRepository.save(cardList);
+        return cardList;
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -38,10 +68,10 @@ public class RechargeCardServiceImpl implements RechargeCardService {
         // TODO: 2018/1/5
         RechargeCard rechargeCard = rechargeCardRepository.findOne((root, cq, cb)
                 -> cb.equal(root.get(RechargeCard_.code), cardNo));
-        if (rechargeCard == null){
+        if (rechargeCard == null) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.CARD_NOT_EXIST));
         }
-        if (rechargeCard.isUsed()){
+        if (rechargeCard.isUsed()) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.CARD_ALREADY_USED));
         }
         return rechargeCard;

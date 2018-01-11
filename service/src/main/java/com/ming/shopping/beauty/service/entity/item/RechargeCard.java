@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"code"})})
-public class RechargeCard {
+public class RechargeCard implements Cloneable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -58,4 +58,15 @@ public class RechargeCard {
      */
     @Column(columnDefinition = Constant.DATE_NULLABLE_COLUMN_DEFINITION,nullable = true)
     private LocalDateTime usedTime;
+
+    @Override
+    public Object clone() {
+        RechargeCard card = null;
+        try {
+            card = (RechargeCard) super.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        return card;
+    }
 }

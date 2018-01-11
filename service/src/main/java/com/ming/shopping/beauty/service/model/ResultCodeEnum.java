@@ -38,6 +38,7 @@ public enum ResultCodeEnum {
     MERCHANT_CANNOT_DELETE(2001,"商户不可删除"),
     LOGIN_STORE_EXIST(2002,"该账号已是门店操作员"),
     STORE_CANNOT_DELETE(2003,"门店不可删除"),
+    USER_NOT_ACTIVE(2004,"充值后才能激活会员卡"),
     /**
      * 项目、门店：[3000,3999]
      */

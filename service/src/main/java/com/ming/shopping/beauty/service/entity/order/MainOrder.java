@@ -61,18 +61,18 @@ public class MainOrder {
     /**
      * 生成时间
      */
-    @Column(columnDefinition = Constant.DATE_COLUMN_DEFINITION)
+    @Column(columnDefinition = Constant.DATE_NULLABLE_COLUMN_DEFINITION)
     private LocalDateTime createTime;
     /**
      * 支付时间
      */
-    @Column(columnDefinition = Constant.DATE_COLUMN_DEFINITION)
+    @Column(columnDefinition = Constant.DATE_NULLABLE_COLUMN_DEFINITION)
     private LocalDateTime payTime;
 
     /**
      * 完成时间
      */
-    @Column(columnDefinition = Constant.DATE_COLUMN_DEFINITION)
+    @Column(columnDefinition = Constant.DATE_NULLABLE_COLUMN_DEFINITION)
     private LocalDateTime completeTime;
     /**
      * 是否结算

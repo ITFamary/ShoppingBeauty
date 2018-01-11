@@ -7,6 +7,7 @@ import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.model.request.LoginOrRegisterBody;
 import com.ming.shopping.beauty.service.service.LoginService;
+import com.ming.shopping.beauty.service.service.SystemService;
 import com.ming.shopping.beauty.service.utils.Constant;
 import com.ming.shopping.beauty.service.utils.LoginAuthentication;
 import me.jiangcai.wx.OpenId;
@@ -44,7 +45,7 @@ public class IndexController {
     @Autowired
     private LoginService loginService;
 
-    @GetMapping(value = Constant.TO_LOGIN)
+    @GetMapping(value = SystemService.TO_LOGIN)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public void toLogin() {
     }
@@ -92,7 +93,7 @@ public class IndexController {
      * @param response
      * @return
      */
-    @PostMapping(value = Constant.LOGIN)
+    @PostMapping(value = SystemService.LOGIN)
     @ResponseStatus(HttpStatus.OK)
     public void login(WeixinUserDetail weixinUserDetail, @Valid @RequestBody LoginOrRegisterBody postData, BindingResult bindingResult
             , HttpServletRequest request, HttpServletResponse response) {

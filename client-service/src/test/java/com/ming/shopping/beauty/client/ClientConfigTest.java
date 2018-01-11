@@ -2,20 +2,74 @@ package com.ming.shopping.beauty.client;
 
 import com.ming.shopping.beauty.client.config.ClientConfig;
 import com.ming.shopping.beauty.service.CoreServiceTest;
+import com.ming.shopping.beauty.service.entity.item.RechargeCard;
+import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.model.request.LoginOrRegisterBody;
+import com.ming.shopping.beauty.service.service.RechargeCardService;
+import com.ming.shopping.beauty.service.service.SystemService;
+import me.jiangcai.wx.model.Gender;
 import me.jiangcai.wx.model.WeixinUserDetail;
 import org.junit.Before;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.ContextConfiguration;
+
+import java.util.List;
+
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * @author helloztt
  */
 @ContextConfiguration(classes = ClientConfig.class)
 public abstract class ClientConfigTest extends CoreServiceTest {
+    @Autowired
+    private RechargeCardService rechargeCardService;
 
-    protected WeixinUserDetail mockWeixinUser;
+    private WeixinUserDetail mockWeixinUser;
+    /**
+     * 未激活的用户
+     */
+    protected Login mockUnActiveUser;
+    protected MockHttpSession unActiveUserSession;
+
+    /**
+     * 已激活的用户
+     */
+    protected Login mockActiveUser;
+    protected MockHttpSession activeUserSession;
 
     @Before
-    public void setupByClient(){
+    public void setupByClient() throws Exception {
+        LoginOrRegisterBody unActiveUser = new LoginOrRegisterBody()
+                , activeUser = new LoginOrRegisterBody();
+        unActiveUser.setMobile(randomMobile());
+        unActiveUser.setAuthCode("1234");
+        unActiveUser.setSurname(randomChinese(1) );
+        unActiveUser.setGender(randomEnum(Gender.class));
+        unActiveUserSession = register(unActiveUser);
+
+        List<RechargeCard> card = rechargeCardService.newCard(1,null,null);
+        activeUser.setMobile(randomMobile());
+        activeUser.setAuthCode("1234");
+        activeUser.setSurname(randomChinese(1) );
+        activeUser.setGender(randomEnum(Gender.class));
+        activeUser.setCdKey(card.get(0).getCode());
+        activeUserSession = register(activeUser);
+
+
+    }
+
+    protected MockHttpSession register(LoginOrRegisterBody registerBody) throws Exception {
         mockWeixinUser = nextCurrentWechatAccount();
+        mockMvc.perform(makeWechat(get("/sendAuthCode/" + registerBody.getMobile())))
+                .andDo(print())
+                .andExpect(status().isOk());
+        return  (MockHttpSession)mockMvc.perform(makeWechat(post(SystemService.LOGIN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerBody))))
+                .andExpect(status().isOk())
+                .andReturn().getRequest().getSession();
     }
 }
