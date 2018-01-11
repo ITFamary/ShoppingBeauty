@@ -4,6 +4,7 @@ import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.order.MainOrder_;
+import com.ming.shopping.beauty.service.entity.support.OrderStatus;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.service.MainOrderService;
@@ -67,7 +68,8 @@ public class ClientOrderController {
                         , FieldBuilder.asName(MainOrder.class, "orderStatus")
                                 .build()
                         , FieldBuilder.asName(MainOrder.class, "orderStatusCode")
-                                //TODO 
+                                .addSelect(mainOrderRoot -> mainOrderRoot.get(MainOrder_.orderStatus))
+                                .addFormat((data, type) -> ((OrderStatus) data).ordinal())
                                 .build()
                         , FieldBuilder.asName(MainOrder.class, "items")
                                 .addSelect(root -> root.get(MainOrder_.orderItemList))
