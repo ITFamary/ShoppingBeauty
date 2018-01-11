@@ -58,7 +58,7 @@ public class CoreServiceTestConfig extends H2DataSourceConfig implements WebMvcC
         if (environment.acceptsProfiles("h2file")) {
             return fileDataSource("shopping");
         }
-        return memDataSource("com/ming/shopping");
+        return memDataSource("com/ming/shopping","MySQL");
     }
 
     @Override

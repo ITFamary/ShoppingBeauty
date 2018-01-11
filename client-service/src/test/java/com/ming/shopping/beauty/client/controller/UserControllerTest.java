@@ -27,11 +27,16 @@ public class UserControllerTest extends ClientConfigTest {
         registerBody.setSurname(randomChinese(1));
         registerBody.setGender(randomEnum(Gender.class));
 
+        mockMvc.perform(makeWechat(get("/sendAuthCode/" + registerBody.getMobile())))
+                .andExpect(status().isOk());
+
         MockHttpSession session = (MockHttpSession)mockMvc.perform(makeWechat(post(Constant.LOGIN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerBody))))
                 .andExpect(status().isOk())
                 .andReturn().getRequest().getSession();
+
+
         mockMvc.perform(makeWechat(get(BASE_URL).session(session))).andDo(print());
 
     }

@@ -7,15 +7,8 @@ import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.model.request.LoginOrRegisterBody;
 import com.ming.shopping.beauty.service.utils.Constant;
 import me.jiangcai.wx.model.Gender;
-import me.jiangcai.wx.model.WeixinUserDetail;
-import me.jiangcai.wx.test.WeixinTestConfig;
-import me.jiangcai.wx.web.exception.NoWeixinClientException;
 import org.junit.Test;
 import org.springframework.http.MediaType;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-
-import java.util.HashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;

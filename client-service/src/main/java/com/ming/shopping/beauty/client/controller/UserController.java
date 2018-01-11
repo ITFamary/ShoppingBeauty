@@ -8,6 +8,7 @@ import me.jiangcai.crud.row.FieldDefinition;
 import me.jiangcai.crud.row.RowCustom;
 import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
+import me.jiangcai.crud.row.supplier.SingleRowDramatizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,7 +16,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.JoinType;
 import java.util.Arrays;
 import java.util.List;
@@ -29,8 +29,13 @@ public class UserController {
     @Autowired
     private LoginService loginService;
 
+    /**
+     * 获取当前登录用户信息
+     * @param login
+     * @return
+     */
     @GetMapping
-    @RowCustom(distinct = true)
+    @RowCustom(distinct = true,dramatizer = SingleRowDramatizer.class)
     public RowDefinition<Login> userBaseInfo(@AuthenticationPrincipal Login login) {
         return new RowDefinition<Login>() {
             @Override
@@ -56,11 +61,10 @@ public class UserController {
                         , FieldBuilder.asName(Login.class, "isMember")
                                 .addSelect(loginRoot -> loginRoot.join(Login_.user, JoinType.LEFT).get(User_.active))
                                 .build()
-                        // TODO: 2018/1/11  
-//                        , FieldBuilder.asName(Login.class, "isRepresent")
-//                                .addBiSelect((loginRoot, cb) -> cb.function("IF", Boolean.class, cb.isNull(loginRoot.get(Login_.represent))
-//                                        , cb.literal(Boolean.TRUE), cb.literal(Boolean.FALSE)))
-//                                .build()
+                        , FieldBuilder.asName(Login.class, "isRepresent")
+                                .addBiSelect((loginRoot, cb) -> cb.<Boolean>selectCase().when(cb.isNull(loginRoot.get(Login_.represent)),Boolean.FALSE)
+                                        .otherwise(Boolean.TRUE) )
+                                .build()
                 );
             }
 
