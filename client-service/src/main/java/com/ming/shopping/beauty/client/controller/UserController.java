@@ -2,6 +2,7 @@ package com.ming.shopping.beauty.client.controller;
 
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Login_;
+import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.entity.login.User_;
 import com.ming.shopping.beauty.service.service.LoginService;
 import me.jiangcai.crud.row.FieldDefinition;
@@ -45,27 +46,7 @@ public class UserController {
 
             @Override
             public List<FieldDefinition<Login>> fields() {
-                return Arrays.asList(
-                        FieldBuilder.asName(Login.class, "avatar")
-                                .addSelect(loginRoot -> loginRoot.join(Login_.wechatUser, JoinType.LEFT).get("headImageUrl"))
-                                .build()
-                        , FieldBuilder.asName(Login.class, "name")
-                                .addSelect(loginRoot -> loginRoot.join(Login_.user, JoinType.LEFT).get(User_.familyName))
-                                .build()
-                        , FieldBuilder.asName(Login.class, "mobile")
-                                .addSelect(loginRoot -> loginRoot.get(Login_.loginName))
-                                .build()
-                        , FieldBuilder.asName(Login.class, "balance")
-                                .addSelect(loginRoot -> loginRoot.join(Login_.user, JoinType.LEFT).get(User_.currentAmount))
-                                .build()
-                        , FieldBuilder.asName(Login.class, "isMember")
-                                .addSelect(loginRoot -> loginRoot.join(Login_.user, JoinType.LEFT).get(User_.active))
-                                .build()
-                        , FieldBuilder.asName(Login.class, "isRepresent")
-                                .addBiSelect((loginRoot, cb) -> cb.<Boolean>selectCase().when(cb.isNull(loginRoot.get(Login_.represent)),Boolean.FALSE)
-                                        .otherwise(Boolean.TRUE) )
-                                .build()
-                );
+                return listFields();
             }
 
             @Override
@@ -74,5 +55,29 @@ public class UserController {
                         cb.equal(root.get(Login_.id), login.getId());
             }
         };
+    }
+
+    private List<FieldDefinition<Login>> listFields(){
+        return Arrays.asList(
+                FieldBuilder.asName(Login.class, "avatar")
+                        .addSelect(loginRoot -> loginRoot.join(Login_.wechatUser, JoinType.LEFT).get("headImageUrl"))
+                        .build()
+                , FieldBuilder.asName(Login.class, "name")
+                        .addSelect(loginRoot -> loginRoot.join(Login_.user, JoinType.LEFT).get(User_.familyName))
+                        .build()
+                , FieldBuilder.asName(Login.class, "mobile")
+                        .addSelect(loginRoot -> loginRoot.get(Login_.loginName))
+                        .build()
+                , FieldBuilder.asName(Login.class, "balance")
+                        .addSelect(loginRoot -> loginRoot.join(Login_.user, JoinType.LEFT).get(User_.currentAmount))
+                        .build()
+                , FieldBuilder.asName(Login.class, "isMember")
+                        .addSelect(loginRoot -> loginRoot.join(Login_.user, JoinType.LEFT).get(User_.active))
+                        .build()
+                , FieldBuilder.asName(Login.class, "isRepresent")
+                        .addBiSelect((loginRoot, cb) -> cb.<Boolean>selectCase().when(cb.isNull(loginRoot.get(Login_.represent)),Boolean.FALSE)
+                                .otherwise(Boolean.TRUE) )
+                        .build()
+        );
     }
 }

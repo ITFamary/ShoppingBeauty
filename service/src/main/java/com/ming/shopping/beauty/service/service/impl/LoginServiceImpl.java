@@ -1,5 +1,6 @@
 package com.ming.shopping.beauty.service.service.impl;
 
+import com.huotu.verification.IllegalVerificationCodeException;
 import com.huotu.verification.service.VerificationCodeService;
 import com.ming.shopping.beauty.service.aop.BusinessSafe;
 import com.ming.shopping.beauty.service.config.ServiceConfig;
@@ -59,9 +60,13 @@ public class LoginServiceImpl implements LoginService {
     @BusinessSafe
     public Login getLogin(String openId, String mobile, String verifyCode
             , String familyName, Gender gender, String cardNo, Long guideUserId) {
-        mobileVerify(mobile);
         if (!env.acceptsProfiles(ServiceConfig.PROFILE_UNIT_TEST) && !StringUtils.isEmpty(verifyCode)) {
-            verificationCodeService.verify(mobile, verifyCode, loginVerificationType());
+            try{
+                verificationCodeService.verify(mobile, verifyCode, loginVerificationType());
+            }catch (IllegalVerificationCodeException ex){
+                throw new ApiResultException(
+                        ApiResult.withCodeAndMessage(ResultCodeEnum.THIRD_ERROR.getCode(),"验证码无效",null));
+            }
         }
         if (!StringUtils.isEmpty(cardNo)) {
             rechargeCardService.verify(cardNo);
@@ -74,6 +79,8 @@ public class LoginServiceImpl implements LoginService {
                 throw new ApiResultException(ApiResult.withError(ResultCodeEnum.USERNAME_ERROR));
             }
         }
+        //注册前校验手机号是否存在
+        mobileVerify(mobile);
         if (StringUtils.isEmpty(familyName) || gender == null) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.MESSAGE_NOT_FULL));
         }
@@ -89,15 +96,16 @@ public class LoginServiceImpl implements LoginService {
         user.setFamilyName(familyName);
         user.setGender(gender);
         if (guideUserId != null && guideUserId > 0) {
+            //这里就不判断推荐人存不存在，可不可用了
             user.setGuideUser(loginRepository.findOne(guideUserId));
         }
+        userRepository.saveAndFlush(user);
         if (!StringUtils.isEmpty(cardNo)) {
             //使用这张充值卡，如果不存在或者已经用过了，就抛出异常
             rechargeCardService.useCard(cardNo, login.getId());
             user.setCardNo(cardNo);
             user.setActive(true);
         }
-        userRepository.saveAndFlush(user);
         return login;
     }
 

@@ -6,6 +6,7 @@ import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.service.LoginService;
+import com.ming.shopping.beauty.service.utils.CharUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,8 +49,12 @@ public class MiscController {
             verificationCodeService.sendCode(mobile, loginService.loginVerificationType());
         } catch (IOException e) {
             log.error("发送验证码失败", e);
+            String message = e.getMessage();
+            if(!CharUtil.isChinese(message)){
+                message = "发送验证码失败";
+            }
             throw new ApiResultException(
-                    ApiResult.withCodeAndMessage(ResultCodeEnum.THIRD_ERROR.getCode(), e.getMessage(), null));
+                    ApiResult.withCodeAndMessage(ResultCodeEnum.THIRD_ERROR.getCode(), message, null));
         }
     }
 

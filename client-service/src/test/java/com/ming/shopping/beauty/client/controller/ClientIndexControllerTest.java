@@ -86,8 +86,6 @@ public class ClientIndexControllerTest extends ClientConfigTest {
                 .content(objectMapper.writeValueAsString(registerBody))))
                 .andExpect(status().isOk());
 
-        // TODO: 2018/1/10 这个时候已经登录了，去请求一个需要登录的接口
-
         //再去判断一下是否已经注册了，返回绑定微信的手机号
         mockMvc.perform(makeWechat(get(isExistUrl)))
                 .andExpect(status().isOk())
@@ -98,6 +96,12 @@ public class ClientIndexControllerTest extends ClientConfigTest {
         mockMvc.perform(makeWechat(get(isRegister + mobile)))
                 .andExpect(status().is(HttpStatusCustom.SC_DATA_NOT_VALIDATE))
                 .andExpect(jsonPath(RESULT_CODE_PATH).value(ResultCodeEnum.MOBILE_EXIST.getCode()));
+
+        //没用注册后的session，此时还不是登录状态，再去执行一下登录
+        mockMvc.perform(makeWechat(post(Constant.LOGIN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerBody))))
+                .andExpect(status().isOk());
 
     }
 

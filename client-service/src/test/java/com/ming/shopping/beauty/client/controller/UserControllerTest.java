@@ -24,7 +24,7 @@ public class UserControllerTest extends ClientConfigTest {
         LoginOrRegisterBody registerBody = new LoginOrRegisterBody();
         registerBody.setMobile(randomMobile());
         registerBody.setAuthCode("1234");
-        registerBody.setSurname(randomChinese(1));
+        registerBody.setSurname(randomChinese(1) );
         registerBody.setGender(randomEnum(Gender.class));
 
         mockMvc.perform(makeWechat(get("/sendAuthCode/" + registerBody.getMobile())))
