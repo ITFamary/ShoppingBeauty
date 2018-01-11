@@ -107,12 +107,19 @@ public class MainMainOrderServiceImpl implements MainOrderService {
                             , FieldBuilder.asName(MainOrder.class, "payer")
                                     .build()
                             , FieldBuilder.asName(MainOrder.class, "payerMobile")
-                                    //TODO 需求根据 "订单id"" 查 "支付人手机号".
-                            //实体类的关系  MainOrder类 中的支付者payer 类型是User, 要根据User中的login 获取 Login类中的 LoginName(电话号)
-                            //3表查询用RowDefinition 怎么写.
-
-//                                    .addSelect(mainOrderRoot ->
-//                                            mainOrderRoot.join(mainOrderRoot.join(MainOrder_.payer,JoinType.LEFT).get(User_.login),JoinType.LEFT).get(Login_.loginName))
+                                    // 比你想象的要简单
+                                    .addSelect(mainOrderRoot -> {
+                                        // 这里我将写成一步一步的方式
+                                        // 首先获得支付者
+                                        Join<?, User> userJoin = mainOrderRoot.join(MainOrder_.payer);// 当然也直接用get 使用join可以自定以←或者→链接
+                                        // 获得其Login
+                                        Join<?, Login> loginJoin = userJoin.join(User_.login);// 跟上列一样
+                                        // 让后获得它的电话号码
+                                        return loginJoin.get(Login_.loginName);
+                                    })
+                                    // 在确认内连接没有问题的情况下-> 内链接会产生其他约束 关联的所有数据绝不为空，否者会被本次查询所过滤
+                                    // 就可以采用以下的简单写法
+                                    .addSelect(mainOrderRoot -> mainOrderRoot.get(MainOrder_.payer).get(User_.login).get(Login_.loginName))
                                     .build()
                             , FieldBuilder.asName(MainOrder.class, "items")
                                     .addSelect(mainOrderRoot -> mainOrderRoot.get(MainOrder_.orderItemList))
