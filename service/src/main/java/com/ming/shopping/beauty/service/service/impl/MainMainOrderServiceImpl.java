@@ -129,7 +129,8 @@ public class MainMainOrderServiceImpl implements MainOrderService {
 
                 @Override
                 public Specification<MainOrder> specification() {
-                    //TODO 如何分页?
+                    //TODO 如何分页? 此处命题错误，RowDefinition只定义数据规格和渲染方式，简单的说它跟分页无关，如果真的产生了关系也是渲染器干的
+                    //TODO 如果要立刻获得其结果 应该采用 me.jiangcai.crud.row.RowService 的几个方法；具体可以打开这个接口 并且download source;可以在此直接 Autowired
                     //return (root, query, cb) -> cb.and(cb.equal(root.get(MainOrder_.store), entity),pageable);
                     return null;
                 }
