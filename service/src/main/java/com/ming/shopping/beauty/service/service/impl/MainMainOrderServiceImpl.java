@@ -119,7 +119,7 @@ public class MainMainOrderServiceImpl implements MainOrderService {
                                     })
                                     // 在确认内连接没有问题的情况下-> 内链接会产生其他约束 关联的所有数据绝不为空，否者会被本次查询所过滤
                                     // 就可以采用以下的简单写法
-                                    .addSelect(mainOrderRoot -> mainOrderRoot.get(MainOrder_.payer).get(User_.login).get(Login_.loginName))
+//                                    .addSelect(mainOrderRoot -> mainOrderRoot.get(MainOrder_.payer).get(User_.login).get(Login_.loginName))
                                     .build()
                             , FieldBuilder.asName(MainOrder.class, "items")
                                     .addSelect(mainOrderRoot -> mainOrderRoot.get(MainOrder_.orderItemList))
