@@ -36,13 +36,12 @@ public class MiscController {
 
     @GetMapping(value = "/sendAuthCode/{mobile}")
     @ResponseStatus(HttpStatus.OK)
-    public void sendAuthCode(@PathVariable @Valid @Size(min = 11, max = 11, message = "手机号") String mobile
-            , BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
+    public void sendAuthCode(@PathVariable String mobile) {
+        if (mobile.length() != 11) {
             throw new ApiResultException(
                     //提示 XXX格式错误
                     ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
-                            , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), bindingResult.getAllErrors().get(0).getDefaultMessage())
+                            , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "手机号")
                             , null));
         }
         try {

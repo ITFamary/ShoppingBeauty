@@ -25,7 +25,6 @@ import static com.ming.shopping.beauty.service.utils.Constant.DATE_COLUMN_DEFINI
 @Entity
 @Setter
 @Getter
-@Inheritance(strategy = InheritanceType.JOINED)
 public class Login implements UserDetails {
     /**
      * 商户超管
@@ -91,6 +90,7 @@ public class Login implements UserDetails {
      */
     private boolean enabled = true;
 
+    @Column(name = "`DELETE`")
     private boolean delete;
     /**
      * 是否是个超级管理员
