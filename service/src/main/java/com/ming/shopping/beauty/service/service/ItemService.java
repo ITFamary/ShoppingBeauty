@@ -26,6 +26,7 @@ public interface ItemService {
     /**
      * 添加新的项目
      * @param merchant 所属的商家
+     * @param thumbnailUrl 缩略图
      * @param name 项目名称
      * @param itemType 项目类型
      * @param price 原价格
@@ -37,8 +38,8 @@ public interface ItemService {
      * @return
      */
     @Transactional
-    Item addItem(Merchant merchant,String name,String itemType,BigDecimal price,
-                 BigDecimal salesPrice,BigDecimal costPrice,String description,String richDescription,boolean recommended);
+    Item addItem(Merchant merchant, String thumbnailUrl, String name, String itemType, BigDecimal price,
+                 BigDecimal salesPrice, BigDecimal costPrice, String description, String richDescription, boolean recommended);
 
     /**
      * 修改项目是否冻结/解冻

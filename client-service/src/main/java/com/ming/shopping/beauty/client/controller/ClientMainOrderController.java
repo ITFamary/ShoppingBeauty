@@ -29,7 +29,7 @@ import java.util.List;
  * @author lxf
  */
 @Controller
-public class ClientOrderController {
+public class ClientMainOrderController {
     @Autowired
     private MainOrderService mainOrderService;
     @Autowired

@@ -38,13 +38,14 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional
-    public Item addItem(Merchant merchant, String name, String itemType, BigDecimal price, BigDecimal salesPrice,
+    public Item addItem(Merchant merchant, String thumbnailUrl, String name, String itemType, BigDecimal price, BigDecimal salesPrice,
                         BigDecimal costPrice, String description, String richDescription, boolean recommended) {
         Item item = new Item();
         if (merchant != null) {
             item.setMerchant(merchant);
         }
         item.setName(name);
+        item.setThumbnailUrl(thumbnailUrl);
         item.setItemType(itemType);
         item.setPrice(price);
         item.setSalesPrice(salesPrice);
