@@ -63,10 +63,4 @@ public interface MainOrderService {
     @Transactional
     boolean payOrder(long id);
 
-    /**
-     * 根据登录用户查询订单列表
-     * @param entity 身份
-     * @return 结果集
-     */
-    RowDefinition<MainOrder> search(Object entity);
 }
