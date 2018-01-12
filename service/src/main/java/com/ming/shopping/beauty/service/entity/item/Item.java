@@ -1,12 +1,14 @@
 package com.ming.shopping.beauty.service.entity.item;
 
 import com.ming.shopping.beauty.service.entity.login.Merchant;
+import com.ming.shopping.beauty.service.entity.support.UserLevel;
 import com.ming.shopping.beauty.service.utils.Constant;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.util.Map;
 
 /**
  * 项目
@@ -53,6 +55,11 @@ public class Item {
     @Column(scale = Constant.FLOAT_COLUMN_SCALE, precision = Constant.FLOAT_COLUMN_PRECISION)
     private BigDecimal costPrice;
 
+    /**
+     * 会员价
+     */
+    //TODO 2018/1/12 列如何定义.
+    private Map<UserLevel,BigDecimal> vipPrice;
     /**
      * 描述
      */
