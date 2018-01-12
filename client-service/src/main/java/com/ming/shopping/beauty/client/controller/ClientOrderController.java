@@ -2,17 +2,18 @@ package com.ming.shopping.beauty.client.controller;
 
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Store;
+import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.order.MainOrder_;
 import com.ming.shopping.beauty.service.entity.support.OrderStatus;
-import com.ming.shopping.beauty.service.exception.ApiResultException;
-import com.ming.shopping.beauty.service.model.ApiResult;
+import com.ming.shopping.beauty.service.repository.LoginRepository;
 import com.ming.shopping.beauty.service.service.MainOrderService;
 import com.ming.shopping.beauty.service.service.StoreService;
 import me.jiangcai.crud.row.FieldDefinition;
 import me.jiangcai.crud.row.RowCustom;
 import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
+import me.jiangcai.crud.row.supplier.JQueryDataTableDramatizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,7 +22,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.persistence.criteria.JoinType;
 import java.util.Arrays;
 import java.util.List;
 
@@ -34,21 +34,18 @@ public class ClientOrderController {
     private MainOrderService mainOrderService;
     @Autowired
     private StoreService storeService;
-
     /**
      * @param login
-     * @param page 页码
-     * @param page_size 每页多少
      * @return 查询结果
      */
     @GetMapping("/orders")
-    public @ResponseBody List<MainOrder> orderList(@AuthenticationPrincipal Login login, int page, int page_size){
-        Store entity = storeService.findByLogin(login);
+    @RowCustom(distinct = true ,dramatizer = JQueryDataTableDramatizer.class)
+    public RowDefinition<MainOrder> orderList(@AuthenticationPrincipal Login login){
+        Object entity = storeService.findByLogin(login);
         if(entity == null){
-            //TODO 还没写完
-            //他是一个普通会员,查询自己的订单列表
+            entity = login.getUser();
         }
-        return mainOrderService.search(entity,page,page_size);
+        return mainOrderService.search(entity);
     }
 
     @GetMapping("/orders/{orderId}")
@@ -73,6 +70,7 @@ public class ClientOrderController {
                                 .build()
                         , FieldBuilder.asName(MainOrder.class, "items")
                                 .addSelect(root -> root.get(MainOrder_.orderItemList))
+                                //TODO 2018/1/12 这里的返回的数据格式怎么改成前端需要的样子
                                 .build()
                 );
             }

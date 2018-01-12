@@ -70,11 +70,6 @@ public class MainOrder {
     private LocalDateTime payTime;
 
     /**
-     * 完成时间
-     */
-    @Column(columnDefinition = Constant.DATE_NULLABLE_COLUMN_DEFINITION)
-    private LocalDateTime completeTime;
-    /**
      * 是否结算
      */
     private boolean settled;

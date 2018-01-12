@@ -9,6 +9,7 @@ import me.jiangcai.crud.row.FieldDefinition;
 import me.jiangcai.crud.row.RowCustom;
 import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
+import me.jiangcai.crud.row.supplier.JQueryDataTableDramatizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Controller;
@@ -26,7 +27,8 @@ import java.util.List;
 public class ClientItemController {
 
     @GetMapping("/items")
-    public void itemList(String item_type,int lat,int lon,int page,int page_size){
+    @RowCustom(distinct = true , dramatizer = JQueryDataTableDramatizer.class)
+    public void itemList(String item_type,int lat,int lon){
         //TODO 带坐标的还不会写.
     }
     @GetMapping("/items/{itemId}")
@@ -52,6 +54,7 @@ public class ClientItemController {
                                 .build()
                         , FieldBuilder.asName(Item.class, "address")
                                 .addSelect(root -> root.join(Item_.merchant, JoinType.LEFT).get(Merchant_.address))
+                                .addFormat((data, type) -> data.toString())
                                 .build()
                         , FieldBuilder.asName(Item.class, "type")
                                 .addSelect(root -> root.get(Item_.itemType))

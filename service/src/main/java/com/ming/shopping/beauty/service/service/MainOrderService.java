@@ -5,6 +5,7 @@ import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.order.OrderItem;
+import me.jiangcai.crud.row.RowDefinition;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -32,25 +33,27 @@ public interface MainOrderService {
     /**
      *
      * 生成订单
+     *
+     * @param orderId 扫二维码生成的订单
      * @param store 产生订单的门店
-     * @param user 下单用户
      * @param represent 门店代表
      * @param itemList 该订单中的项目
      * @return
      */
     @Transactional
-    MainOrder newOrder(Store store, User user, Represent represent, List<OrderItem> itemList);
+    MainOrder supplementOrder(long orderId, Store store, Represent represent, List<OrderItem> itemList);
 
     /**
      * 生成订单
+     *
+     * @param orderId 扫二维码生成的订单
      * @param store 产生订单的门店
-     * @param user 下单用户
      * @param represent 门店代表
      * @param orderItem 该订单中的项目
      * @return
      */
     @Transactional
-    MainOrder newOrder(Store store, User user, Represent represent, OrderItem orderItem);
+    MainOrder supplementOrder(long orderId, Store store, Represent represent, OrderItem orderItem);
 
     /**
      * 支付订单
@@ -63,9 +66,7 @@ public interface MainOrderService {
     /**
      * 根据登录用户查询订单列表
      * @param entity 身份
-     * @param page 页码
-     * @param page_size 每页多少
-     * @return MainOrder集合
+     * @return 结果集
      */
-    List<MainOrder> search(Object entity , int page , int page_size);
+    RowDefinition<MainOrder> search(Object entity);
 }

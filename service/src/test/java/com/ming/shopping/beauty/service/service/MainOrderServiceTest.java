@@ -36,11 +36,6 @@ public class MainOrderServiceTest extends CoreServiceTest {
         //生成订单项目
         OrderItem orderItem = orderItemService.newOrderItem(item, 1);
         assertThat(orderItem.getItemId()).isNotNull();
-        //生成订单
-        MainOrder order = mainOrderService.newOrder(null, null, null, orderItem);
-        MainOrder getOrder = mainOrderService.findById(order.getOrderId());
-        //是否包含ItemOrder
-        List<OrderItem> orderItemList = getOrder.getOrderItemList();
-        assertThat(orderItemList.size()).isNotEqualTo(0);
+
     }
 }
