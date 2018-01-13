@@ -46,20 +46,18 @@ public class ClientMainOrderController {
     @GetMapping("/orders")
     @ResponseBody
     public void orderList(@AuthenticationPrincipal Login login
-            , @RequestBody OrderSearcherBody postData , NativeWebRequest webRequest) throws IOException {
-        if("store".equalsIgnoreCase(postData.getOrderType())){
-            if(login.getRepresent() == null){
+            , @RequestBody OrderSearcherBody postData, NativeWebRequest webRequest) throws IOException {
+        if ("store".equalsIgnoreCase(postData.getOrderType())) {
+            if (login.getRepresent() == null) {
                 throw new ApiResultException(HttpStatusCustom.SC_FORBIDDEN);
             }
             postData.setStoreId(login.getRepresent().getStore().getId());
-        }else{
+        } else {
             postData.setUserId(login.getId());
         }
         List orderList = mainOrderService.findAll(postData);
-//        if(!CollectionUtils.isEmpty(orderList)){
-            RowDramatizer dramatizer = new DefaultRowDramatizer();
-            dramatizer.writeResponse(orderList, mainOrderService.orderListField(), webRequest);
-//        }
+        RowDramatizer dramatizer = new DefaultRowDramatizer();
+        dramatizer.writeResponse(orderList, mainOrderService.orderListField(), webRequest);
     }
 
     @GetMapping("/orders/{orderId}")
