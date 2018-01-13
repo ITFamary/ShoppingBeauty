@@ -1,6 +1,7 @@
 package com.ming.shopping.beauty.service.entity.item;
 
 import com.ming.shopping.beauty.service.entity.login.Merchant;
+import com.ming.shopping.beauty.service.entity.support.AuditStatus;
 import com.ming.shopping.beauty.service.entity.support.UserLevel;
 import com.ming.shopping.beauty.service.utils.Constant;
 import lombok.Getter;
@@ -9,9 +10,11 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 项目
+ *
  * @author helloztt
  */
 @Entity
@@ -59,12 +62,20 @@ public class Item {
      */
     @Column(scale = Constant.FLOAT_COLUMN_SCALE, precision = Constant.FLOAT_COLUMN_PRECISION)
     private BigDecimal costPrice;
+    /**
+     * 审核状态
+     */
+    private AuditStatus auditStatus;
+    /**
+     * 审核备注
+     */
+    private String auditComment;
 
     /**
      * 会员价
      */
     //TODO 2018/1/12 列如何定义.
-    private Map<UserLevel,BigDecimal> vipPrice;
+//    private Map<UserLevel,BigDecimal> vipPrice;
     /**
      * 描述
      */
@@ -87,4 +98,12 @@ public class Item {
      * 含义上跟enable完全不同；该值为true 则该货品不会在系统中可见！
      */
     private boolean deleted = false;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Item)) return false;
+        Item item = (Item) o;
+        return Objects.equals(id, item.getId());
+    }
 }

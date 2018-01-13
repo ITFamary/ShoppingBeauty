@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.persistence.criteria.JoinType;
 import javax.servlet.http.HttpServletResponse;
-import java.awt.image.BufferedImage;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Arrays;
@@ -92,7 +91,7 @@ public class UserController {
         response.setHeader("X-Order-Id", String.valueOf(mainOrder.getOrderId()));
         Map<String,Object> result = new HashMap<>(1);
         // TODO: 2018/1/12 这里要确定购物车地址
-        String text = "/" + mainOrder.getOrderId();
+        String text = systemService.toUrl("/" + mainOrder.getOrderId());
         result.put("qrcode",systemService.toUrl("/toQR?text=" + URLEncoder.encode(text, "UTF-8")));
         return result;
     }

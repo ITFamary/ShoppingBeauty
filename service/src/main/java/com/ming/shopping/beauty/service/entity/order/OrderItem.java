@@ -9,6 +9,8 @@ import javax.persistence.*;
 import java.math.BigDecimal;
 
 /**
+ * 其实就是为了保存下单时 项目数据和下单数量 的
+ *
  * @author helloztt
  */
 @Entity
@@ -31,6 +33,11 @@ public class OrderItem {
      */
     @Column(length = 40)
     private String name;
+    /**
+     * 缩略图
+     */
+    @Column(length = 200)
+    private String thumbnailUrl;
     /**
      * 原价
      */

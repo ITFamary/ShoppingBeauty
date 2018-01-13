@@ -49,6 +49,7 @@ public abstract class ClientConfigTest extends CoreServiceTest {
         unActiveUser.setSurname(randomChinese(1) );
         unActiveUser.setGender(randomEnum(Gender.class));
         unActiveUserSession = register(unActiveUser);
+        mockUnActiveUser = loginService.findOne(unActiveUser.getMobile());
 
         List<RechargeCard> card = rechargeCardService.newCard(1,null,null);
         activeUser.setMobile(randomMobile());
@@ -57,6 +58,7 @@ public abstract class ClientConfigTest extends CoreServiceTest {
         activeUser.setGender(randomEnum(Gender.class));
         activeUser.setCdKey(card.get(0).getCode());
         activeUserSession = register(activeUser);
+        mockActiveUser = loginService.findOne(activeUser.getMobile());
 
 
     }

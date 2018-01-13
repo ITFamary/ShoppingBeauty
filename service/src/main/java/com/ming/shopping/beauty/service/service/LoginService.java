@@ -3,6 +3,7 @@ package com.ming.shopping.beauty.service.service;
 import com.huotu.verification.VerificationType;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
+import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.utils.Constant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -48,6 +49,15 @@ public interface LoginService extends UserDetailsService {
      * @throws ApiResultException 校验失败返回结果
      */
     Login findOne(long id) throws ApiResultException;
+
+    /**
+     * 查找角色，并校验角色是否可用，若不可用则抛出异常
+     *
+     * @param mobile
+     * @return
+     * @throws ApiResultException
+     */
+    Login findOne(String mobile) throws ApiResultException;
 
     /**
      * 校验手机号是否已被注册，若被注册则抛出异常

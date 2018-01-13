@@ -1,5 +1,6 @@
 package com.ming.shopping.beauty.service.entity.login;
 
+import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import lombok.Getter;
 import lombok.Setter;
 import me.jiangcai.jpa.entity.support.Address;
@@ -7,6 +8,7 @@ import me.jiangcai.jpa.entity.support.Address;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 import static com.ming.shopping.beauty.service.utils.Constant.DATE_COLUMN_DEFINITION;
 
@@ -76,5 +78,13 @@ public class Store {
     public boolean isStoreUsable() {
         return (manageable && enabled)
                 || (!manageable && store.enabled);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Store)) return false;
+        Store store = (Store) o;
+        return Objects.equals(id, store.getId());
     }
 }

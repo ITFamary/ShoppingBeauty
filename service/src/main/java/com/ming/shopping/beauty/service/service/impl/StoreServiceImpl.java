@@ -38,7 +38,7 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
-    public void addStore(long loginId, long merchantId, String name, String telephone, String contact, Address address) {
+    public Store addStore(long loginId, long merchantId, String name, String telephone, String contact, Address address) {
         Login login = loginService.findOne(loginId);
         if (login.getStore() != null) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.LOGIN_STORE_EXIST));
@@ -57,11 +57,12 @@ public class StoreServiceImpl implements StoreService {
         login.setStore(store);
         login.getLevelSet().add(ManageLevel.storeRoot);
         merchant.getStores().add(store);
+        return store;
     }
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
-    public void addStore(long loginId, long storeId) {
+    public Store addStore(long loginId, long storeId) {
         Login login = loginService.findOne(loginId);
         if (login.getStore() != null) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.LOGIN_STORE_EXIST));
@@ -75,6 +76,7 @@ public class StoreServiceImpl implements StoreService {
         login.setStore(store);
         login.getLevelSet().add(ManageLevel.storeRoot);
         storeRepository.save(manage);
+        return manage;
     }
 
     @Override

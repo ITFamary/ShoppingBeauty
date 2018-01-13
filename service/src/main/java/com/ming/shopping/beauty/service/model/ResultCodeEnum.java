@@ -31,6 +31,7 @@ public enum ResultCodeEnum {
     STORE_NOT_ENABLE(1009,"门店不可用"),
     MANAGE_NOT_ENABLE(1010,"操作员不可用"),
     ALREADY_MANAGEABLE(1011,"请勿重复操作"),
+    REPRESENT_NOT_EXIST(1012,"门店代表不存在"),
     /**
      * 用户、推荐：[2000,2999]
      */
@@ -38,11 +39,13 @@ public enum ResultCodeEnum {
     MERCHANT_CANNOT_DELETE(2001,"商户不可删除"),
     LOGIN_STORE_EXIST(2002,"该账号已是门店操作员"),
     STORE_CANNOT_DELETE(2003,"门店不可删除"),
-    USER_NOT_ACTIVE(2004,"充值后才能激活会员卡"),
+    LOGIN_REPRESENT_EXIST(2004,"该账号已是门店代表"),
+    USER_NOT_ACTIVE(2005,"充值后才能激活会员卡"),
     /**
      * 项目、门店：[3000,3999]
      */
-    Item_Not_EXIST(3001,"项目不存在,或deleted = false"),
+    Item_Not_EXIST(3001,"项目不存在或已删除"),
+    STORE_ITEM_PRICE_ERROR(3002,"销售价必须大于项目销售价"),
     /**
      * 订单相关：[4000,4999]
      */

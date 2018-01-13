@@ -26,7 +26,7 @@ public interface StoreService {
      * @param telephone  门店电话
      */
     @Transactional(rollbackFor = RuntimeException.class)
-    void addStore(long loginId, long merchantId, String name, String telephone, String contact, Address address);
+    Store addStore(long loginId, long merchantId, String name, String telephone, String contact, Address address);
 
     /**
      * 添加门店管理员
@@ -35,7 +35,7 @@ public interface StoreService {
      * @param storeId 所属门店
      */
     @Transactional(rollbackFor = RuntimeException.class)
-    void addStore(long loginId, long storeId);
+    Store addStore(long loginId, long storeId);
 
     /**
      * 冻结或启用门店或门店管理员

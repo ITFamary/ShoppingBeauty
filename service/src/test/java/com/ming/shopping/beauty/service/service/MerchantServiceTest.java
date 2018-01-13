@@ -5,13 +5,10 @@ import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Merchant;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
-import com.ming.shopping.beauty.service.utils.Constant;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.data.domain.Page;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
 
 /**
  * Created by helloztt on 2018/1/7.
@@ -36,7 +33,7 @@ public class MerchantServiceTest extends CoreServiceTest {
 
     @Test
     public void addMerchantManage() throws Exception {
-        Merchant mockManage = mockMerchant(mockMerchant.getId());
+        Merchant mockManage = mockMerchantManager(mockMerchant.getId());
         assertThat(mockManage).isNotNull();
         assertThat(mockManage.isManageable()).isFalse();
         assertThat(mockManage.getMerchant()).isEqualTo(mockMerchant);
@@ -57,7 +54,7 @@ public class MerchantServiceTest extends CoreServiceTest {
 
     @Test
     public void removeMerchantManage() throws Exception {
-        Merchant removeManage = mockMerchant(mockMerchant.getId());
+        Merchant removeManage = mockMerchantManager(mockMerchant.getId());
         merchantService.removeMerchantManage(removeManage.getId());
         try {
             merchantService.findOne(removeManage.getId());

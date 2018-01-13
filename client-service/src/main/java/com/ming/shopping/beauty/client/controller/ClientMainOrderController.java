@@ -2,27 +2,29 @@ package com.ming.shopping.beauty.client.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ming.shopping.beauty.service.exception.ApiResultException;
+import com.ming.shopping.beauty.service.model.HttpStatusCustom;
+import com.ming.shopping.beauty.service.model.request.OrderSearcherBody;
 import com.ming.shopping.beauty.service.entity.login.*;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.order.MainOrder_;
 import com.ming.shopping.beauty.service.entity.order.OrderItem;
 import com.ming.shopping.beauty.service.entity.support.OrderStatus;
-import com.ming.shopping.beauty.service.repository.LoginRepository;
 import com.ming.shopping.beauty.service.service.MainOrderService;
 import com.ming.shopping.beauty.service.service.StoreService;
-import me.jiangcai.crud.row.FieldDefinition;
-import me.jiangcai.crud.row.RowCustom;
-import me.jiangcai.crud.row.RowDefinition;
+import me.jiangcai.crud.row.*;
 import me.jiangcai.crud.row.field.FieldBuilder;
-import me.jiangcai.crud.row.supplier.JQueryDataTableDramatizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.context.request.NativeWebRequest;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -42,54 +44,25 @@ public class ClientMainOrderController {
      * @return 查询结果
      */
     @GetMapping("/orders")
-    @RowCustom(distinct = true, dramatizer = JQueryDataTableDramatizer.class)
-    public RowDefinition<MainOrder> orderList(@AuthenticationPrincipal Login login) {
-        final Object entity;
-        Store store = storeService.findByLogin(login);
-        if (store != null)
-            entity = store;
-        else
-            entity = login.getUser();
-
-        if (entity instanceof Store) {
-            return new RowDefinition<MainOrder>() {
-                @Override
-                public Class<MainOrder> entityClass() {
-                    return MainOrder.class;
-                }
-
-                @Override
-                public List<FieldDefinition<MainOrder>> fields() {
-                    return listField();
-                }
-
-                @Override
-                public Specification<MainOrder> specification() {
-                    return (root, query, cb) -> cb.and(cb.equal(root.get(MainOrder_.store), entity));
-                }
-            };
-        } else {
-            return new RowDefinition<MainOrder>() {
-                @Override
-                public Class<MainOrder> entityClass() {
-                    return MainOrder.class;
-                }
-
-                @Override
-                public List<FieldDefinition<MainOrder>> fields() {
-                    return listField();
-                }
-
-                @Override
-                public Specification<MainOrder> specification() {
-                    return (root, query, cb) -> cb.and(cb.equal(root.get(MainOrder_.payer), entity));
-                }
-            };
+    @ResponseBody
+    public void orderList(@AuthenticationPrincipal Login login
+            , @RequestBody OrderSearcherBody postData , NativeWebRequest webRequest) throws IOException {
+        if("store".equalsIgnoreCase(postData.getOrderType())){
+            if(login.getRepresent() == null){
+                throw new ApiResultException(HttpStatusCustom.SC_FORBIDDEN);
+            }
+            postData.setStoreId(login.getRepresent().getStore().getId());
+        }else{
+            postData.setUserId(login.getId());
         }
+        List orderList = mainOrderService.findAll(postData);
+//        if(!CollectionUtils.isEmpty(orderList)){
+            RowDramatizer dramatizer = new DefaultRowDramatizer();
+            dramatizer.writeResponse(orderList, mainOrderService.orderListField(), webRequest);
+//        }
     }
 
     @GetMapping("/orders/{orderId}")
-    @RowCustom(distinct = true)
     public RowDefinition<MainOrder> mainOrderDetail(@PathVariable long orderId) {
         return new RowDefinition<MainOrder>() {
             @Override
@@ -123,7 +96,7 @@ public class ClientMainOrderController {
         };
     }
 
-    private List<FieldDefinition<MainOrder>> listField() {
+    private List<FieldDefinition<MainOrder>> listFieldForUser() {
         return Arrays.asList(
                 FieldBuilder.asName(MainOrder.class, "orderId")
                         .build()

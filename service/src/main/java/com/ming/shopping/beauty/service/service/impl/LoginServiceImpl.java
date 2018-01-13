@@ -130,6 +130,18 @@ public class LoginServiceImpl implements LoginService {
     }
 
     @Override
+    public Login findOne(String mobile) throws ApiResultException {
+        Login login = loginRepository.findByLoginName(mobile);
+        if (login == null) {
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.LOGIN_NOT_EXIST));
+        }
+        if (!login.isEnabled()) {
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.LOGIN_NOT_ENABLE));
+        }
+        return login;
+    }
+
+    @Override
     public void mobileVerify(String mobile) throws ApiResultException {
         if (loginRepository.countByLoginName(mobile) > 0) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.MOBILE_EXIST));

@@ -1,14 +1,19 @@
 package com.ming.shopping.beauty.service.service;
 
+import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import com.ming.shopping.beauty.service.entity.login.Represent;
 import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.order.OrderItem;
+import com.ming.shopping.beauty.service.model.request.OrderSearcherBody;
+import me.jiangcai.crud.row.FieldDefinition;
 import me.jiangcai.crud.row.RowDefinition;
+import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author lxf
@@ -24,6 +29,7 @@ public interface MainOrderService {
 
     /**
      * 给用户增加一个空的订单
+     *
      * @param user
      * @return
      */
@@ -31,36 +37,51 @@ public interface MainOrderService {
     MainOrder newEmptyOrder(User user);
 
     /**
-     *
+     * TODO List<OrderItem> -》 Map<StoreItem,Integer>
      * 生成订单
      *
-     * @param orderId 扫二维码生成的订单
-     * @param store 产生订单的门店
+     * @param orderId   扫二维码生成的订单
      * @param represent 门店代表
-     * @param itemList 该订单中的项目
+     * @param amounts   下单的门店数量
      * @return
      */
     @Transactional
-    MainOrder supplementOrder(long orderId, Store store, Represent represent, List<OrderItem> itemList);
+    MainOrder supplementOrder(long orderId, Represent represent, Map<StoreItem, Integer> amounts);
 
     /**
      * 生成订单
      *
-     * @param orderId 扫二维码生成的订单
-     * @param store 产生订单的门店
+     * @param orderId   扫二维码生成的订单
      * @param represent 门店代表
-     * @param orderItem 该订单中的项目
+     * @param storeItem 门店项目
+     * @param amount    下单数量
      * @return
      */
     @Transactional
-    MainOrder supplementOrder(long orderId, Store store, Represent represent, OrderItem orderItem);
+    MainOrder supplementOrder(long orderId,Represent represent, StoreItem storeItem, int amount);
 
     /**
      * 支付订单
+     *
      * @param id 被支付的订单.
      * @return 是否成功
      */
     @Transactional
     boolean payOrder(long id);
+
+    /**
+     * 根据条件查询订单
+     *
+     * @param orderSearcher
+     * @return
+     */
+    List findAll(OrderSearcherBody orderSearcher);
+
+    /**
+     * 查询订单字段及定义
+     *
+     * @return
+     */
+    List<FieldDefinition<MainOrder>> orderListField();
 
 }

@@ -23,7 +23,10 @@ public class Represent {
     @PrimaryKeyJoinColumn(name = "id",referencedColumnName = "id")
     private Login login;
     /**
-     * 性别
+     * 所属门店
      */
-    private Gender gender;
+    @ManyToOne
+    private Store store;
+
+    private boolean enable = true;
 }
