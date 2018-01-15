@@ -13,7 +13,6 @@ import com.ming.shopping.beauty.service.entity.order.OrderItem;
 import com.ming.shopping.beauty.service.entity.support.OrderStatus;
 import com.ming.shopping.beauty.service.service.ItemService;
 import com.ming.shopping.beauty.service.service.MainOrderService;
-import com.ming.shopping.beauty.service.service.StoreService;
 import me.jiangcai.crud.row.*;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +26,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.NativeWebRequest;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -37,8 +35,6 @@ import java.util.*;
 public class ClientMainOrderController {
     @Autowired
     private MainOrderService mainOrderService;
-    @Autowired
-    private ItemService itemService;
     @Autowired
     private ConversionService conversionService;
     private static final ObjectMapper objectMapper = new ObjectMapper();

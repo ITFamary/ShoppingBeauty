@@ -3,25 +3,21 @@ package com.ming.shopping.beauty.service.service.impl;
 import com.ming.shopping.beauty.service.aop.BusinessSafe;
 import com.ming.shopping.beauty.service.entity.item.RechargeCard;
 import com.ming.shopping.beauty.service.entity.item.RechargeCard_;
+import com.ming.shopping.beauty.service.entity.log.RechargeLog;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
-import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.repository.RechargeCardRepository;
+import com.ming.shopping.beauty.service.repository.RechargeLogRepository;
 import com.ming.shopping.beauty.service.repository.UserRepository;
 import com.ming.shopping.beauty.service.service.RechargeCardService;
 import me.jiangcai.lib.sys.service.SystemStringService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -38,6 +34,8 @@ public class RechargeCardServiceImpl implements RechargeCardService {
     private UserRepository userRepository;
     @Autowired
     private SystemStringService systemStringService;
+    @Autowired
+    private RechargeLogRepository rechargeLogRepository;
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
@@ -93,9 +91,14 @@ public class RechargeCardServiceImpl implements RechargeCardService {
         if (!user.isActive()) {
             user.setActive(true);
         }
-        rechargeCardRepository.save(rechargeCard);
+        rechargeCardRepository.saveAndFlush(rechargeCard);
         userRepository.save(user);
 
-        // TODO: 2018/1/6 直接从充值卡读取用户的充值记录即可？不需要另外加表记录充值日志了？
+        RechargeLog log = new RechargeLog();
+        log.setUser(user);
+        log.setRechargeCardId(rechargeCard.getId());
+        log.setCreateTime(LocalDateTime.now());
+        rechargeLogRepository.save(log);
+
     }
 }
