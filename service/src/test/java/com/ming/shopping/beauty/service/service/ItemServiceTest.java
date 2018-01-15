@@ -27,7 +27,7 @@ public class ItemServiceTest extends CoreServiceTest {
         //添加一个项目
         Item item = itemService.addItem(null,null, "测试添加项目", "测试", new BigDecimal(0.01),
                 new BigDecimal(0.01), new BigDecimal(0.01), "测试添加一个项目", "这个项目用来测试", false);
-        Item byId = itemService.findById(item.getId());
+        Item byId = itemService.findOne(item.getId());
         assertThat(byId).isNotNull();
     }
 }

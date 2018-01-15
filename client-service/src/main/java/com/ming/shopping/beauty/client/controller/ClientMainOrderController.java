@@ -4,24 +4,26 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.HttpStatusCustom;
+import com.ming.shopping.beauty.service.model.request.NewOrderBody;
 import com.ming.shopping.beauty.service.model.request.OrderSearcherBody;
 import com.ming.shopping.beauty.service.entity.login.*;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.order.MainOrder_;
 import com.ming.shopping.beauty.service.entity.order.OrderItem;
 import com.ming.shopping.beauty.service.entity.support.OrderStatus;
+import com.ming.shopping.beauty.service.service.ItemService;
 import com.ming.shopping.beauty.service.service.MainOrderService;
 import com.ming.shopping.beauty.service.service.StoreService;
 import me.jiangcai.crud.row.*;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.NativeWebRequest;
 
 import java.io.IOException;
@@ -36,8 +38,24 @@ public class ClientMainOrderController {
     @Autowired
     private MainOrderService mainOrderService;
     @Autowired
-    private StoreService storeService;
+    private ItemService itemService;
+    @Autowired
+    private ConversionService conversionService;
     private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    /**
+     * 门店代表下单
+     *
+     * @param login
+     * @param postData
+     */
+    @PostMapping("/order")
+    @ResponseBody
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('" + Login.ROLE_REPRESENT + "')")
+    public void newOrder(@AuthenticationPrincipal Login login, @RequestBody NewOrderBody postData) {
+        mainOrderService.supplementOrder(postData.getOrderId(), login.getRepresent(), postData.getItems());
+    }
 
     /**
      * @param login
@@ -100,15 +118,15 @@ public class ClientMainOrderController {
                         .build()
                 , FieldBuilder.asName(MainOrder.class, "completeTime")
                         .addSelect(mainOrderRoot -> mainOrderRoot.get(MainOrder_.payTime))
-                        .addFormat((data, type) -> ((LocalDateTime) data).toString())
+                        .addFormat((data, type) -> conversionService.convert(data, String.class))
                         .build()
                 , FieldBuilder.asName(MainOrder.class, "orderStatus")
                         .build()
                 , FieldBuilder.asName(MainOrder.class, "store")
-                        .addFormat((data,type)->((Store)data).getName())
+                        .addFormat((data, type) -> ((Store) data).getName())
                         .build()
                 , FieldBuilder.asName(MainOrder.class, "payer")
-                        .addFormat((data,type)->((Store)data).getName())
+                        .addFormat((data, type) -> ((Store) data).getName())
                         .build()
                 , FieldBuilder.asName(MainOrder.class, "payerMobile")
                         .addSelect(mainOrderRoot -> mainOrderRoot.get(MainOrder_.payer).get(User_.login).get(Login_.loginName))

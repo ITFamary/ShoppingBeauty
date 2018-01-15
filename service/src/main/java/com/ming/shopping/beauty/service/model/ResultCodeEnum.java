@@ -20,6 +20,7 @@ public enum ResultCodeEnum {
     /**
      * 注册、登录、权限相关：[1000,1999]
      */
+    OPEN_ID_ERROR(1000,"openId无效"),
     MOBILE_EXIST(1001,"手机号已经注册"),
     MESSAGE_NOT_FULL(1002,"注册信息不完成"),
     LOGIN_NOT_EXIST(1003,"账号不存在"),
@@ -50,6 +51,7 @@ public enum ResultCodeEnum {
      * 订单相关：[4000,4999]
      */
     MAINORDER_NOT_EXIST(4001,"订单不存在"),
+    ORDER_NOT_EMPTY(4002,"订单已被创建，请重新扫码下单"),
     /**
      * 支付、充值：[5000,5999]
      */

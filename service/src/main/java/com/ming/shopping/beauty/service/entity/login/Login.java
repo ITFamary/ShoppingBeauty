@@ -5,7 +5,9 @@ import lombok.Getter;
 import lombok.Setter;
 import me.jiangcai.wx.standard.entity.StandardWeixinUser;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.util.CollectionUtils;
 
 import javax.persistence.*;
 
@@ -14,6 +16,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.ming.shopping.beauty.service.utils.Constant.DATE_COLUMN_DEFINITION;
 
@@ -34,6 +38,7 @@ public class Login implements UserDetails {
      * 门店超管
      */
     public static final String ROLE_STORE_ROOT = "STORE_ROOT";
+    public static final String ROLE_REPRESENT = "REPRESENT";
     /**
      * 审核门店
      */
@@ -99,7 +104,15 @@ public class Login implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptySet();
+        if (CollectionUtils.isEmpty(levelSet)) {
+            return Collections.emptySet();
+        }
+        Stream<String> fixed = levelSet.stream()
+                .flatMap(level1 -> Stream.of(level1.roles()));
+        return fixed
+                .map(ManageLevel::roleNameToRole)
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toSet());
     }
 
     @Override
@@ -127,10 +140,12 @@ public class Login implements UserDetails {
         return true;
     }
 
-    public Set<ManageLevel> getLevelSet(){
-        if(levelSet == null){
+    public Set<ManageLevel> getLevelSet() {
+        if (levelSet == null) {
             return new HashSet<>();
         }
         return levelSet;
     }
+
+
 }

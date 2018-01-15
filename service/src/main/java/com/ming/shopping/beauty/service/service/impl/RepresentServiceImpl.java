@@ -3,6 +3,7 @@ package com.ming.shopping.beauty.service.service.impl;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Represent;
 import com.ming.shopping.beauty.service.entity.login.Store;
+import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
@@ -39,6 +40,7 @@ public class RepresentServiceImpl implements RepresentService {
         represent.setLogin(login);
         represent.setStore(store);
         login.setRepresent(represent);
+        login.getLevelSet().add(ManageLevel.represent);
         return representRepository.save(represent);
     }
 

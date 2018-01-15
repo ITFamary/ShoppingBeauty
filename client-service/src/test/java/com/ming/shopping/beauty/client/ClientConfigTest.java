@@ -70,6 +70,22 @@ public abstract class ClientConfigTest extends CoreServiceTest {
         return  (MockHttpSession)mockMvc.perform(makeWechat(post(SystemService.LOGIN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerBody))))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getRequest().getSession();
+    }
+
+    protected MockHttpSession login(Login login) throws Exception{
+        LoginOrRegisterBody registerBody = new LoginOrRegisterBody();
+        registerBody.setMobile(login.getLoginName());
+        registerBody.setAuthCode("1234");
+        nextCurrentWechatAccount(login.getWechatUser());
+        mockMvc.perform(makeWechat(get("/sendAuthCode/" + login.getLoginName())))
+                .andExpect(status().isOk());
+        return  (MockHttpSession)mockMvc.perform(makeWechat(post(SystemService.LOGIN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerBody))))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn().getRequest().getSession();
     }

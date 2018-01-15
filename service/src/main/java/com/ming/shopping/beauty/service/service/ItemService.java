@@ -21,13 +21,21 @@ public interface ItemService {
      */
     List<Item> findAll(ItemSearcherBody searcher);
 
+    /**
+     * 查找门店所有项目
+     *
+     * @param searcher
+     * @return
+     */
     List<StoreItem> findAllStoreItem(ItemSearcherBody searcher);
 
     /**
+     * 根据项目编号查找项目
+     *
      * @param id 项目id
      * @return 项目
      */
-    Item findById(long id);
+    Item findOne(long id);
 
     /**
      * 添加新的项目，状态为待审核
@@ -58,6 +66,13 @@ public interface ItemService {
      * @return
      */
     StoreItem addStoreItem(long storeId, long itemId, BigDecimal salesPrice, boolean recommended);
+
+    /**
+     * 根据编号查找门店项目
+     * @param storeItemId
+     * @return
+     */
+    StoreItem findStoreItem(long storeItemId);
 
     /**
      * 审核项目

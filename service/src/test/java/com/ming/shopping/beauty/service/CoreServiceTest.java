@@ -1,5 +1,6 @@
 package com.ming.shopping.beauty.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.ming.shopping.beauty.service.config.ServiceConfig;
@@ -9,16 +10,18 @@ import com.ming.shopping.beauty.service.entity.login.*;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.support.AuditStatus;
 import com.ming.shopping.beauty.service.model.request.ItemSearcherBody;
-import com.ming.shopping.beauty.service.repository.MerchantRepository;
+import com.ming.shopping.beauty.service.model.request.LoginOrRegisterBody;
+import com.ming.shopping.beauty.service.model.request.StoreItemNum;
 import com.ming.shopping.beauty.service.service.*;
 import com.ming.shopping.beauty.service.utils.Constant;
 import me.jiangcai.lib.test.SpringWebTest;
 import me.jiangcai.wx.model.Gender;
-import me.jiangcai.wx.model.PublicAccount;
 import me.jiangcai.wx.model.WeixinUserDetail;
+import me.jiangcai.wx.standard.entity.StandardWeixinUser;
 import me.jiangcai.wx.test.WeixinTestConfig;
 import me.jiangcai.wx.test.WeixinUserMocker;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -32,6 +35,8 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * @author helloztt
@@ -70,6 +75,11 @@ public abstract class CoreServiceTest extends SpringWebTest {
         WeixinUserDetail detail = WeixinUserMocker.randomWeixinUserDetail();
         weixinTestConfig.setNextDetail(detail);
         return detail;
+    }
+
+    protected WeixinUserDetail nextCurrentWechatAccount(StandardWeixinUser weixinUser){
+        weixinTestConfig.setNextDetail(weixinUser);
+        return weixinUser;
     }
 
     @Override
@@ -111,7 +121,7 @@ public abstract class CoreServiceTest extends SpringWebTest {
      *
      * @return
      */
-    protected Login mockLogin() {
+    protected Login mockLogin() throws Exception {
         return mockLogin(null, null);
     }
 
@@ -121,7 +131,7 @@ public abstract class CoreServiceTest extends SpringWebTest {
      * @param guideUserId
      * @return
      */
-    protected Login mockLogin(long guideUserId) {
+    protected Login mockLogin(long guideUserId) throws Exception {
         return mockLogin(null, guideUserId);
     }
 
@@ -132,11 +142,21 @@ public abstract class CoreServiceTest extends SpringWebTest {
      * @param guideUserId 推荐人
      * @return
      */
-    protected Login mockLogin(String cardNo, Long guideUserId) {
-        WeixinUserDetail weixinUserDetail = nextCurrentWechatAccount();
+    protected Login mockLogin(String cardNo, Long guideUserId) throws Exception {
+        nextCurrentWechatAccount();
         String mobile = randomMobile();
-        return loginService.getLogin(weixinUserDetail.getOpenId(), mobile,
-                "1234", randomChinese(1), randomEnum(Gender.class), cardNo, guideUserId);
+        LoginOrRegisterBody registerBody = new LoginOrRegisterBody();
+        registerBody.setMobile(mobile);
+        registerBody.setAuthCode("1234");
+        registerBody.setSurname(randomChinese(1));
+        registerBody.setGender(randomEnum(Gender.class));
+        registerBody.setCdKey(cardNo);
+        registerBody.setGuideUserId(guideUserId);
+        mockMvc.perform(makeWechat(post(SystemService.LOGIN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerBody))))
+                .andExpect(status().isOk());
+        return loginService.findOne(mobile);
     }
 
     /**
@@ -144,7 +164,7 @@ public abstract class CoreServiceTest extends SpringWebTest {
      *
      * @return
      */
-    protected Merchant mockMerchant() {
+    protected Merchant mockMerchant() throws Exception {
         Login login = mockLogin();
         return merchantService.addMerchant(login.getId(), randomChinese(5)
                 , randomMobile(), randomChinese(3), null);
@@ -156,7 +176,7 @@ public abstract class CoreServiceTest extends SpringWebTest {
      * @param merchantId 所属商户
      * @return
      */
-    protected Merchant mockMerchantManager(long merchantId) {
+    protected Merchant mockMerchantManager(long merchantId) throws Exception {
         Login login = mockLogin();
         return merchantService.addMerchant(login.getId(), merchantId);
     }
@@ -167,13 +187,13 @@ public abstract class CoreServiceTest extends SpringWebTest {
      * @param merchant
      * @return
      */
-    protected Store mockStore(Merchant merchant) {
+    protected Store mockStore(Merchant merchant) throws Exception {
         Login login = mockLogin();
         return storeService.addStore(login.getId(), merchant.getId()
                 , randomString(), randomMobile(), randomString(), null);
     }
 
-    protected Represent mockRepresent(Store store) {
+    protected Represent mockRepresent(Store store) throws Exception {
         Login login = mockLogin();
         return representService.addRepresent(login.getId(), store.getId());
     }
@@ -184,7 +204,7 @@ public abstract class CoreServiceTest extends SpringWebTest {
      * @param storeId
      * @return
      */
-    protected Store mockStoreManager(long storeId) {
+    protected Store mockStoreManager(long storeId) throws Exception {
         Login login = mockLogin();
         return storeService.addStore(login.getId(), storeId);
     }
@@ -204,7 +224,7 @@ public abstract class CoreServiceTest extends SpringWebTest {
         Item item = itemService.addItem(merchant, randomHttpURL(), randomString(), randomString()
                 , price, salesPrice, costPrice, randomString(), randomString(), random.nextBoolean());
         itemService.auditItem(item.getId(), AuditStatus.AUDIT_PASS, null);
-        return itemService.findById(item.getId());
+        return itemService.findOne(item.getId());
     }
 
     /**
@@ -241,7 +261,7 @@ public abstract class CoreServiceTest extends SpringWebTest {
         return mockMainOrder(user, represent, randomOrderItemSet(represent.getStore().getId()));
     }
 
-    private Map<StoreItem, Integer> randomOrderItemSet(long storeId) {
+    protected Map<StoreItem, Integer> randomOrderItemSet(long storeId) {
         Map<StoreItem, Integer> data = new HashMap<>();
         //查找门店可用的项目
         ItemSearcherBody searcher = new ItemSearcherBody();
@@ -254,7 +274,7 @@ public abstract class CoreServiceTest extends SpringWebTest {
                     .filter(item -> !data.keySet().contains(item))
                     .max(new RandomComparator()).orElse(null);
             if (randomItem != null) {
-                data.put(randomItem, random.nextInt(10));
+                data.put(randomItem, 1 + random.nextInt(10));
             }
         }
         return data;

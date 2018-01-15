@@ -61,15 +61,18 @@ public class LoginServiceImpl implements LoginService {
     public Login getLogin(String openId, String mobile, String verifyCode
             , String familyName, Gender gender, String cardNo, Long guideUserId) {
         if (!env.acceptsProfiles(ServiceConfig.PROFILE_UNIT_TEST) && !StringUtils.isEmpty(verifyCode)) {
-            try{
+            try {
                 verificationCodeService.verify(mobile, verifyCode, loginVerificationType());
-            }catch (IllegalVerificationCodeException ex){
+            } catch (IllegalVerificationCodeException ex) {
                 throw new ApiResultException(
-                        ApiResult.withCodeAndMessage(ResultCodeEnum.THIRD_ERROR.getCode(),"验证码无效",null));
+                        ApiResult.withCodeAndMessage(ResultCodeEnum.THIRD_ERROR.getCode(), "验证码无效", null));
             }
         }
         if (!StringUtils.isEmpty(cardNo)) {
             rechargeCardService.verify(cardNo);
+        }
+        if (StringUtils.isEmpty(openId)) {
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.OPEN_ID_ERROR));
         }
         Login login = asWechat(openId);
         if (login != null) {

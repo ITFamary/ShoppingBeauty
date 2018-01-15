@@ -1,6 +1,7 @@
 package com.ming.shopping.beauty.service.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ming.shopping.beauty.service.aop.BusinessSafe;
+import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.item.Item_;
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import com.ming.shopping.beauty.service.entity.login.*;
@@ -13,12 +14,14 @@ import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.model.request.OrderSearcherBody;
+import com.ming.shopping.beauty.service.model.request.StoreItemNum;
+import com.ming.shopping.beauty.service.model.response.OrderResponse;
 import com.ming.shopping.beauty.service.repository.MainOrderRepository;
 import com.ming.shopping.beauty.service.repository.OrderItemRepository;
+import com.ming.shopping.beauty.service.service.ItemService;
 import com.ming.shopping.beauty.service.service.MainOrderService;
 import me.jiangcai.crud.row.*;
 import me.jiangcai.crud.row.field.FieldBuilder;
-import me.jiangcai.wx.model.Gender;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
@@ -32,6 +35,7 @@ import javax.persistence.criteria.*;
 import java.lang.reflect.Array;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 /**
@@ -46,6 +50,8 @@ public class MainOrderServiceImpl implements MainOrderService {
     private RowService rowService;
     @Autowired
     private ConversionService conversionService;
+    @Autowired
+    private ItemService itemService;
     @Autowired
     private OrderItemRepository orderItemRepository;
 
@@ -76,10 +82,29 @@ public class MainOrderServiceImpl implements MainOrderService {
     }
 
     @Override
+    @BusinessSafe
+    @Transactional(rollbackFor = RuntimeException.class)
+    public MainOrder supplementOrder(long orderId, Represent represent, StoreItemNum[] items) {
+        Map<StoreItem, Integer> amounts = new HashMap<>(items.length);
+        for (StoreItemNum storeItemNum : items) {
+            StoreItem item = itemService.findStoreItem(storeItemNum.getStoreItemId());
+            if (!amounts.containsKey(item)) {
+                amounts.put(item, storeItemNum.getNum());
+            }
+        }
+        return supplementOrder(orderId, represent, amounts);
+    }
+
+    @Override
+    @BusinessSafe
     @Transactional(rollbackFor = RuntimeException.class)
     public MainOrder supplementOrder(long orderId, Represent represent, Map<StoreItem, Integer> amounts) {
         //门店代表扫码后，把List<OrderItem>塞到了这个订单里，并修改MainOrder
         MainOrder mainOrder = mainOrderRepository.getOne(orderId);
+        //判断订单是不是空的
+        if (!OrderStatus.EMPTY.equals(mainOrder.getOrderStatus())) {
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.ORDER_NOT_EMPTY));
+        }
         mainOrder.setRepresent(represent);
         mainOrder.setStore(represent.getStore());
 
@@ -90,8 +115,10 @@ public class MainOrderServiceImpl implements MainOrderService {
             orderItem.setItem(storeItem.getItem());
             //项目的数据随时会改变，所以需要保存在 OrderItem 里面
             orderItem.setName(orderItem.getItem().getName());
+            orderItem.setThumbnailUrl(orderItem.getItem().getThumbnailUrl());
             orderItem.setPrice(orderItem.getItem().getPrice());
-            orderItem.setSalesPrice(orderItem.getItem().getSalesPrice());
+            //销售价从门店项目中获取
+            orderItem.setSalesPrice(orderItem.getSalesPrice());
             orderItem.setCostPrice(orderItem.getItem().getCostPrice());
             orderItem.setNum(amounts.get(storeItem));
             orderItemList.add(orderItem);
@@ -106,6 +133,7 @@ public class MainOrderServiceImpl implements MainOrderService {
     }
 
     @Override
+    @BusinessSafe
     @Transactional(rollbackFor = RuntimeException.class)
     public MainOrder supplementOrder(long orderId, Represent represent, StoreItem storeItem, int amount) {
         Map<StoreItem, Integer> amounts = new HashMap<>(1);
@@ -284,7 +312,7 @@ public class MainOrderServiceImpl implements MainOrderService {
                         .addSelect(orderItemRoot -> orderItemRoot.get(OrderItem_.itemId))
                         .build()
                 , FieldBuilder.asName(OrderItem.class, "thumbnail")
-                        .addSelect(orderItemRoot -> orderItemRoot.join(OrderItem_.item,JoinType.LEFT).get(Item_.thumbnailUrl))
+                        .addSelect(orderItemRoot -> orderItemRoot.get(OrderItem_.thumbnailUrl))
                         .build()
                 , FieldBuilder.asName(OrderItem.class, "title")
                         .addSelect(orderItemRoot -> orderItemRoot.get(OrderItem_.name))

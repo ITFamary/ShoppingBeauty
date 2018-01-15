@@ -28,6 +28,10 @@ public enum ManageLevel {
      * 门店管理员
      */
     storeRoot("门店管理员", Login.ROLE_STORE_ROOT),
+    /**
+     * 门店代表
+     */
+    represent("门店代表", Login.ROLE_REPRESENT),
     //将来添加角色,原数据不能删除,只能在这之后向下加.
     ;
     private final String[] roles;

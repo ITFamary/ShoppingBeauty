@@ -4,10 +4,22 @@ import com.ming.shopping.beauty.client.ClientConfigTest;
 import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import com.ming.shopping.beauty.service.entity.login.*;
+import com.ming.shopping.beauty.service.entity.order.MainOrder;
+import com.ming.shopping.beauty.service.entity.support.OrderStatus;
+import com.ming.shopping.beauty.service.model.HttpStatusCustom;
+import com.ming.shopping.beauty.service.model.ResultCodeEnum;
+import com.ming.shopping.beauty.service.model.request.NewOrderBody;
 import com.ming.shopping.beauty.service.model.request.OrderSearcherBody;
+import com.ming.shopping.beauty.service.model.request.StoreItemNum;
 import org.junit.Test;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -36,14 +48,41 @@ public class ClientMainOrderControllerTest extends ClientConfigTest {
 
         //然后需要有下单的用户(mockActiveUser)和门店代表
         Represent mockRepresent = mockRepresent(mockStore);
+        //以门店身份登录
+        MockHttpSession representSession = login(mockRepresent.getLogin());
 
         //来它至少2个订单
         for (int i = 0; i < 2 + random.nextInt(5); i++) {
-            mockMainOrder(mockActiveUser.getUser(), mockRepresent);
+            //先获取用户的 orderId
+            long orderId = Long.valueOf(mockMvc.perform(get("/user/vipCard")
+                    .session(activeUserSession))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getHeader("X-Order-Id"));
+            NewOrderBody orderBody = new NewOrderBody();
+            orderBody.setOrderId(orderId);
+            Map<StoreItem, Integer> randomMap = randomOrderItemSet(mockStore.getId());
+            StoreItemNum[] items = randomMap.keySet().stream().map(p->new StoreItemNum(p.getId(),randomMap.get(p))).toArray(StoreItemNum[]::new);
+            orderBody.setItems(items);
+
+            mockMvc.perform(post("/order")
+                    .session(representSession)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsBytes(orderBody)))
+                    .andExpect(status().isOk());
+            MainOrder mainOrder = mainOrderService.findById(orderId);
+            assertThat(mainOrder.getOrderStatus()).isEqualTo(OrderStatus.forPay);
+            assertThat(mainOrder.getOrderItemList()).isNotEmpty();
+            //再次下单会提示错误
+            mockMvc.perform(post("/order")
+                    .session(representSession)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsBytes(orderBody)))
+                    .andExpect(status().is(HttpStatusCustom.SC_DATA_NOT_VALIDATE))
+                    .andExpect(jsonPath(RESULT_CODE_PATH).value(ResultCodeEnum.ORDER_NOT_EMPTY.getCode()));
         }
 
 
-        //激活的用户获取订单列表 懵了
+        //激活的用户获取订单列表
         mockMvc.perform(get("/orders")
                 .session(activeUserSession)
                 .contentType(MediaType.APPLICATION_JSON)

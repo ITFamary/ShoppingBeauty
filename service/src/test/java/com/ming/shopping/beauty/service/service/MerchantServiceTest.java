@@ -18,7 +18,7 @@ public class MerchantServiceTest extends CoreServiceTest {
     private Merchant mockMerchant;
 
     @Before
-    public void init() {
+    public void init() throws Exception {
         mockMerchant = mockMerchant();
     }
 

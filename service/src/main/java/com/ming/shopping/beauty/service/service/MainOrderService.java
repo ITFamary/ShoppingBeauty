@@ -7,6 +7,7 @@ import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.order.OrderItem;
 import com.ming.shopping.beauty.service.model.request.OrderSearcherBody;
+import com.ming.shopping.beauty.service.model.request.StoreItemNum;
 import me.jiangcai.crud.row.FieldDefinition;
 import me.jiangcai.crud.row.RowDefinition;
 import org.springframework.data.domain.Page;
@@ -37,7 +38,16 @@ public interface MainOrderService {
     MainOrder newEmptyOrder(User user);
 
     /**
-     * TODO List<OrderItem> -》 Map<StoreItem,Integer>
+     * 生成订单
+     *
+     * @param orderId   订单编号
+     * @param represent 门店代表
+     * @param items     下单门店项目及数量
+     * @return
+     */
+    MainOrder supplementOrder(long orderId, Represent represent, StoreItemNum[] items);
+
+    /**
      * 生成订单
      *
      * @param orderId   扫二维码生成的订单
@@ -58,7 +68,7 @@ public interface MainOrderService {
      * @return
      */
     @Transactional
-    MainOrder supplementOrder(long orderId,Represent represent, StoreItem storeItem, int amount);
+    MainOrder supplementOrder(long orderId, Represent represent, StoreItem storeItem, int amount);
 
     /**
      * 支付订单

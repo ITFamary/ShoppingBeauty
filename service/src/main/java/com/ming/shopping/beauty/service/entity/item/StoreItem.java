@@ -42,6 +42,10 @@ public class StoreItem {
      * 是否上架
      */
     private boolean enable = true;
+    /**
+     * 含义上跟enable完全不同；该值为true 则该货品不会在系统中可见！
+     */
+    private boolean deleted = false;
 
     @Override
     public int hashCode() {

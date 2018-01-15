@@ -31,7 +31,7 @@ public class MainOrderServiceTest extends CoreServiceTest {
     @Autowired
     private OrderItemRepository orderItemRepository;
     @Test
-    public void go(){
+    public void go() throws Exception {
         //生成一个订单.
         Merchant merchant = mockMerchant();
         //首先有个项目

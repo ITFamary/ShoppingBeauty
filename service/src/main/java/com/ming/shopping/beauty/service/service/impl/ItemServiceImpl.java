@@ -77,10 +77,10 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Item findById(long id) {
+    public Item findOne(long id) {
         Item item = itemRepository.findOne(((root, query, cb) ->
                 cb.and(cb.equal(root.get(Item_.id), id), cb.isFalse(root.get(Item_.deleted)))));
-        if (item == null) {
+        if (item == null || item.isDeleted()) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.Item_Not_EXIST));
         }
         return item;
@@ -113,7 +113,7 @@ public class ItemServiceImpl implements ItemService {
     @Transactional(rollbackFor = RuntimeException.class)
     public StoreItem addStoreItem(long storeId, long itemId, BigDecimal salesPrice, boolean recommended) {
         Store store = storeService.findStore(storeId);
-        Item item = findById(itemId);
+        Item item = findOne(itemId);
         StoreItem storeItem = new StoreItem();
         storeItem.setStore(store);
         storeItem.setItem(item);
@@ -131,9 +131,19 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    public StoreItem findStoreItem(long storeItemId) {
+        StoreItem storeItem = storeItemRepository.findOne((root,query,cb)->
+                cb.equal(root.get(StoreItem_.id),storeItemId));
+        if(storeItem == null || storeItem.isDeleted()){
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.Item_Not_EXIST));
+        }
+        return storeItem;
+    }
+
+    @Override
     @Transactional(rollbackFor = RuntimeException.class)
     public void auditItem(long itemId, AuditStatus auditStatus, String comment) {
-        Item item = findById(itemId);
+        Item item = findOne(itemId);
         item.setAuditStatus(auditStatus);
         item.setAuditComment(comment);
     }
@@ -141,7 +151,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public Item freezeOrEnable(long id, boolean enable) {
-        Item item = findById(id);
+        Item item = findOne(id);
         item.setEnable(enable);
         return itemRepository.save(item);
     }
@@ -149,7 +159,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public Item showOrHidden(long id, boolean deleted) {
-        Item item = findById(id);
+        Item item = findOne(id);
         item.setDeleted(deleted);
         return itemRepository.save(item);
     }
@@ -157,7 +167,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public Item setMerchant(long id, Merchant merchant) {
-        Item item = findById(id);
+        Item item = findOne(id);
         item.setMerchant(merchant);
         return itemRepository.save(item);
     }
