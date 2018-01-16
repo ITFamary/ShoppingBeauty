@@ -63,7 +63,6 @@ public class ClientItemController {
                                 //TODO 距离还不知道怎么写
                                 .build()
                         , FieldBuilder.asName(Item.class, "vipPrice")
-                                //TODO 会员价是这个么
                                 .addSelect(root -> root.get(Item_.salesPrice))
                                 .build()
                         , FieldBuilder.asName(Item.class, "originalPrice")

@@ -115,7 +115,6 @@ public class MainOrderServiceImpl implements MainOrderService {
             orderItem.setItem(storeItem.getItem());
             //项目的数据随时会改变，所以需要保存在 OrderItem 里面
             orderItem.setName(orderItem.getItem().getName());
-            orderItem.setThumbnailUrl(orderItem.getItem().getThumbnailUrl());
             orderItem.setPrice(orderItem.getItem().getPrice());
             //销售价从门店项目中获取
             orderItem.setSalesPrice(orderItem.getSalesPrice());
@@ -312,7 +311,7 @@ public class MainOrderServiceImpl implements MainOrderService {
                         .addSelect(orderItemRoot -> orderItemRoot.get(OrderItem_.itemId))
                         .build()
                 , FieldBuilder.asName(OrderItem.class, "thumbnail")
-                        .addSelect(orderItemRoot -> orderItemRoot.get(OrderItem_.thumbnailUrl))
+                        .addSelect(orderItemRoot -> orderItemRoot.join(OrderItem_.item,JoinType.LEFT).get(Item_.thumbnailUrl))
                         .build()
                 , FieldBuilder.asName(OrderItem.class, "title")
                         .addSelect(orderItemRoot -> orderItemRoot.get(OrderItem_.name))

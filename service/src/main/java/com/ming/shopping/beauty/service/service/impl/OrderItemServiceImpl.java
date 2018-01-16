@@ -29,8 +29,7 @@ public class OrderItemServiceImpl implements OrderItemService {
     @Transactional(readOnly = true)
     public List<OrderItem> findByOrderId(long id) {
         MainOrder mainOrder = mainOrderRepository.findOne(id);
-        List<OrderItem> byOrder = orderItemRepository.findByMainOrder(mainOrder);
-        return byOrder;
+        return orderItemRepository.findByMainOrder(mainOrder);
     }
 
     @Override

@@ -34,11 +34,6 @@ public class OrderItem {
     @Column(length = 40)
     private String name;
     /**
-     * 缩略图
-     */
-    @Column(length = 200)
-    private String thumbnailUrl;
-    /**
      * 原价
      */
     @Column(scale = Constant.FLOAT_COLUMN_SCALE, precision = Constant.FLOAT_COLUMN_PRECISION)
