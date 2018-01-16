@@ -15,6 +15,7 @@ import com.ming.shopping.beauty.service.service.ItemService;
 import com.ming.shopping.beauty.service.service.MainOrderService;
 import me.jiangcai.crud.row.*;
 import me.jiangcai.crud.row.field.FieldBuilder;
+import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.domain.Specification;
@@ -75,6 +76,7 @@ public class ClientMainOrderController {
     }
 
     @GetMapping("/orders/{orderId}")
+    @RowCustom(distinct = true,dramatizer = AntDesignPaginationDramatizer.class)
     public RowDefinition<MainOrder> mainOrderDetail(@PathVariable long orderId) {
         return new RowDefinition<MainOrder>() {
             @Override

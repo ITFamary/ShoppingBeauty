@@ -10,6 +10,7 @@ import me.jiangcai.crud.row.RowCustom;
 import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.supplier.JQueryDataTableDramatizer;
+import me.jiangcai.crud.row.supplier.SingleRowDramatizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Controller;
@@ -32,7 +33,7 @@ public class ClientItemController {
         //TODO 带坐标的还不会写.
     }
     @GetMapping("/items/{itemId}")
-    @RowCustom(distinct = true)
+    @RowCustom(distinct = true,dramatizer =SingleRowDramatizer.class)
     public RowDefinition<Item> itemDetail(@PathVariable("itemId") long itemId) {
         return new RowDefinition<Item>() {
             @Override
