@@ -82,6 +82,12 @@ public class LoginServiceImpl implements LoginService {
                 throw new ApiResultException(ApiResult.withError(ResultCodeEnum.USERNAME_ERROR));
             }
         }
+        //也许是初始化时未设置wechatUser的登录
+        login = loginRepository.findByLoginName(mobile);
+        if(login != null && login.getWechatUser() == null){
+            login.setWechatUser(standardWeixinUserRepository.findByOpenId(openId));
+            return loginRepository.save(login);
+        }
         //注册前校验手机号是否存在
         mobileVerify(mobile);
         if (StringUtils.isEmpty(familyName) || gender == null) {

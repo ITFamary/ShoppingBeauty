@@ -12,14 +12,22 @@ import java.util.List;
 public interface RechargeCardService {
 
     /**
+     * 新增卡密
+     * @param guideId 推荐人
+     * @param manageId 操作员
+     * @return
+     */
+    RechargeCard newCard(Long guideId, Long manageId);
+
+    /**
      * 批量新增卡密
      *
      * @param num    数量
-     * @param guide  推荐人
-     * @param manage 操作员
+     * @param guideId  推荐人
+     * @param manageId 操作员
      * @return
      */
-    List<RechargeCard> newCard(int num, Login guide, Login manage);
+    List<RechargeCard> newCard(int num, Long guideId, Long manageId);
 
     /**
      * 校验卡密

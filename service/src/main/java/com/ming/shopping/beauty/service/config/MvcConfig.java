@@ -19,7 +19,7 @@ import java.util.List;
 @Configuration
 @EnableWebMvc
 @Import({ServiceConfig.class})
-@ComponentScan({"com.ming.shopping.beauty.service.controller"})
+@ComponentScan({"com.ming.shopping.beauty.service.controller","com.ming.shopping.beauty.service.converter"})
 public class MvcConfig extends WebMvcConfigurerAdapter {
 
     @Override

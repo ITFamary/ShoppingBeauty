@@ -57,6 +57,8 @@ public enum ResultCodeEnum {
      */
     CARD_NOT_EXIST(5000,"充值卡无效"),
     CARD_ALREADY_USED(5001,"充值卡失效"),
+    NO_MONEY_CARD(5002,"请输入充值金额或者充值卡卡密"),
+    RECHARGE_MONEY_NOT_ENOUGH(5003,"充值金额必须大于{0}")
 
     
     ;

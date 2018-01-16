@@ -9,9 +9,11 @@ import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
+import com.ming.shopping.beauty.service.repository.LoginRepository;
 import com.ming.shopping.beauty.service.repository.RechargeCardRepository;
 import com.ming.shopping.beauty.service.repository.RechargeLogRepository;
 import com.ming.shopping.beauty.service.repository.UserRepository;
+import com.ming.shopping.beauty.service.service.LoginService;
 import com.ming.shopping.beauty.service.service.RechargeCardService;
 import me.jiangcai.lib.sys.service.SystemStringService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,14 +38,28 @@ public class RechargeCardServiceImpl implements RechargeCardService {
     private SystemStringService systemStringService;
     @Autowired
     private RechargeLogRepository rechargeLogRepository;
+    @Autowired
+    private LoginRepository loginRepository;
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
-    public List<RechargeCard> newCard(int num, Login guide, Login manage) {
+    public RechargeCard newCard(Long guideId, Long manageId) {
+        List<RechargeCard> cardList = newCard(1,guideId,manageId);
+        return cardList.get(0);
+    }
+
+    @Override
+    @Transactional(rollbackFor = RuntimeException.class)
+    public List<RechargeCard> newCard(int num, Long guideId, Long manageId) {
         List<RechargeCard> cardList = new ArrayList<>(num);
         RechargeCard rechargeCard = new RechargeCard();
-        rechargeCard.setGuideUser(guide);
-        rechargeCard.setManager(manage);
+        //这里就不去校验对应的用户是否存在了
+        if(guideId != null){
+            rechargeCard.setGuideUser(loginRepository.findOne(guideId));
+        }
+        if(manageId != null){
+            rechargeCard.setManager(loginRepository.findOne(manageId));
+        }
         rechargeCard.setCreateTime(LocalDateTime.now());
         Integer defaultAmount = systemStringService.getCustomSystemString("shopping.service.card.amount", null, true, Integer.class, 500);
         rechargeCard.setAmount(BigDecimal.valueOf(defaultAmount));
@@ -95,6 +111,7 @@ public class RechargeCardServiceImpl implements RechargeCardService {
         userRepository.save(user);
 
         RechargeLog log = new RechargeLog();
+        log.setAmount(rechargeCard.getAmount());
         log.setUser(user);
         log.setRechargeCardId(rechargeCard.getId());
         log.setCreateTime(LocalDateTime.now());

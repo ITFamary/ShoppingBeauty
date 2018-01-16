@@ -10,8 +10,11 @@ import me.jiangcai.lib.thread.ThreadConfig;
 import me.jiangcai.wx.WeixinSpringConfig;
 import me.jiangcai.wx.standard.StandardWeixinConfig;
 import me.jiangcai.wx.web.WeixinWebSpringConfig;
+import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.support.ResourceBundleMessageSource;
 
 /**
  * Created by helloztt on 2018/1/5.
@@ -25,4 +28,12 @@ import org.springframework.context.annotation.Import;
         , SystemStringConfig.class
         , LoggingConfig.class})
 public class CommonConfig extends WeixinWebSpringConfig {
+    @Bean
+    public MessageSource messageSource() {
+        ResourceBundleMessageSource resourceBundleMessageSource = new ResourceBundleMessageSource();
+        resourceBundleMessageSource.setDefaultEncoding("UTF-8");
+        resourceBundleMessageSource.setBasenames("coreMessage");
+        resourceBundleMessageSource.setUseCodeAsDefaultMessage(true);
+        return resourceBundleMessageSource;
+    }
 }

@@ -1,5 +1,8 @@
 package com.ming.shopping.beauty.service.service;
 
+import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.entity.support.ManageLevel;
+import com.ming.shopping.beauty.service.repository.LoginRepository;
 import me.jiangcai.lib.jdbc.ConnectionProvider;
 import me.jiangcai.lib.jdbc.JdbcService;
 import org.apache.commons.logging.Log;
@@ -18,6 +21,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDateTime;
 
 /**
  * @author helloztt
@@ -30,43 +34,49 @@ public class InitService {
     private JdbcService jdbcService;
     @Autowired
     private ApplicationContext applicationContext;
+    @Autowired
+    private LoginRepository loginRepository;
 
     @PostConstruct
     @Transactional(rollbackFor = RuntimeException.class)
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public void init() throws IOException, SQLException {
-//        database();
+        database();
+        initSuperManage();
+    }
+
+    /**
+     * 定义一些超级管理员
+     */
+    private void initSuperManage() {
+        //CJ
+        String cjMobile = "18606509616";
+        if (loginRepository.findByLoginName(cjMobile) == null) {
+            Login login = new Login();
+            login.setLoginName("18606509616");
+            login.setManageable(true);
+            login.setGuidable(true);
+            login.getLevelSet().add(ManageLevel.root);
+            login.setCreateTime(LocalDateTime.now());
+            loginRepository.save(login);
+        }
     }
 
     private void database() throws SQLException {
-        // TODO: 2018/1/15  
         jdbcService.runJdbcWork(connection -> {
-            if (connection.profile().isH2()) {
-                executeSQLCode(connection, "LoginAgentLevel.h2.sql");
-            } else if (connection.profile().isMySQL()) {
-                try (Statement statement = connection.getConnection().createStatement()) {
-                    statement.executeUpdate("DROP FUNCTION IF EXISTS `LoginAgentLevel`");
-                }
-                executeSQLCode(connection, "LoginAgentLevel.mysql.sql");
-            }
-            //
             String fileName;
             if (connection.profile().isMySQL()) {
                 fileName = "mysql";
             } else if (connection.profile().isH2()) {
                 fileName = "h2";
-            } else{
+            } else {
                 throw new IllegalStateException("not support for:" + connection.getConnection());
             }
             try {
                 try (Statement statement = connection.getConnection().createStatement()) {
-                    statement.executeUpdate("DROP TABLE IF EXISTS `LoginCommissionJournal`");
+                    statement.executeUpdate("DROP TABLE IF EXISTS `CapitalFlow`");
                     statement.executeUpdate(StreamUtils.copyToString(new ClassPathResource(
-                                    "/LoginCommissionJournal." + fileName + ".sql").getInputStream()
-                            , Charset.forName("UTF-8")));
-                    statement.executeUpdate("DROP TABLE IF EXISTS `AgentGoodAdvancePaymentJournal`");
-                    statement.executeUpdate(StreamUtils.copyToString(new ClassPathResource(
-                                    "/AgentGoodAdvancePaymentJournal." + fileName + ".sql").getInputStream()
+                                    "/CapitalFlow." + fileName + ".sql").getInputStream()
                             , Charset.forName("UTF-8")));
                 }
             } catch (IOException e) {
