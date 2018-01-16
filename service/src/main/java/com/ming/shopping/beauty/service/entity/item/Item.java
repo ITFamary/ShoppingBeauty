@@ -72,11 +72,6 @@ public class Item {
     private String auditComment;
 
     /**
-     * 会员价
-     */
-    //TODO 2018/1/12 列如何定义.
-//    private Map<UserLevel,BigDecimal> vipPrice;
-    /**
      * 描述
      */
     @Lob
