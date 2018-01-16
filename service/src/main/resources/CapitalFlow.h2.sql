@@ -10,7 +10,7 @@ AS
   FROM RechargeLog AS r
 UNION
   SELECT
-    concat('RL',o.ORDERID) AS `ID`,
+    concat('MO',o.ORDERID) AS `ID`,
     o.PAYER_ID         AS `USER_ID`,
     o.ORDERID              AS `ORDER_ID`,
     o.PAYTIME      AS `HAPPEN_TIME`,

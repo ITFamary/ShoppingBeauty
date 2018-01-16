@@ -15,13 +15,17 @@ import com.ming.shopping.beauty.service.service.ItemService;
 import com.ming.shopping.beauty.service.service.MainOrderService;
 import me.jiangcai.crud.row.*;
 import me.jiangcai.crud.row.field.FieldBuilder;
+import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
+import me.jiangcai.crud.row.supplier.SingleRowDramatizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.NativeWebRequest;
 
@@ -69,86 +73,19 @@ public class ClientMainOrderController {
         } else {
             postData.setUserId(login.getId());
         }
-        List orderList = mainOrderService.findAll(postData);
-        RowDramatizer dramatizer = new DefaultRowDramatizer();
+        Page orderList = mainOrderService.findAll(postData);
+        RowDramatizer dramatizer = new AntDesignPaginationDramatizer();
         dramatizer.writeResponse(orderList, mainOrderService.orderListField(), webRequest);
     }
 
     @GetMapping("/orders/{orderId}")
-    public RowDefinition<MainOrder> mainOrderDetail(@PathVariable long orderId) {
-        return new RowDefinition<MainOrder>() {
-            @Override
-            public Class<MainOrder> entityClass() {
-                return MainOrder.class;
-            }
-
-            @Override
-            public List<FieldDefinition<MainOrder>> fields() {
-                return Arrays.asList(
-                        FieldBuilder.asName(MainOrder.class, "orderId")
-                                .build()
-                        , FieldBuilder.asName(MainOrder.class, "orderStatus")
-                                .build()
-                        , FieldBuilder.asName(MainOrder.class, "orderStatusCode")
-                                .addSelect(mainOrderRoot -> mainOrderRoot.get(MainOrder_.orderStatus))
-                                .addFormat((data, type) -> ((OrderStatus) data).ordinal())
-                                .build()
-                        , FieldBuilder.asName(MainOrder.class, "items")
-                                .addSelect(root -> root.get(MainOrder_.orderItemList))
-                                .addFormat((data, type) -> getOrderItemResult(data))
-                                .build()
-                );
-            }
-
-            @Override
-            public Specification<MainOrder> specification() {
-                return (root, cq, cb) ->
-                        cb.equal(root.get(MainOrder_.orderId), orderId);
-            }
-        };
-    }
-
-    private List<FieldDefinition<MainOrder>> listFieldForUser() {
-        return Arrays.asList(
-                FieldBuilder.asName(MainOrder.class, "orderId")
-                        .build()
-                , FieldBuilder.asName(MainOrder.class, "completeTime")
-                        .addSelect(mainOrderRoot -> mainOrderRoot.get(MainOrder_.payTime))
-                        .addFormat((data, type) -> conversionService.convert(data, String.class))
-                        .build()
-                , FieldBuilder.asName(MainOrder.class, "orderStatus")
-                        .build()
-                , FieldBuilder.asName(MainOrder.class, "store")
-                        .addFormat((data, type) -> ((Store) data).getName())
-                        .build()
-                , FieldBuilder.asName(MainOrder.class, "payer")
-                        .addFormat((data, type) -> ((Store) data).getName())
-                        .build()
-                , FieldBuilder.asName(MainOrder.class, "payerMobile")
-                        .addSelect(mainOrderRoot -> mainOrderRoot.get(MainOrder_.payer).get(User_.login).get(Login_.loginName))
-                        .build()
-                , FieldBuilder.asName(MainOrder.class, "items")
-                        .addSelect(mainOrderRoot -> mainOrderRoot.get(MainOrder_.orderItemList))
-                        .addFormat((data, type) -> getOrderItemResult(data))
-                        .build()
-        );
-    }
-
-    @SuppressWarnings("unchecked")
-    private String getOrderItemResult(Object data) {
-        Map<String, Object> result = new HashMap<>();
-        ((List<OrderItem>) data).forEach((item) -> {
-            result.put("itemId", item.getItemId());
-            result.put("thumbnail", item.getItem().getThumbnailUrl());
-            result.put("title", item.getName());
-            result.put("quantity", item.getNum());
-            result.put("amount", item.getCostPrice());
-        });
-        try {
-            return objectMapper.writeValueAsString(result);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return null;
+    @ResponseBody
+    public void mainOrderDetail(@PathVariable long orderId, NativeWebRequest webRequest) throws IOException {
+        OrderSearcherBody search = new OrderSearcherBody();
+        search.setPageSize(1);
+        search.setOrderId(orderId);
+        Page orderList = mainOrderService.findAll(search);
+        RowDramatizer dramatizer = new SingleRowDramatizer();
+        dramatizer.writeResponse(orderList.getContent(),mainOrderService.orderListField(), webRequest);
     }
 }

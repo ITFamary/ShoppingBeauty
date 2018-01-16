@@ -10,6 +10,7 @@ import com.ming.shopping.beauty.service.model.request.OrderSearcherBody;
 import com.ming.shopping.beauty.service.repository.OrderItemRepository;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -47,7 +48,7 @@ public class MainOrderServiceTest extends CoreServiceTest {
         Login login = mockLogin();
         MainOrder order = mainOrderService.newEmptyOrder(login.getUser());
         mainOrderService.supplementOrder(order.getOrderId(),represent,storeItem,random.nextInt(5));
-        List<MainOrder> orderList = mainOrderService.findAll(new OrderSearcherBody());
+        Page orderList = mainOrderService.findAll(new OrderSearcherBody());
 
     }
 }

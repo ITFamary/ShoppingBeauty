@@ -14,6 +14,7 @@ public class OrderSearcherBody {
     private int page = 1;
     private int pageSize = Constant.CLIENT_PAGE_SIZE;
 
+    private Long orderId;
     private Long userId;
     private Long representId;
     private Long storeId;

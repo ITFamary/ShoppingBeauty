@@ -151,7 +151,7 @@ public class MainOrderServiceImpl implements MainOrderService {
     }
 
     @Override
-    public List findAll(OrderSearcherBody orderSearcher) {
+    public Page findAll(OrderSearcherBody orderSearcher) {
         RowDefinition<MainOrder> orderRow = orderRowDefinition(orderSearcher);
         final int startPosition = (orderSearcher.getPage() - 1) * orderSearcher.getPageSize();
         Page<Object[]> page = (Page<Object[]>) rowService.queryFields(orderRow, true, null
@@ -172,7 +172,7 @@ public class MainOrderServiceImpl implements MainOrderService {
                 });
             }
         }
-        return page.getContent();
+        return page;
     }
 
     private RowDefinition<MainOrder> orderRowDefinition(OrderSearcherBody orderSearcher) {
@@ -199,6 +199,9 @@ public class MainOrderServiceImpl implements MainOrderService {
             public Specification<MainOrder> specification() {
                 return (root, cq, cb) -> {
                     List<Predicate> conditions = new ArrayList<>();
+                    if (orderSearcher.getOrderId() != null && orderSearcher.getOrderId() > 0L) {
+                        conditions.add(cb.equal(root.get(MainOrder_.orderId), orderSearcher.getOrderId()));
+                    }
                     if (orderSearcher.getUserId() != null && orderSearcher.getUserId() > 0L) {
                         conditions.add(cb.equal(root.join(MainOrder_.payer, JoinType.LEFT)
                                 .get(User_.id), orderSearcher.getUserId()));

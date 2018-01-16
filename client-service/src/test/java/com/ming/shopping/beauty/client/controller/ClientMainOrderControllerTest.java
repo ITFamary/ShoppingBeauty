@@ -1,5 +1,6 @@
 package com.ming.shopping.beauty.client.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.ming.shopping.beauty.client.ClientConfigTest;
 import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
@@ -30,12 +31,14 @@ public class ClientMainOrderControllerTest extends ClientConfigTest {
     public void go() throws Exception {
         //先看看没数据的订单长啥样
         OrderSearcherBody searcherBody = new OrderSearcherBody();
-        mockMvc.perform(get("/orders")
+        String response = mockMvc.perform(get("/orders")
             .session(activeUserSession)
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(searcherBody)))
-            .andDo(print())
-            .andExpect(status().isOk());
+//            .andDo(print())
+            .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        int total = objectMapper.readTree(response).get("pagination").get("total").asInt();
 
         //造订单啦~
         //首先要有 商户，门店，项目，门店项目
@@ -52,7 +55,8 @@ public class ClientMainOrderControllerTest extends ClientConfigTest {
         MockHttpSession representSession = login(mockRepresent.getLogin());
 
         //来它至少2个订单
-        for (int i = 0; i < 2 + random.nextInt(5); i++) {
+        int randomOrderNum = 2 + random.nextInt(5);
+        for (int i = 0; i < randomOrderNum; i++) {
             //先获取用户的 orderId
             long orderId = Long.valueOf(mockMvc.perform(get("/user/vipCard")
                     .session(activeUserSession))
@@ -83,12 +87,25 @@ public class ClientMainOrderControllerTest extends ClientConfigTest {
 
 
         //激活的用户获取订单列表
-        mockMvc.perform(get("/orders")
+        response = mockMvc.perform(get("/orders")
                 .session(activeUserSession)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(searcherBody)))
-                .andDo(print())
-                .andExpect(status().isOk());
+//                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        int totalOrderNum = objectMapper.readTree(response).get("pagination").get("total").asInt();
+        assertThat(totalOrderNum).isEqualTo(total + randomOrderNum);
+        //获取第一个订单编号
+        JsonNode orderList = objectMapper.readTree(response).get("list");
+        for(JsonNode order:orderList){
+            long orderId = order.get("orderId").asLong();
+            //根据这个订单编号查
+            mockMvc.perform(get("/orders/" + orderId)
+                    .session(activeUserSession))
+//                    .andDo(print())
+                    .andExpect(jsonPath("$.orderId").value(orderId));
+        }
     }
 }
 
