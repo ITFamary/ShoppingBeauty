@@ -1,36 +1,25 @@
 package com.ming.shopping.beauty.client.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import com.ming.shopping.beauty.service.model.request.NewOrderBody;
 import com.ming.shopping.beauty.service.model.request.OrderSearcherBody;
 import com.ming.shopping.beauty.service.entity.login.*;
-import com.ming.shopping.beauty.service.entity.order.MainOrder;
-import com.ming.shopping.beauty.service.entity.order.MainOrder_;
-import com.ming.shopping.beauty.service.entity.order.OrderItem;
-import com.ming.shopping.beauty.service.entity.support.OrderStatus;
-import com.ming.shopping.beauty.service.service.ItemService;
 import com.ming.shopping.beauty.service.service.MainOrderService;
 import me.jiangcai.crud.row.*;
-import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
 import me.jiangcai.crud.row.supplier.SingleRowDramatizer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.NativeWebRequest;
 
 import java.io.IOException;
-import java.util.*;
 
 /**
  * @author lxf
@@ -39,8 +28,6 @@ import java.util.*;
 public class ClientMainOrderController {
     @Autowired
     private MainOrderService mainOrderService;
-    @Autowired
-    private ConversionService conversionService;
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
