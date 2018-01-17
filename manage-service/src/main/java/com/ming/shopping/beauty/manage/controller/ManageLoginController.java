@@ -38,58 +38,28 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
 
     @Autowired
     private LoginService loginService;
-    @Autowired
-    private StoreService storeService;
-    @Autowired
-    private MerchantService merchantService;
-    @Autowired
-    private RepresentService representService;
-    /**
-     * 查看用户详情
-     * @param loginId
-     * @return
-     */
-    @GetMapping("/{loginId}")
-    @Transactional
-    public LoginDetailResponse loginDetail(@PathParam("loginId")Long loginId){
-        Login login = loginService.findOne(loginId);
-        final User user = login.getUser();
-        final Store store = login.getStore();
-        final  Represent represent = login.getRepresent();
-        return new LoginDetailResponse(login.getId(),login.getNickName(),login.getUsername(),login.isEnabled());
+
+    @Override
+    @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
+    public Object getOne(Long aLong) {
+        return super.getOne(aLong);
     }
 
-
-
-    @PutMapping("/{loginId}/enable")
-    @Transactional
-    public void setEnable(@PathVariable("loginId")long loginId,boolean enabled){
-        Login login = loginService.findOne(loginId);
-        login.setEnabled(enabled);
+    @PutMapping("/{loginId}/enabled")
+    @Transactional(rollbackFor = RuntimeException.class)
+    @PreAuthorize("hasAnyRole('ROOT')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void setEnable(@PathVariable("loginId") long loginId) {
+        loginService.freezeOrEnable(loginId,true);
     }
 
-    @PostMapping("/login/{loginId}/setManager")
-    @Transactional
-    public void setManager(@PathVariable("loginId")long loginId,long storeId,long merchantId,int identity){
-        final Login login ;
-        if(identity == 0){
-            //商户管理员
-            merchantService.addMerchant(loginId,merchantId);
-        }else if(identity == 1){
-            //商户操作员
-            login = loginService.findOne(loginId);
-            login.getLevelSet().add(ManageLevel.merchantManager);
-        }else if(identity == 2){
-            //门店管理员
-            storeService.addStore(loginId,storeId);
-        }else if(identity == 3){
-            //门店代表
-            representService.addRepresent(loginId,storeId);
-        }else{
-            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.MANAGER_NOT_EXIST));
-        }
+    @PutMapping("/{loginId}/disabled")
+    @Transactional(rollbackFor = RuntimeException.class)
+    @PreAuthorize("hasAnyRole('ROOT')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void setDisabled(@PathVariable("loginId") long loginId) {
+        loginService.freezeOrEnable(loginId,false);
     }
-
 
 
     @Override
@@ -111,7 +81,7 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
 
     @Override
     protected Specification<Login> listSpecification(Map<String, Object> queryData) {
-        return (root,query,cb)-> cb.equal(root.get(Login_.delete),false);
+        return (root, query, cb) -> cb.equal(root.get(Login_.delete), false);
     }
 
     @Override
