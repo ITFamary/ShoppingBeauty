@@ -33,6 +33,7 @@ public enum ResultCodeEnum {
     MANAGE_NOT_ENABLE(1010,"操作员不可用"),
     ALREADY_MANAGEABLE(1011,"请勿重复操作"),
     REPRESENT_NOT_EXIST(1012,"门店代表不存在"),
+    MANAGER_NOT_EXIST(1013,"不存在该管理权限"),
     /**
      * 用户、推荐：[2000,2999]
      */
@@ -42,6 +43,7 @@ public enum ResultCodeEnum {
     STORE_CANNOT_DELETE(2003,"门店不可删除"),
     LOGIN_REPRESENT_EXIST(2004,"该账号已是门店代表"),
     USER_NOT_ACTIVE(2005,"充值后才能激活会员卡"),
+
     /**
      * 项目、门店：[3000,3999]
      */
