@@ -8,7 +8,6 @@ import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.model.request.LoginOrRegisterBody;
 import com.ming.shopping.beauty.service.service.LoginService;
 import com.ming.shopping.beauty.service.service.SystemService;
-import com.ming.shopping.beauty.service.utils.Constant;
 import com.ming.shopping.beauty.service.utils.LoginAuthentication;
 import me.jiangcai.wx.OpenId;
 import me.jiangcai.wx.model.WeixinUserDetail;
@@ -16,20 +15,24 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpRequestResponseHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import javax.validation.constraints.Size;
 import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 注册前的校验、注册、登录、发送验证码等
@@ -42,8 +45,13 @@ public class IndexController {
     private static final Log log = LogFactory.getLog(IndexController.class);
     private final SecurityContextRepository httpSessionSecurityContextRepository
             = new HttpSessionSecurityContextRepository();
+    private final Map<String, String> sessionAuth = new HashMap<>();
     @Autowired
     private LoginService loginService;
+    @Autowired
+    private SystemService systemService;
+    @Autowired
+    private QRController qrController;
 
     @GetMapping(value = SystemService.TO_LOGIN)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
@@ -108,6 +116,79 @@ public class IndexController {
                 , postData.getSurname(), postData.getGender(), postData.getCdKey(), postData.getGuideUserId());
         //注册或登录成功了，加到 security 中
         loginToSecurity(login, request, response);
+    }
+
+    /**
+     * 管理登录申请
+     *
+     * @param request
+     * @param response
+     * @return
+     */
+    @GetMapping(value = "/managerLoginRequest")
+    @ResponseBody
+    public Object managerLoginRequest(HttpServletRequest request, HttpServletResponse response) {
+        //判断是否登录
+        String sessionId = request.getSession().getId();
+        sessionAuth.put(request.getSession().getId(), null);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Map<String, Object> result = new HashMap<>(3);
+        result.put("id", request.getSession().getId());
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+            response.setStatus(HttpStatusCustom.SC_ACCEPTED);
+            String text = systemService.toUrl("/managerLogin/" + sessionId);
+            result.put("url", qrController.urlForText(text).toString());
+        } else if (authentication instanceof LoginAuthentication) {
+            result.put("username", authentication.getName());
+            result.put("enabled", true);
+            response.setStatus(HttpStatusCustom.SC_OK);
+        }
+        return result;
+    }
+
+    /**
+     * 扫码登录
+     *
+     * @param weixinUserDetail
+     */
+    @GetMapping("/managerLogin/{sessionId}")
+    @ResponseBody
+    public void manageLogin(WeixinUserDetail weixinUserDetail, @PathVariable String sessionId, HttpServletRequest request, HttpServletResponse response) {
+        Login login = loginService.asWechat(weixinUserDetail.getOpenId());
+        if (login == null) {
+            //说明没有这个用户，让他先去注册或登录
+            response.setStatus(HttpStatusCustom.SC_LOGIN_NOT_EXIST);
+        } else if (CollectionUtils.isEmpty(login.getLevelSet())) {
+            //说明用户没有权限登录管理后台
+            response.setStatus(HttpStatusCustom.SC_FORBIDDEN);
+            sessionAuth.remove(sessionId);
+        } else {
+            //执行登录
+            loginToSecurity(login, request, response);
+            sessionAuth.put(sessionId, login.getLoginName());
+            response.setStatus(HttpStatusCustom.SC_OK);
+        }
+    }
+
+    /**
+     * 管理登录结果
+     *
+     * @param request
+     * @param response
+     */
+    @GetMapping("/manageLoginResult")
+    @ResponseBody
+    public void manageLoginResult(HttpServletRequest request, HttpServletResponse response) {
+        String sessionId = request.getSession().getId();
+        if (!sessionAuth.containsKey(sessionId)) {
+            //session已失效，请重新获取二维码
+            response.setStatus(HttpStatusCustom.SC_SESSION_TIMEOUT);
+        } else if (sessionAuth.get(sessionId) == null) {
+            //登录尚未被获准
+            response.setStatus(HttpStatusCustom.SC_NO_CONTENT);
+        } else {
+            response.setStatus(HttpStatusCustom.SC_OK);
+        }
     }
 
     private void loginToSecurity(Login login, HttpServletRequest request, HttpServletResponse response) {

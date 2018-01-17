@@ -24,12 +24,14 @@ import java.net.URLEncoder;
 @Controller
 public class QRController {
 
+    public static final String QR_URL = "/qrImageForText";
+
     @Autowired
     private SystemService systemService;
     @Autowired
     private QRCodeService qrCodeService;
 
-    @RequestMapping(method = RequestMethod.GET, value = "/toQR")
+    @RequestMapping(method = RequestMethod.GET, value = QR_URL)
     public BufferedImage toQRCode(String text) throws IOException, WriterException {
         return qrCodeService.generateQRCode(text);
     }
@@ -40,7 +42,7 @@ public class QRController {
      */
     @SneakyThrows({UnsupportedEncodingException.class, MalformedURLException.class})
     public URL urlForText(String text) {
-        return new URL(systemService.toUrl("/toQR?text=" + URLEncoder.encode(text, "UTF-8")));
+        return new URL(systemService.toUrl(QR_URL + "?text=" + URLEncoder.encode(text, "UTF-8")));
     }
 
 }

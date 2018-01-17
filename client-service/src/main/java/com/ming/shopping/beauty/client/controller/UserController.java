@@ -1,6 +1,7 @@
 package com.ming.shopping.beauty.client.controller;
 
 import com.google.zxing.WriterException;
+import com.ming.shopping.beauty.service.controller.QRController;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Login_;
 import com.ming.shopping.beauty.service.entity.login.User;
@@ -45,7 +46,7 @@ public class UserController {
     @Autowired
     private SystemService systemService;
     @Autowired
-    private QRCodeService qrCodeService;
+    private QRController qrController;
 
     /**
      * 获取当前登录用户信息
@@ -90,12 +91,11 @@ public class UserController {
         }
         MainOrder mainOrder = orderService.newEmptyOrder(login.getUser());
         response.setHeader("X-Order-Id", String.valueOf(mainOrder.getOrderId()));
-        Map<String,Object> result = new HashMap<>(1);
+        Map<String,Object> result = new HashMap<>(2);
         // TODO: 2018/1/12 这里要确定购物车地址
         String text = systemService.toUrl("/" + mainOrder.getOrderId());
-        BufferedImage qrCode = qrCodeService.generateQRCode(text);
         result.put("vipCard",login.getUser().getCardNo());
-        result.put("qrCode",text);
+        result.put("qrCode",qrController.urlForText(text).toString());
         return result;
     }
 
