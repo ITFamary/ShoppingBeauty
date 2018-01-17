@@ -1,6 +1,5 @@
 package com.ming.shopping.beauty.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.ming.shopping.beauty.service.config.ServiceConfig;
@@ -12,7 +11,6 @@ import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.support.AuditStatus;
 import com.ming.shopping.beauty.service.model.request.ItemSearcherBody;
 import com.ming.shopping.beauty.service.model.request.LoginOrRegisterBody;
-import com.ming.shopping.beauty.service.model.request.StoreItemNum;
 import com.ming.shopping.beauty.service.service.*;
 import com.ming.shopping.beauty.service.utils.Constant;
 import me.jiangcai.lib.test.SpringWebTest;

@@ -44,7 +44,7 @@ public class MerchantServiceImpl implements MerchantService {
         }
         Merchant merchant = new Merchant();
         login.setMerchant(merchant);
-        login.getLevelSet().add(ManageLevel.merchantRoot);
+        login.addLevel(ManageLevel.merchantRoot);
         merchant.setId(login.getId());
         merchant.setLogin(login);
         merchant.setName(name);
@@ -66,7 +66,7 @@ public class MerchantServiceImpl implements MerchantService {
         Merchant merchant = findMerchant(merchantId);
         Merchant manage = new Merchant();
         login.setMerchant(manage);
-        login.getLevelSet().add(ManageLevel.merchantManager);
+        login.addLevel(ManageLevel.merchantManager);
         manage.setId(login.getId());
         manage.setLogin(login);
         manage.setMerchant(merchant);

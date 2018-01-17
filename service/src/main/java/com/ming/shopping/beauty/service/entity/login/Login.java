@@ -140,11 +140,13 @@ public class Login implements UserDetails {
         return true;
     }
 
-    public Set<ManageLevel> getLevelSet() {
+    public void addLevel(ManageLevel... manageLevels) {
         if (levelSet == null) {
-            return new HashSet<>();
+            levelSet = new HashSet<>();
         }
-        return levelSet;
+        for(ManageLevel manageLevel : manageLevels){
+            levelSet.add(manageLevel);
+        }
     }
 
 

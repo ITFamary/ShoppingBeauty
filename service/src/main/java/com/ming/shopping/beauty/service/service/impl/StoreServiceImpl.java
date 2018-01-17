@@ -55,7 +55,7 @@ public class StoreServiceImpl implements StoreService {
         store.setCreateTime(LocalDateTime.now());
         storeRepository.save(store);
         login.setStore(store);
-        login.getLevelSet().add(ManageLevel.storeRoot);
+        login.addLevel(ManageLevel.storeRoot);
         merchant.getStores().add(store);
         return store;
     }
@@ -74,7 +74,7 @@ public class StoreServiceImpl implements StoreService {
         manage.setStore(store);
         manage.setCreateTime(LocalDateTime.now());
         login.setStore(store);
-        login.getLevelSet().add(ManageLevel.storeRoot);
+        login.addLevel(ManageLevel.storeRoot);
         storeRepository.save(manage);
         return manage;
     }

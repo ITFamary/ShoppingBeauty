@@ -29,6 +29,7 @@ import java.time.LocalDateTime;
 @Service
 public class InitService {
     private static final Log log = LogFactory.getLog(InitService.class);
+    public static final String cjMobile = "18606509616";
 
     @Autowired
     private JdbcService jdbcService;
@@ -49,14 +50,12 @@ public class InitService {
      * 定义一些超级管理员
      */
     private void initSuperManage() {
-        //CJ
-        String cjMobile = "18606509616";
         if (loginRepository.findByLoginName(cjMobile) == null) {
             Login login = new Login();
-            login.setLoginName("18606509616");
+            login.setLoginName(cjMobile);
             login.setManageable(true);
             login.setGuidable(true);
-            login.getLevelSet().add(ManageLevel.root);
+            login.addLevel(ManageLevel.root);
             login.setCreateTime(LocalDateTime.now());
             loginRepository.save(login);
         }

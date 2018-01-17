@@ -40,7 +40,7 @@ public class RepresentServiceImpl implements RepresentService {
         represent.setLogin(login);
         represent.setStore(store);
         login.setRepresent(represent);
-        login.getLevelSet().add(ManageLevel.represent);
+        login.addLevel(ManageLevel.represent);
         return representRepository.save(represent);
     }
 

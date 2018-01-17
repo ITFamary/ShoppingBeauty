@@ -171,7 +171,7 @@ public class LoginServiceImpl implements LoginService {
         Login login = findOne(id);
         login.setManageable(manageAble);
         if (manageAble) {
-            login.getLevelSet().add(ManageLevel.root);
+            login.addLevel(ManageLevel.root);
         } else {
             login.getLevelSet().remove(ManageLevel.root);
         }

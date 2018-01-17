@@ -154,6 +154,11 @@ public class IndexController {
     @GetMapping("/managerLogin/{sessionId}")
     @ResponseBody
     public void manageLogin(WeixinUserDetail weixinUserDetail, @PathVariable String sessionId, HttpServletRequest request, HttpServletResponse response) {
+        if(!sessionAuth.containsKey(sessionId)){
+            //session已失效，请重新获取二维码
+            response.setStatus(HttpStatusCustom.SC_SESSION_TIMEOUT);
+            return;
+        }
         Login login = loginService.asWechat(weixinUserDetail.getOpenId());
         if (login == null) {
             //说明没有这个用户，让他先去注册或登录
