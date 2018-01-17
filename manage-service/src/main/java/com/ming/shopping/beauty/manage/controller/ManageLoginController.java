@@ -24,11 +24,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.criteria.Predicate;
 import javax.websocket.server.PathParam;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static com.ming.shopping.beauty.service.entity.login.Login_.delete;
 
@@ -50,7 +48,7 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
     @PreAuthorize("hasAnyRole('ROOT')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void setEnable(@PathVariable("loginId") long loginId) {
-        loginService.freezeOrEnable(loginId,true);
+        loginService.freezeOrEnable(loginId, true);
     }
 
     @PutMapping("/{loginId}/disabled")
@@ -58,7 +56,7 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
     @PreAuthorize("hasAnyRole('ROOT')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void setDisabled(@PathVariable("loginId") long loginId) {
-        loginService.freezeOrEnable(loginId,false);
+        loginService.freezeOrEnable(loginId, false);
     }
 
 
@@ -81,18 +79,26 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
 
     @Override
     protected Specification<Login> listSpecification(Map<String, Object> queryData) {
-        return (root, query, cb) -> cb.equal(root.get(Login_.delete), false);
+        return (root, query, cb) -> {
+            List<Predicate> conditions = new ArrayList<>();
+            conditions.add(cb.equal(root.get(Login_.delete), false));
+            if (queryData.get("loginId") != null) {
+                conditions.add(cb.equal(root.get(Login_.id), queryData.get("loginId")));
+            }
+            // TODO: 2018/1/18 这里判断请求字段并设置查询条件
+            return cb.and(conditions.toArray(new Predicate[conditions.size()]));
+        };
     }
 
     @Override
     @PreAuthorize("denyAll()")
     public RowDefinition<Login> getDetail(Long aLong) {
-        return super.getDetail(aLong);
+        return null;
     }
 
     @Override
     @PreAuthorize("denyAll()")
     public void deleteOne(Long aLong) {
-        super.deleteOne(aLong);
+
     }
 }
