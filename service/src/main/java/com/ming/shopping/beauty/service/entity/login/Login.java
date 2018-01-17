@@ -3,6 +3,7 @@ package com.ming.shopping.beauty.service.entity.login;
 import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import lombok.Getter;
 import lombok.Setter;
+import me.jiangcai.crud.CrudFriendly;
 import me.jiangcai.wx.standard.entity.StandardWeixinUser;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -29,7 +30,7 @@ import static com.ming.shopping.beauty.service.utils.Constant.DATE_COLUMN_DEFINI
 @Entity
 @Setter
 @Getter
-public class Login implements UserDetails {
+public class Login implements UserDetails,CrudFriendly<Long> {
     /**
      * 商户超管
      */
