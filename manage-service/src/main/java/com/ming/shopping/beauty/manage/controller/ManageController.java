@@ -2,12 +2,13 @@ package com.ming.shopping.beauty.manage.controller;
 
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Login_;
-import com.ming.shopping.beauty.service.entity.login.User_;
 import com.ming.shopping.beauty.service.entity.support.ManageLevel;
+import com.ming.shopping.beauty.service.exception.ApiResultException;
+import com.ming.shopping.beauty.service.model.ApiResult;
+import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.service.LoginService;
 import me.jiangcai.crud.controller.AbstractCrudController;
 import me.jiangcai.crud.row.FieldDefinition;
-import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.field.Fields;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,9 +21,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import java.net.URISyntaxException;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -34,7 +35,7 @@ import java.util.stream.Collectors;
 @Controller
 @RequestMapping("/manage")
 @PreAuthorize("hasAnyRole('ROOT')")
-public class ManageIndexController extends AbstractCrudController<Login, Long> {
+public class ManageController extends AbstractCrudController<Login, Long> {
     @Autowired
     private LoginService loginService;
     @Autowired
@@ -60,20 +61,14 @@ public class ManageIndexController extends AbstractCrudController<Login, Long> {
     @PutMapping("/{id}/manageable/on")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Transactional(rollbackFor = RuntimeException.class)
-    public void manageable(@PathVariable long id) {
-        loginService.upOrDowngradeToRoot(id, true);
-    }
-
-    /**
-     * 删除某角色的管理员权限
-     *
-     * @param id
-     */
-    @PutMapping("/{id}/manageable/off")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Transactional(rollbackFor = RuntimeException.class)
-    public void unManageable(@PathVariable long id) {
-        loginService.upOrDowngradeToRoot(id, false);
+    public void manageable(@PathVariable long id, Map<String, Boolean> putData) {
+        final String param = "manageable";
+        if (putData.get(param) != null) {
+            loginService.upOrDowngradeToRoot(id,putData.get(param));
+        } else {
+            throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), param), null));
+        }
     }
 
 

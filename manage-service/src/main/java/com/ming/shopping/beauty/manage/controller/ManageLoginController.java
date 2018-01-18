@@ -1,21 +1,14 @@
 package com.ming.shopping.beauty.manage.controller;
 
 import com.ming.shopping.beauty.service.entity.login.*;
-import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
-import com.ming.shopping.beauty.service.model.response.LoginDetailResponse;
 import com.ming.shopping.beauty.service.service.LoginService;
-import com.ming.shopping.beauty.service.service.MerchantService;
-import com.ming.shopping.beauty.service.service.RepresentService;
-import com.ming.shopping.beauty.service.service.StoreService;
 import me.jiangcai.crud.controller.AbstractCrudController;
 import me.jiangcai.crud.row.FieldDefinition;
-import me.jiangcai.crud.row.RowCustom;
 import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
-import me.jiangcai.crud.row.supplier.JQueryDataTableDramatizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -26,10 +19,14 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.criteria.Predicate;
 import javax.websocket.server.PathParam;
+import java.text.MessageFormat;
 import java.util.*;
 
 import static com.ming.shopping.beauty.service.entity.login.Login_.delete;
 
+/**
+ * @author helloztt
+ */
 @Controller
 @RequestMapping("/login")
 public class ManageLoginController extends AbstractCrudController<Login, Long> {
@@ -43,22 +40,19 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
         return super.getOne(aLong);
     }
 
-    @PutMapping("/{loginId}/enabled")
+    @PutMapping("/{loginId}")
     @Transactional(rollbackFor = RuntimeException.class)
     @PreAuthorize("hasAnyRole('ROOT')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void setEnable(@PathVariable("loginId") long loginId) {
-        loginService.freezeOrEnable(loginId, true);
+    public void setEnable(@PathVariable("loginId") long loginId, Map<String, Boolean> putData) {
+        final String param = "enable";
+        if (putData.get(param) != null) {
+            loginService.freezeOrEnable(loginId, putData.get(param));
+        } else {
+            throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), param), null));
+        }
     }
-
-    @PutMapping("/{loginId}/disabled")
-    @Transactional(rollbackFor = RuntimeException.class)
-    @PreAuthorize("hasAnyRole('ROOT')")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void setDisabled(@PathVariable("loginId") long loginId) {
-        loginService.freezeOrEnable(loginId, false);
-    }
-
 
     @Override
     protected List<FieldDefinition<Login>> listFields() {
