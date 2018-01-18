@@ -29,6 +29,16 @@ public interface MerchantService {
     Merchant addMerchant(long loginId, String name, String telephone, String contact, Address address) throws ApiResultException;
 
     /**
+     * 把某个角色设置为商户
+     * @param loginId 一个可登录的角色
+     * @param merchant 商户基本信息，包含名称、电话、联系人、地址
+     * @return
+     * @throws ApiResultException
+     */
+    @Transactional(rollbackFor = RuntimeException.class)
+    Merchant addMerchant(long loginId,Merchant merchant) throws ApiResultException;
+
+    /**
      * 添加商户的管理员
      *
      * @param loginId
