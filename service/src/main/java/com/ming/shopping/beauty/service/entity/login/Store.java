@@ -45,8 +45,11 @@ public class Store {
     @Column(length = 20)
     private String telephone;
 
-    @ManyToOne
-    private Merchant merchant;
+    /**
+     * 联系人
+     */
+    @Column(length = 50)
+    private String contact;
 
     /**
      * 门店地址
