@@ -13,7 +13,7 @@ import org.apache.http.HttpStatus;
  * <p>SESSION过期：返回{@link HttpStatusCustom#SC_SESSION_TIMEOUT} 4011</p>
  * <p>不允许操作：返回{@link HttpStatusCustom#SC_FORBIDDEN} 403</p>
  * <p>用户不存在：返回{@link HttpStatusCustom#SC_LOGIN_NOT_EXIST}  4041</p>
- * <p>系统正在维护：返回{@link HttpStatusCustom#SC_SYSTEM_MAINTENANCE} 508</p>
+ * <p>系统正在维护：返回{@link HttpStatusCustom#SC_SERVICE_UNAVAILABLE} 503</p>
  * <p>系统故障：返回{@link HttpStatusCustom#SC_INTERNAL_SERVER_ERROR} 500</p>
  * <p></p>
  *

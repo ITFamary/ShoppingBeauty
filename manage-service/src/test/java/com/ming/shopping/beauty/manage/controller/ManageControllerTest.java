@@ -8,7 +8,6 @@ import com.ming.shopping.beauty.service.service.InitService;
 import com.ming.shopping.beauty.service.service.SystemService;
 import org.junit.Test;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -20,7 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * @author helloztt
  */
-public class ManageIndexControllerTest extends ManageConfigTest {
+public class ManageControllerTest extends ManageConfigTest {
     private static final String manageLogin = "/managerLogin", managerLoginRequest = "/managerLoginRequest", manageLoginResult = "/manageLoginResult";
 
     @Test

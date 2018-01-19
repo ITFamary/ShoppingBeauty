@@ -58,6 +58,22 @@ public class MerchantServiceImpl implements MerchantService {
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
+    public Merchant addMerchant(long loginId, Merchant merchant) throws ApiResultException {
+        Login login = loginService.findOne(loginId);
+        if (login.getMerchant() != null) {
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.LOGIN_MERCHANT_EXIST));
+        }
+        login.setMerchant(merchant);
+        login.addLevel(ManageLevel.merchantRoot);
+        merchant.setId(login.getId());
+        merchant.setLogin(login);
+        merchant.setManageable(true);
+        merchant.setCreateTime(LocalDateTime.now());
+        return merchantRepository.save(merchant);
+    }
+
+    @Override
+    @Transactional(rollbackFor = RuntimeException.class)
     public Merchant addMerchant(long loginId, long merchantId) throws ApiResultException {
         Login login = loginService.findOne(loginId);
         if (login.getMerchant() != null) {
