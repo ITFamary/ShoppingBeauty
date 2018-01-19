@@ -1,20 +1,10 @@
 package com.ming.shopping.beauty.client.controller;
 
 import com.ming.shopping.beauty.client.ClientConfigTest;
-import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
-import com.ming.shopping.beauty.service.model.request.LoginOrRegisterBody;
-import com.ming.shopping.beauty.service.service.SystemService;
-import com.ming.shopping.beauty.service.utils.Constant;
-import me.jiangcai.wx.model.Gender;
 import org.junit.Test;
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 
-import java.math.BigDecimal;
-
-import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -54,7 +44,7 @@ public class UserControllerTest extends ClientConfigTest {
         //激活用户请求会员卡
         mockMvc.perform(get(vipCardUrl).session(activeUserSession))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.qrcode").isNotEmpty());
+                .andExpect(jsonPath("$.qrCode").isNotEmpty());
 
     }
 
