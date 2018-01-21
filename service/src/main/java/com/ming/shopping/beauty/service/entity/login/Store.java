@@ -3,6 +3,7 @@ package com.ming.shopping.beauty.service.entity.login;
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import lombok.Getter;
 import lombok.Setter;
+import me.jiangcai.crud.CrudFriendly;
 import me.jiangcai.jpa.entity.support.Address;
 
 import javax.persistence.*;
@@ -20,7 +21,7 @@ import static com.ming.shopping.beauty.service.utils.Constant.DATE_COLUMN_DEFINI
 @Entity
 @Getter
 @Setter
-public class Store {
+public class Store implements CrudFriendly<Long> {
 
     @Id
     private Long id;

@@ -32,12 +32,25 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
     @Autowired
     private LoginService loginService;
 
+
+    /**
+     * 用户详情
+     *
+     * @param aLong
+     * @return
+     */
     @Override
     @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
     public Object getOne(Long aLong) {
         return super.getOne(aLong);
     }
 
+    /**
+     * 冻结/启用 用户
+     *
+     * @param loginId
+     * @param putData
+     */
     @PutMapping("/{loginId}")
     @PreAuthorize("hasAnyRole('ROOT')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -76,7 +89,19 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
             if (queryData.get("loginId") != null) {
                 conditions.add(cb.equal(root.get(Login_.id), queryData.get("loginId")));
             }
-            // TODO: 2018/1/18 这里判断请求字段并设置查询条件
+            if (queryData.get("loginType") != null) {
+                //TODO 等
+            }
+            if (queryData.get("enabled") != null){
+                if((boolean)queryData.get("enabled")){
+                    conditions.add(cb.isTrue(root.get(Login_.enabled)));
+                }else{
+                    conditions.add(cb.isFalse(root.get(Login_.enabled)));
+                }
+            }
+            if(queryData.get("mobile") != null){
+                conditions.add(cb.equal(root.get(Login_.loginName),queryData.get("mobile")));
+            }
             return cb.and(conditions.toArray(new Predicate[conditions.size()]));
         };
     }
