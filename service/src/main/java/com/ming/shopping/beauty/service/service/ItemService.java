@@ -22,14 +22,6 @@ public interface ItemService {
     List<Item> findAll(ItemSearcherBody searcher);
 
     /**
-     * 查找门店所有项目
-     *
-     * @param searcher
-     * @return
-     */
-    List<StoreItem> findAllStoreItem(ItemSearcherBody searcher);
-
-    /**
      * 根据项目编号查找项目
      *
      * @param id 项目id
@@ -57,22 +49,14 @@ public interface ItemService {
                  BigDecimal salesPrice, BigDecimal costPrice, String description, String richDescription, boolean recommended);
 
     /**
-     * 给门店添加项目
-     *
-     * @param storeId     门店编号
-     * @param itemId      项目编号
-     * @param salesPrice  销售价
-     * @param recommended 是否推荐
-     * @return
+     * 添加新项目, 状态为待审核
+     * @param merchant 所属上家
+     * @param item 添加的项目
+     * @return item
      */
-    StoreItem addStoreItem(long storeId, long itemId, BigDecimal salesPrice, boolean recommended);
+    @Transactional
+    Item addItem(Merchant merchant,Item item);
 
-    /**
-     * 根据编号查找门店项目
-     * @param storeItemId
-     * @return
-     */
-    StoreItem findStoreItem(long storeItemId);
 
     /**
      * 审核项目
@@ -81,10 +65,11 @@ public interface ItemService {
      * @param auditStatus 审核结果
      * @param comment     备注
      */
+    @Transactional
     void auditItem(long itemId, AuditStatus auditStatus, String comment);
 
     /**
-     * 修改项目是否冻结/解冻
+     * 修改项目是否冻结/解冻,上架前需要审核.
      *
      * @param id     项目id
      * @param enable 是否冻结
@@ -112,4 +97,14 @@ public interface ItemService {
      */
     @Transactional
     Item setMerchant(long id, Merchant merchant);
+
+    /**
+     * 项目是否推荐
+     *
+     * @param id 项目id
+     * @param recommended  是否推荐
+     * @return
+     */
+    @Transactional
+    Item recommended(long id, boolean recommended);
 }

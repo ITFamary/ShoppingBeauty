@@ -51,6 +51,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
     @Override
     @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
     @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_STORE_ROOT + "' ,'" + Login.ROLE_MERCHANT_ROOT + "')")
+    @ResponseStatus(HttpStatus.OK)
     public RowDefinition<Store> list(@RequestBody(required = false) Map<String, Object> queryData) {
         return super.list(queryData);
     }
@@ -66,7 +67,8 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
     @Override
     @PostMapping
     @PreAuthorize("hassAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
-    public ResponseEntity addOne(@RequestBody Store postData, @RequestBody Map<String, Object> otherData) throws URISyntaxException {
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity addOne(@RequestBody Store postData,@RequestBody Map<String, Object> otherData) throws URISyntaxException {
         final String loginId = "loginId";
         final String merchantId = "merchanId";
         if (otherData.get(loginId) == null) {
@@ -111,6 +113,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
     @GetMapping("/{storeId}/manage")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
     @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
+    @ResponseStatus(HttpStatus.OK)
     public RowDefinition<Store> listForManage(@PathVariable long storeId) {
         return new RowDefinition<Store>() {
             @Override
@@ -145,11 +148,12 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
     /**
      * 新增门店操作员
      *
-     * @param storeId
-     * @param manageId
+     * @param storeId 门店id
+     * @param manageId 要变成操作员的id
      */
     @PostMapping("/{storeId}/manage/{manageId}")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
+    @ResponseStatus(HttpStatus.CREATED)
     public void addStoreManage(@PathVariable long storeId, @PathVariable long manageId) {
         storeService.addStore(manageId, storeId);
     }
@@ -159,10 +163,11 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
      *
      * @param storeId  门店
      * @param manageId 用户id
-     * @param putData
+     * @param putData  启用/禁用
      */
     @PutMapping("/{storeId}/manage/{manageId}")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void enableStoreManage(@PathVariable(required = true) long storeId, @PathVariable(required = true) long manageId, Map<String, Boolean> putData) {
         final String param = "enable";
         if (putData.get(param) != null) {
@@ -209,6 +214,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
      */
     @PostMapping("/{storeId}/represent/{representId}")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
+    @ResponseStatus(HttpStatus.CREATED)
     public void addRepresent(@PathVariable(required = true) long storeId, @PathVariable(required = true) long representId) {
         representService.addRepresent(representId, storeId);
     }
@@ -221,6 +227,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
      */
     @PutMapping("/{storeId}/represent/{representId}")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void enableRepresent(@PathVariable(required = true) long representId, Map<String, Boolean> putData) {
         final String param = "enable";
         if (putData.get(param) != null) {
