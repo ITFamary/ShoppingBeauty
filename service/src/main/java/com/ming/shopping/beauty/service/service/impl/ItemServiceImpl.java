@@ -58,30 +58,11 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<StoreItem> findAllStoreItem(ItemSearcherBody searcher) {
-        Specification<StoreItem> specification = (root, cq, cb) -> {
-            List<Predicate> conditionList = new ArrayList<>();
-            if (searcher.getStoreId() != null && searcher.getStoreId() > 0) {
-                conditionList.add(cb.equal(root.join(StoreItem_.store, JoinType.LEFT)
-                        .get(Store_.id), searcher.getStoreId()));
-            }
-            if (searcher.getEnabled() != null) {
-                conditionList.add(cb.equal(root.get(StoreItem_.enable), searcher.getEnabled()));
-            }
-            if (searcher.getRecommended() != null) {
-                conditionList.add(cb.equal(root.get(StoreItem_.recommended), searcher.getRecommended()));
-            }
-            return cb.and(conditionList.toArray(new Predicate[conditionList.size()]));
-        };
-        return storeItemRepository.findAll(specification);
-    }
-
-    @Override
     public Item findOne(long id) {
         Item item = itemRepository.findOne(((root, query, cb) ->
                 cb.and(cb.equal(root.get(Item_.id), id), cb.isFalse(root.get(Item_.deleted)))));
         if (item == null || item.isDeleted()) {
-            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.Item_Not_EXIST));
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.ITEM_NOT_EXIST));
         }
         return item;
     }
@@ -117,36 +98,7 @@ public class ItemServiceImpl implements ItemService {
         item.setAuditStatus(AuditStatus.NOT_SUBMIT);
         return itemRepository.save(item);
     }
-    @Override
-    @Transactional(rollbackFor = RuntimeException.class)
-    public StoreItem addStoreItem(long storeId, long itemId, BigDecimal salesPrice, boolean recommended) {
-        Store store = storeService.findStore(storeId);
-        Item item = findOne(itemId);
-        StoreItem storeItem = new StoreItem();
-        storeItem.setStore(store);
-        storeItem.setItem(item);
-        if (salesPrice != null) {
-            //这个价格必须大于等于 项目的销售价
-            if (salesPrice.compareTo(item.getSalesPrice()) == -1) {
-                throw new ApiResultException(ApiResult.withError(ResultCodeEnum.STORE_ITEM_PRICE_ERROR));
-            }
-            storeItem.setSalesPrice(salesPrice);
-        } else {
-            storeItem.setSalesPrice(item.getSalesPrice());
-        }
-        storeItem.setRecommended(recommended);
-        return storeItemRepository.save(storeItem);
-    }
 
-    @Override
-    public StoreItem findStoreItem(long storeItemId) {
-        StoreItem storeItem = storeItemRepository.findOne((root,query,cb)->
-                cb.equal(root.get(StoreItem_.id),storeItemId));
-        if(storeItem == null || storeItem.isDeleted()){
-            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.Item_Not_EXIST));
-        }
-        return storeItem;
-    }
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
@@ -160,7 +112,10 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     public Item freezeOrEnable(long id, boolean enable) {
         Item item = findOne(id);
-        item.setEnable(enable);
+        if(item.getAuditStatus() == AuditStatus.AUDIT_PASS)
+            item.setEnable(enable);
+        else
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.ITEM_NOT_AUDIT));
         return itemRepository.save(item);
     }
 

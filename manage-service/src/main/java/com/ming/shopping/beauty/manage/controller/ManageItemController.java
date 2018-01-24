@@ -56,7 +56,7 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
     @PostMapping
     @Override
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity addOne(Item item,Map<String, Object> otherData) throws URISyntaxException {
+    public ResponseEntity addOne(@RequestBody Item item,@RequestBody Map<String, Object> otherData) throws URISyntaxException {
         final String param = "merchantId";
 
         if (otherData.get(param) == null) {
@@ -244,6 +244,8 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
                 else
                     conditions.add(cb.isFalse(root.get(Item_.recommended)));
             }
+
+            conditions.add(cb.isFalse(root.get(Item_.deleted)));
             return cb.and(conditions.toArray(new Predicate[conditions.size()]));
         });
     }

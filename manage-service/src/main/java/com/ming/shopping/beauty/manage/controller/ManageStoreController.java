@@ -68,7 +68,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
     @PostMapping
     @PreAuthorize("hassAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity addOne(Store postData,Map<String, Object> otherData) throws URISyntaxException {
+    public ResponseEntity addOne(@RequestBody Store postData,@RequestBody Map<String, Object> otherData) throws URISyntaxException {
         final String loginId = "loginId";
         final String merchantId = "merchanId";
         if (otherData.get(loginId) == null) {

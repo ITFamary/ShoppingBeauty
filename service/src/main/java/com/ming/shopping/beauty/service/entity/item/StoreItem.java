@@ -4,6 +4,7 @@ import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.utils.Constant;
 import lombok.Getter;
 import lombok.Setter;
+import me.jiangcai.crud.CrudFriendly;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -17,7 +18,7 @@ import java.util.Objects;
 @Entity
 @Getter
 @Setter
-public class StoreItem {
+public class StoreItem implements CrudFriendly<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,7 +30,6 @@ public class StoreItem {
     @ManyToOne
     private Item item;
     /**
-     * todo 这里应该给不同等级的用户设置不同的销售价
      * 销售价
      */
     @Column(scale = Constant.FLOAT_COLUMN_SCALE, precision = Constant.FLOAT_COLUMN_PRECISION)
@@ -41,7 +41,7 @@ public class StoreItem {
     /**
      * 是否上架
      */
-    private boolean enable = true;
+    private boolean enable;
     /**
      * 含义上跟enable完全不同；该值为true 则该货品不会在系统中可见！
      */
