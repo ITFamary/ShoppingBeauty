@@ -57,6 +57,8 @@ public abstract class CoreServiceTest extends SpringWebTest {
     @Autowired
     protected ItemService itemService;
     @Autowired
+    protected StoreItemService storeItemService;
+    @Autowired
     protected MainOrderService mainOrderService;
     @Autowired
     private RechargeCardService rechargeCardService;
@@ -236,7 +238,7 @@ public abstract class CoreServiceTest extends SpringWebTest {
      * @return
      */
     protected StoreItem mockStoreItem(Store store, Item item) {
-        return itemService.addStoreItem(store.getId(), item.getId(), null, random.nextBoolean());
+        return storeItemService.addStoreItem(store.getId(), item.getId(), null, random.nextBoolean());
     }
 
     /**
@@ -267,7 +269,7 @@ public abstract class CoreServiceTest extends SpringWebTest {
         //查找门店可用的项目
         ItemSearcherBody searcher = new ItemSearcherBody();
         searcher.setStoreId(storeId);
-        List<StoreItem> storeItemList = itemService.findAllStoreItem(searcher);
+        List<StoreItem> storeItemList = storeItemService.findAllStoreItem(searcher);
 
         int count = 1 + random.nextInt(storeItemList.size());
         while (count-- > 0 || data.size() == 0) {
