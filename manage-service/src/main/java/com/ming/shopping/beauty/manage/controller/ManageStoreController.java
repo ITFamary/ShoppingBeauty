@@ -307,7 +307,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
         return (root, cq, cb) ->
                 cb.and(
                         cb.isFalse(root.get(Store_.manageable))
-                        , cb.equal(root.join(Store_.store, JoinType.LEFT).get(Store_.id), storeId)
+                        , cb.equal(root.get(Store_.id), storeId)
                 );
     }
 
