@@ -84,6 +84,15 @@ public class Store implements CrudFriendly<Long> {
                 || (!manageable && store.enabled);
     }
 
+    /**
+     * 获取门店ID
+     *
+     * @return
+     */
+    public long getStoreId() {
+        return manageable ? id : store.getId();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

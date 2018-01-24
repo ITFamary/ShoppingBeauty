@@ -66,7 +66,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 //登录前的校验
                 .antMatchers("/isExist","/isRegister/**","/sendAuthCode/**", SystemService.LOGIN).permitAll()
                 //管理后台登录
-                .antMatchers("/managerLoginRequest","/managerLogin/**","/manageLoginResult").permitAll()
+                .antMatchers("/managerLoginRequest","/managerLogin/**","/manageLoginResult/**").permitAll()
                 // 登录跳转页面
                 .antMatchers("/wechatJoin**", "/wechatRegister/**").permitAll()
                 .antMatchers("/toLoginWechat", "/wechatLogin").permitAll()

@@ -10,6 +10,6 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
     @Test
     public void go() throws Exception {
 
-        mockMvc.perform(get("/merchant")).andExpect(status().isOk());
+        mockMvc.perform(get("/merchant")).andDo(print()).andExpect(status().isOk());
     }
 }

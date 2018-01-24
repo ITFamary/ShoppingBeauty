@@ -86,6 +86,14 @@ public class Merchant implements CrudFriendly<Long> {
                 || (!manageable && merchant.enabled);
     }
 
+    /**
+     * 获取商户ID
+     * @return
+     */
+    public long getMerchantId(){
+        return manageable ? id : merchant.getId();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

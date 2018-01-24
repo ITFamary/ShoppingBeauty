@@ -1,11 +1,13 @@
 package com.ming.shopping.beauty.service.controller;
 
 import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.entity.login.LoginRequest;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.model.request.LoginOrRegisterBody;
+import com.ming.shopping.beauty.service.service.LoginRequestService;
 import com.ming.shopping.beauty.service.service.LoginService;
 import com.ming.shopping.beauty.service.service.SystemService;
 import com.ming.shopping.beauty.service.utils.LoginAuthentication;
@@ -14,6 +16,7 @@ import me.jiangcai.wx.model.WeixinUserDetail;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -45,13 +48,16 @@ public class IndexController {
     private static final Log log = LogFactory.getLog(IndexController.class);
     private final SecurityContextRepository httpSessionSecurityContextRepository
             = new HttpSessionSecurityContextRepository();
-    private final Map<String, String> sessionAuth = new HashMap<>();
     @Autowired
     private LoginService loginService;
+    @Autowired
+    private LoginRequestService loginRequestService;
     @Autowired
     private SystemService systemService;
     @Autowired
     private QRController qrController;
+    @Autowired
+    private ConversionService conversionService;
 
     @GetMapping(value = SystemService.TO_LOGIN)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
@@ -130,17 +136,28 @@ public class IndexController {
     public Object managerLoginRequest(HttpServletRequest request, HttpServletResponse response) {
         //判断是否登录
         String sessionId = request.getSession().getId();
-        sessionAuth.put(request.getSession().getId(), null);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Map<String, Object> result = new HashMap<>(3);
-        result.put("id", request.getSession().getId());
+        Map<String, Object> result = new HashMap<>();
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+            LoginRequest loginRequest = loginRequestService.newRequest(sessionId);
             response.setStatus(HttpStatusCustom.SC_ACCEPTED);
             String text = systemService.toUrl("/managerLogin/" + sessionId);
+            result.put("id", loginRequest.getId());
             result.put("url", qrController.urlForText(text).toString());
         } else if (authentication instanceof LoginAuthentication) {
+            Login login = (Login) authentication.getPrincipal();
+            result.put("id", login.getId());
             result.put("username", authentication.getName());
+            result.put("nickname", login.getNickName());
             result.put("enabled", true);
+            result.put("authorities", authentication.getAuthorities().toArray());
+            if (login.getMerchant() != null) {
+                result.put("merchantId", login.getMerchant().getMerchantId());
+            }
+            if (login.getStore() != null) {
+                result.put("storeId", login.getStore().getStoreId());
+            }
+            result.put("createtime", conversionService.convert(login.getCreateTime(), String.class));
             response.setStatus(HttpStatusCustom.SC_OK);
         }
         return result;
@@ -151,10 +168,10 @@ public class IndexController {
      *
      * @param weixinUserDetail
      */
-    @GetMapping("/managerLogin/{sessionId}")
+    @GetMapping("/managerLogin/{requestId}")
     @ResponseBody
-    public void manageLogin(WeixinUserDetail weixinUserDetail, @PathVariable String sessionId, HttpServletRequest request, HttpServletResponse response) {
-        if(!sessionAuth.containsKey(sessionId)){
+    public void manageLogin(WeixinUserDetail weixinUserDetail, @PathVariable long requestId, HttpServletRequest request, HttpServletResponse response) {
+        if (loginRequestService.findOne(requestId) == null) {
             //session已失效，请重新获取二维码
             response.setStatus(HttpStatusCustom.SC_SESSION_TIMEOUT);
             return;
@@ -163,14 +180,14 @@ public class IndexController {
         if (login == null) {
             //说明没有这个用户，让他先去注册或登录
             response.setStatus(HttpStatusCustom.SC_LOGIN_NOT_EXIST);
-        } else if (CollectionUtils.isEmpty(login.getLevelSet())) {
+        } else if (CollectionUtils.isEmpty(login.getLevelSet()) || !login.isEnabled()) {
             //说明用户没有权限登录管理后台
             response.setStatus(HttpStatusCustom.SC_FORBIDDEN);
-            sessionAuth.remove(sessionId);
+//            loginRequestService.remove(requestId);
         } else {
             //执行登录
             loginToSecurity(login, request, response);
-            sessionAuth.put(sessionId, login.getLoginName());
+            loginRequestService.login(requestId, login);
             response.setStatus(HttpStatusCustom.SC_OK);
         }
     }
@@ -178,17 +195,17 @@ public class IndexController {
     /**
      * 管理登录结果
      *
-     * @param request
+     * @param requestId
      * @param response
      */
-    @GetMapping("/manageLoginResult")
+    @GetMapping("/manageLoginResult/{requestId}")
     @ResponseBody
-    public void manageLoginResult(HttpServletRequest request, HttpServletResponse response) {
-        String sessionId = request.getSession().getId();
-        if (!sessionAuth.containsKey(sessionId)) {
+    public void manageLoginResult(@PathVariable long requestId, HttpServletResponse response) {
+        LoginRequest loginRequest = loginRequestService.findOne(requestId);
+        if (loginRequest == null) {
             //session已失效，请重新获取二维码
             response.setStatus(HttpStatusCustom.SC_SESSION_TIMEOUT);
-        } else if (sessionAuth.get(sessionId) == null) {
+        } else if (loginRequest.getLogin() == null) {
             //登录尚未被获准
             response.setStatus(HttpStatusCustom.SC_NO_CONTENT);
         } else {
