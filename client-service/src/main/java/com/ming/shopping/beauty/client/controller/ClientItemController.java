@@ -33,7 +33,7 @@ public class ClientItemController {
         //TODO 带坐标的还不会写.
     }
     @GetMapping("/items/{itemId}")
-    @RowCustom(distinct = true,dramatizer =SingleRowDramatizer.class)
+    @RowCustom(distinct = true,dramatizer = SingleRowDramatizer.class)
     public RowDefinition<Item> itemDetail(@PathVariable("itemId") long itemId) {
         return new RowDefinition<Item>() {
             @Override

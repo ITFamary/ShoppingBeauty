@@ -17,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import java.text.MessageFormat;
 import java.util.*;
@@ -51,10 +52,10 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
      * @param loginId
      * @param putData
      */
-    @PutMapping("/{loginId}")
+    @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ROOT')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void setEnable(@PathVariable("loginId") long loginId, Map<String, Boolean> putData) {
+    public void setEnable(@PathVariable("id") long loginId, Map<String, Boolean> putData) {
         final String param = "enable";
         if (putData.get(param) != null) {
             loginService.freezeOrEnable(loginId, putData.get(param));
@@ -77,6 +78,13 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
                         .addSelect(root -> root.get(Login_.loginName))
                         .build()
                 , FieldBuilder.asName(Login.class, "enabled")
+                        .build()
+                , FieldBuilder.asName(Login.class, "active")
+                        .addSelect(loginRoot -> loginRoot.join(Login_.user, JoinType.LEFT).get(User_.active))
+                        .build()
+                , FieldBuilder.asName(Login.class,"currentAmount")
+                        //TODO 余额这里还是有问题的.
+                        .addSelect(loginRoot -> loginRoot.join(Login_.user,JoinType.LEFT).get(User_.active))
                         .build()
         );
     }

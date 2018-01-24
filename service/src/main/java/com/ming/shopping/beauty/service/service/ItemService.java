@@ -57,6 +57,15 @@ public interface ItemService {
                  BigDecimal salesPrice, BigDecimal costPrice, String description, String richDescription, boolean recommended);
 
     /**
+     * 添加新项目, 状态为待审核
+     * @param merchant 所属上家
+     * @param item 添加的项目
+     * @return item
+     */
+    @Transactional
+    Item addItem(Merchant merchant,Item item);
+
+    /**
      * 给门店添加项目
      *
      * @param storeId     门店编号
@@ -112,4 +121,14 @@ public interface ItemService {
      */
     @Transactional
     Item setMerchant(long id, Merchant merchant);
+
+    /**
+     * 项目是否推荐
+     *
+     * @param id 项目id
+     * @param recommended  是否推荐
+     * @return
+     */
+    @Transactional
+    Item recommended(long id, boolean recommended);
 }

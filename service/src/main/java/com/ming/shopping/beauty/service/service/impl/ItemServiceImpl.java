@@ -108,7 +108,15 @@ public class ItemServiceImpl implements ItemService {
         item.setRecommended(recommended);
         return itemRepository.save(item);
     }
-
+    @Override
+    @Transactional
+    public Item addItem(Merchant merchant,Item item){
+        if (merchant != null) {
+            item.setMerchant(merchant);
+        }
+        item.setAuditStatus(AuditStatus.NOT_SUBMIT);
+        return itemRepository.save(item);
+    }
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
     public StoreItem addStoreItem(long storeId, long itemId, BigDecimal salesPrice, boolean recommended) {
@@ -170,6 +178,13 @@ public class ItemServiceImpl implements ItemService {
         Item item = findOne(id);
         item.setMerchant(merchant);
         return itemRepository.save(item);
+    }
+
+    @Override
+    public Item recommended(long id, boolean recommended) {
+        Item one = findOne(id);
+        one.setRecommended(recommended);
+        return itemRepository.save(one);
     }
 
 
