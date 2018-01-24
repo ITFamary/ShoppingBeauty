@@ -78,6 +78,23 @@ public class StoreItemServiceImpl implements StoreItemService {
         return storeItemRepository.save(storeItem);
     }
 
+    @Override
+    public StoreItem addStoreItem(long storeId, long itemId, StoreItem storeItem) {
+        Store store = storeService.findStore(storeId);
+        Item item = itemService.findOne(itemId);
+        storeItem.setStore(store);
+        storeItem.setItem(item);
+        if (storeItem.getSalesPrice() != null) {
+            //这个价格必须大于等于 项目的销售价
+            if (storeItem.getSalesPrice().compareTo(item.getSalesPrice()) == -1) {
+                throw new ApiResultException(ApiResult.withError(ResultCodeEnum.STORE_ITEM_PRICE_ERROR));
+            }
+        } else {
+            storeItem.setSalesPrice(item.getSalesPrice());
+        }
+        return storeItemRepository.save(storeItem);
+    }
+
 
     @Override
     public StoreItem findStoreItem(long storeItemId) {
@@ -87,5 +104,39 @@ public class StoreItemServiceImpl implements StoreItemService {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.ITEM_NOT_EXIST));
         }
         return storeItem;
+    }
+
+    @Override
+    @Transactional
+    public void freezeOrEnable(Long itemId, boolean enabled, long storeItemId) {
+        if(itemId == null){
+            //自主操作
+            StoreItem storeItem = storeItemRepository.getOne(storeItemId);
+            storeItem.setEnable(enabled);
+        }else{
+            //项目管理批量操作
+            Item item = itemService.findOne(itemId);
+            List<StoreItem> storeItemList = storeItemRepository.findByItem(item);
+            for (StoreItem storeItem : storeItemList) {
+                storeItem.setEnable(enabled);
+            }
+        }
+    }
+
+    @Override
+    @Transactional
+    public void Recommended(Long itemId, boolean recommended, long storeItemId) {
+        if(itemId == null){
+            //自主操作
+            StoreItem storeItem = storeItemRepository.getOne(storeItemId);
+            storeItem.setRecommended(recommended);
+        }else{
+            //项目管理批量操作
+            Item item = itemService.findOne(itemId);
+            List<StoreItem> storeItemList = storeItemRepository.findByItem(item);
+            for (StoreItem storeItem : storeItemList) {
+                storeItem.setRecommended(recommended);
+            }
+        }
     }
 }

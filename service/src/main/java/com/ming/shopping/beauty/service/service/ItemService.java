@@ -65,6 +65,7 @@ public interface ItemService {
      * @param auditStatus 审核结果
      * @param comment     备注
      */
+    @Transactional
     void auditItem(long itemId, AuditStatus auditStatus, String comment);
 
     /**

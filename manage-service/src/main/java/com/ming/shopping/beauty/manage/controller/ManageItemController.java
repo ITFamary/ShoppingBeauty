@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.criteria.JoinType;
@@ -46,6 +47,14 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
     @Autowired
     private MerchantService merchantService;
 
+
+    @Override
+    @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ROOT + "')")
+    @GetMapping("/{itemId}")
+    public Object getOne(Long aLong) {
+        return super.getOne(aLong);
+    }
+
     /**
      * 添加项目/编辑项目
      *
@@ -68,26 +77,11 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "请求数据"), null));
         }
         Merchant merchant = merchantService.findOne((long) otherData.get(param));
-        Item findOld = itemService.findOne(item.getId());
-        final Item responseItem ;
-        if(findOld != null){
-            //编辑
-            if(!findOld.isEnable()){
-                //下架才可以编辑
-                responseItem = itemService.addItem(merchant, item);
-            }else{
-                throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
-                        , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "请求数据"), null));
-            }
-        }else{
-            //新增
-            responseItem = itemService.addItem(merchant, item);
-        }
+        Item responseItem = itemService.addItem(merchant, item);
         return ResponseEntity
                 .created(new URI("/item/" + responseItem.getId()))
                 .build();
     }
-
 
     /**
      * 项目状态改变/审核
@@ -249,4 +243,5 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
             return cb.and(conditions.toArray(new Predicate[conditions.size()]));
         });
     }
+
 }

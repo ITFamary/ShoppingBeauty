@@ -2,12 +2,8 @@ package com.ming.shopping.beauty.service.service.impl;
 
 import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.item.Item_;
-import com.ming.shopping.beauty.service.entity.item.StoreItem;
-import com.ming.shopping.beauty.service.entity.item.StoreItem_;
 import com.ming.shopping.beauty.service.entity.login.Merchant;
 import com.ming.shopping.beauty.service.entity.login.Merchant_;
-import com.ming.shopping.beauty.service.entity.login.Store;
-import com.ming.shopping.beauty.service.entity.login.Store_;
 import com.ming.shopping.beauty.service.entity.support.AuditStatus;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
@@ -25,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -92,10 +89,25 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public Item addItem(Merchant merchant,Item item){
-        if (merchant != null) {
+
+        Item findOld = findOne(item.getId());
+        if(findOld != null){
+            //编辑
+            if(!findOld.isEnable()){
+                //下架才可以编辑
+                item.setAuditStatus(AuditStatus.NOT_SUBMIT);
+            }else{
+                throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                        , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "请求数据"), null));
+            }
+        }else{
+            //新增
+            if (merchant != null) {
             item.setMerchant(merchant);
         }
         item.setAuditStatus(AuditStatus.NOT_SUBMIT);
+        }
+
         return itemRepository.save(item);
     }
 
@@ -136,6 +148,8 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+
+    @Transactional
     public Item recommended(long id, boolean recommended) {
         Item one = findOne(id);
         one.setRecommended(recommended);
