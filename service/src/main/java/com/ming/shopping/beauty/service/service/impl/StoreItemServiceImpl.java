@@ -125,7 +125,7 @@ public class StoreItemServiceImpl implements StoreItemService {
 
     @Override
     @Transactional
-    public void Recommended(Long itemId, boolean recommended, long storeItemId) {
+    public void recommended(Long itemId, boolean recommended, long storeItemId) {
         if(itemId == null){
             //自主操作
             StoreItem storeItem = storeItemRepository.getOne(storeItemId);

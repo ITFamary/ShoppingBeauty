@@ -20,6 +20,7 @@ import com.ming.shopping.beauty.service.repository.MainOrderRepository;
 import com.ming.shopping.beauty.service.repository.OrderItemRepository;
 import com.ming.shopping.beauty.service.service.ItemService;
 import com.ming.shopping.beauty.service.service.MainOrderService;
+import com.ming.shopping.beauty.service.service.StoreItemService;
 import me.jiangcai.crud.row.*;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,8 @@ public class MainOrderServiceImpl implements MainOrderService {
     private ItemService itemService;
     @Autowired
     private OrderItemRepository orderItemRepository;
+    @Autowired
+    private StoreItemService storeItemService;
 
 
     @Override
@@ -87,7 +90,7 @@ public class MainOrderServiceImpl implements MainOrderService {
     public MainOrder supplementOrder(long orderId, Represent represent, StoreItemNum[] items) {
         Map<StoreItem, Integer> amounts = new HashMap<>(items.length);
         for (StoreItemNum storeItemNum : items) {
-            StoreItem item = itemService.findStoreItem(storeItemNum.getStoreItemId());
+            StoreItem item = storeItemService.findStoreItem(storeItemNum.getStoreItemId());
             if (!amounts.containsKey(item)) {
                 amounts.put(item, storeItemNum.getNum());
             }
