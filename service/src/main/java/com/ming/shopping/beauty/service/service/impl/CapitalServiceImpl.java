@@ -47,4 +47,34 @@ public class CapitalServiceImpl implements CapitalService {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.USER_NOT_EXIST));
         }
     }
+
+    @Override
+    @Transactional
+    public void deduction(Login manager, User user, BigDecimal amount) {
+        if(amount == null){
+            //清空余额
+            BigDecimal currentAmount = user.getCurrentAmount();
+            user.setCurrentAmount(new BigDecimal("0"));
+            //记录扣款日志
+            RechargeLog rechargeLog = new RechargeLog();
+            rechargeLog.setAmount(currentAmount.negate());
+            rechargeLog.setUser(user);
+            rechargeLog.setCreateTime(LocalDateTime.now());
+            rechargeLog.setRechargeType(RechargeType.DEDUCTION);
+            //保存记录
+            rechargeLogRepository.save(rechargeLog);
+        }else{
+            //扣除给定金额
+            BigDecimal currentAmount = user.getCurrentAmount();
+            user.setCurrentAmount(currentAmount.subtract(amount));
+            //记录扣款日志
+            RechargeLog rechargeLog = new RechargeLog();
+            rechargeLog.setAmount(amount);
+            rechargeLog.setUser(user);
+            rechargeLog.setCreateTime(LocalDateTime.now());
+            rechargeLog.setRechargeType(RechargeType.DEDUCTION);
+            //保存记录
+            rechargeLogRepository.save(rechargeLog);
+        }
+    }
 }

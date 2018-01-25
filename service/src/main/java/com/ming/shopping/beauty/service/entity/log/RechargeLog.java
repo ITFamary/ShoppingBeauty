@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 充值记录，来源：充值卡充值，直接充值
+ * 充值/提现记录，来源：充值卡充值，直接充值, 手动充值,手动扣款
  * @author helloztt
  */
 @Entity

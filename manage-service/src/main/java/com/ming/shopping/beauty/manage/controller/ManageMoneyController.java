@@ -7,7 +7,6 @@ import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.service.CapitalService;
 import com.ming.shopping.beauty.service.service.LoginService;
-import me.jiangcai.lib.sys.service.SystemStringService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -44,9 +43,9 @@ public class ManageMoneyController {
     @Transactional
     public ApiResult manualRecharge(@AuthenticationPrincipal Login login, String mobile, BigDecimal amount) {
         //TODO 手动充值是否有最小充值限制?
-        if (amount.compareTo(new BigDecimal("0"))!=1) {
+        if (amount.compareTo(new BigDecimal("0")) != 1) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.RECHARGE_MONEY_NOT_ENOUGH.getCode(),
-                    MessageFormat.format(ResultCodeEnum.RECHARGE_MONEY_NOT_ENOUGH.getMessage(),amount),null));
+                    MessageFormat.format(ResultCodeEnum.RECHARGE_MONEY_NOT_ENOUGH.getMessage(), amount), null));
         }
         if (StringUtils.isEmpty(mobile)) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.CARD_FAILURE.getCode(),
@@ -63,4 +62,36 @@ public class ManageMoneyController {
         }
         return ApiResult.withOk("充值金额:" + amount + ",手机号码:" + mobile + ",充值成功");
     }
+
+    /**
+     * 扣款/提现操作
+     * @param login  操作员
+     * @param mobile 提现/扣款用户
+     * @param amount 提现/扣款金额
+     * @return
+     */
+    @PostMapping("/manage/deduction")
+    @Transactional
+    @ResponseBody
+    public ApiResult deduction(@AuthenticationPrincipal Login login, String mobile, BigDecimal amount) {
+        if (amount != null && amount.compareTo(new BigDecimal("0")) != 1) {
+            throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode(),
+                    MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), amount), null));
+        }
+        if (StringUtils.isEmpty(mobile)) {
+            throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode(),
+                    MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), mobile), null));
+        }
+        Login one = loginService.findOne(mobile);
+        User user = login.getUser();
+        try {
+            capitalService.deduction(login, user, amount);
+        } catch (Exception e) {
+            throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.DEDUCTION_FAILURE.getCode(),
+                    ResultCodeEnum.DEDUCTION_FAILURE.getMessage(), null));
+        }
+        return ApiResult.withOk("扣款金额:" + amount + ",手机号码:" + mobile + ",扣款成功");
+    }
+
+
 }

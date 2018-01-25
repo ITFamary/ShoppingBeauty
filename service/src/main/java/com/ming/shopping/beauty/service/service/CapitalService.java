@@ -15,10 +15,19 @@ public interface CapitalService {
     /**
      * 手动充值
      *
-     * @param manage  操作管理员
+     * @param manager  操作管理员
      * @param user  充值的用户手机号
      * @param amount  充值的金额
      */
     @Transactional
-    void manualRecharge(Login manage, User user, BigDecimal amount);
+    void manualRecharge(Login manager, User user, BigDecimal amount);
+
+    /**
+     * 手动扣款
+     * @param manager  操作管理员
+     * @param user     扣款的用户手机号
+     * @param amount    扣款金额
+     */
+    @Transactional
+    void deduction(Login manager,User user ,BigDecimal amount);
 }
