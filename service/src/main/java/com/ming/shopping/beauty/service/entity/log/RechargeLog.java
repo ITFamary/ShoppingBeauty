@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 充值记录，来源：充值卡充值，直接充值
+ * 充值/提现记录，来源：充值卡充值，直接充值, 手动充值,手动扣款
  * @author helloztt
  */
 @Entity
@@ -34,6 +34,11 @@ public class RechargeLog {
      * 第三方支付订单编号
      */
     private String payOrderId;
+
+    /**
+     * 充值类型
+     */
+    private RechargeType rechargeType;
 
     @Column(columnDefinition = Constant.DATE_COLUMN_DEFINITION)
     private LocalDateTime createTime;

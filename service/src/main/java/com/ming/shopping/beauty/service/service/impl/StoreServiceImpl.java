@@ -49,8 +49,8 @@ public class StoreServiceImpl implements StoreService {
         store.setLogin(login);
         store.setName(name);
         store.setTelephone(telephone);
-        store.setMerchant(merchant);
         store.setAddress(address);
+        store.setContact(contact);
         store.setManageable(true);
         store.setCreateTime(LocalDateTime.now());
         storeRepository.save(store);

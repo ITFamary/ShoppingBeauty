@@ -35,7 +35,7 @@ public class ManageControllerTest extends ManageConfigTest {
         nextCurrentWechatAccount();
         //以CJ的超级管理员账号为测试对象
         //随便找个ID登录，期望提示session失效
-        mockMvc.perform(wechatGet(manageLogin + "/" + UUID.randomUUID().toString()))
+        mockMvc.perform(wechatGet(manageLogin + "/" + random.nextInt(1000)))
                 .andExpect(status().is(HttpStatusCustom.SC_SESSION_TIMEOUT));
         //去获取一个ID
         MvcResult mvcResult = mockMvc.perform(wechatGet(managerLoginRequest))
@@ -44,9 +44,9 @@ public class ManageControllerTest extends ManageConfigTest {
         //之后判断登录状态需要用这个session
         MockHttpSession session = (MockHttpSession) mvcResult.getRequest().getSession();
         String result = mvcResult.getResponse().getContentAsString();
-        String sessionId = objectMapper.readTree(result).get("id").asText();
+        String requestId = objectMapper.readTree(result).get("id").asText();
         //再次登录，由于CJ的账号没有openId，期望 HttpStatusCustom.SC_LOGIN_NOT_EXIST
-        mockMvc.perform(wechatGet(manageLogin + "/" + sessionId))
+        mockMvc.perform(wechatGet(manageLogin + "/" + requestId))
                 .andExpect(status().is(HttpStatusCustom.SC_LOGIN_NOT_EXIST));
 
         //用蒋才的账号登录一下，更新openId
@@ -58,16 +58,16 @@ public class ManageControllerTest extends ManageConfigTest {
                 .content(objectMapper.writeValueAsString(registerBody))))
                 .andExpect(status().isOk());
         //登录前看看登录情况
-        mockMvc.perform(get(manageLoginResult)
+        mockMvc.perform(get(manageLoginResult + "/" + requestId)
                 .session(session))
                 .andExpect(status().isNoContent());
 
         //再次登录，期望成功
-        mockMvc.perform(wechatGet(manageLogin + "/" + sessionId))
+        mockMvc.perform(wechatGet(manageLogin + "/" + requestId))
                 .andExpect(status().isOk());
 
         //看看登录结果
-        mockMvc.perform(get(manageLoginResult)
+        mockMvc.perform(get(manageLoginResult + "/" + requestId)
                 .session(session))
                 .andExpect(status().isOk());
 
@@ -78,15 +78,15 @@ public class ManageControllerTest extends ManageConfigTest {
                 .andReturn();
         session = (MockHttpSession) mvcResult.getRequest().getSession();
         result = mvcResult.getResponse().getContentAsString();
-        sessionId = objectMapper.readTree(result).get("id").asText();
+        requestId = objectMapper.readTree(result).get("id").asText();
         nextCurrentWechatAccount(login.getWechatUser());
 
-        mockMvc.perform(get(manageLoginResult).session(session)).andExpect(status().isNoContent());
+        mockMvc.perform(get(manageLoginResult + "/" + requestId).session(session)).andExpect(status().isNoContent());
 
-        mockMvc.perform(wechatGet(manageLogin + "/" + sessionId))
+        mockMvc.perform(wechatGet(manageLogin + "/" + requestId))
                 .andExpect(status().isForbidden());
 
-        mockMvc.perform(get(manageLoginResult).session(session)).andExpect(status().is(HttpStatusCustom.SC_SESSION_TIMEOUT));
+        mockMvc.perform(get(manageLoginResult + "/" + requestId).session(session)).andExpect(status().isNoContent());
     }
 
 }

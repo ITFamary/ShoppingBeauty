@@ -3,6 +3,7 @@ package com.ming.shopping.beauty.service.entity.login;
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import lombok.Getter;
 import lombok.Setter;
+import me.jiangcai.crud.CrudFriendly;
 import me.jiangcai.jpa.entity.support.Address;
 
 import javax.persistence.*;
@@ -20,7 +21,7 @@ import static com.ming.shopping.beauty.service.utils.Constant.DATE_COLUMN_DEFINI
 @Entity
 @Getter
 @Setter
-public class Store {
+public class Store implements CrudFriendly<Long> {
 
     @Id
     private Long id;
@@ -45,8 +46,11 @@ public class Store {
     @Column(length = 20)
     private String telephone;
 
-    @ManyToOne
-    private Merchant merchant;
+    /**
+     * 联系人
+     */
+    @Column(length = 50)
+    private String contact;
 
     /**
      * 门店地址
@@ -78,6 +82,15 @@ public class Store {
     public boolean isStoreUsable() {
         return (manageable && enabled)
                 || (!manageable && store.enabled);
+    }
+
+    /**
+     * 获取门店ID
+     *
+     * @return
+     */
+    public long getStoreId() {
+        return manageable ? id : store.getId();
     }
 
     @Override

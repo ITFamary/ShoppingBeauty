@@ -17,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import java.text.MessageFormat;
 import java.util.*;
@@ -32,16 +33,29 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
     @Autowired
     private LoginService loginService;
 
+
+    /**
+     * 用户详情
+     *
+     * @param aLong
+     * @return
+     */
     @Override
     @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
     public Object getOne(Long aLong) {
         return super.getOne(aLong);
     }
 
-    @PutMapping("/{loginId}")
+    /**
+     * 冻结/启用 用户
+     *
+     * @param loginId
+     * @param putData
+     */
+    @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ROOT')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void setEnable(@PathVariable("loginId") long loginId, Map<String, Boolean> putData) {
+    public void setEnable(@PathVariable("id") long loginId, Map<String, Boolean> putData) {
         final String param = "enable";
         if (putData.get(param) != null) {
             loginService.freezeOrEnable(loginId, putData.get(param));
@@ -65,6 +79,13 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
                         .build()
                 , FieldBuilder.asName(Login.class, "enabled")
                         .build()
+                , FieldBuilder.asName(Login.class, "active")
+                        .addSelect(loginRoot -> loginRoot.join(Login_.user, JoinType.LEFT).get(User_.active))
+                        .build()
+                , FieldBuilder.asName(Login.class,"currentAmount")
+                        //TODO 余额这里还是有问题的.
+                        .addSelect(loginRoot -> loginRoot.join(Login_.user,JoinType.LEFT).get(User_.active))
+                        .build()
         );
     }
 
@@ -76,7 +97,19 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
             if (queryData.get("loginId") != null) {
                 conditions.add(cb.equal(root.get(Login_.id), queryData.get("loginId")));
             }
-            // TODO: 2018/1/18 这里判断请求字段并设置查询条件
+            if (queryData.get("loginType") != null) {
+                //TODO 等
+            }
+            if (queryData.get("enabled") != null){
+                if((boolean)queryData.get("enabled")){
+                    conditions.add(cb.isTrue(root.get(Login_.enabled)));
+                }else{
+                    conditions.add(cb.isFalse(root.get(Login_.enabled)));
+                }
+            }
+            if(queryData.get("mobile") != null){
+                conditions.add(cb.equal(root.get(Login_.loginName),queryData.get("mobile")));
+            }
             return cb.and(conditions.toArray(new Predicate[conditions.size()]));
         };
     }

@@ -32,13 +32,15 @@ import static com.ming.shopping.beauty.service.utils.Constant.DATE_COLUMN_DEFINI
 @Getter
 public class Login implements UserDetails,CrudFriendly<Long> {
     /**
-     * 商户超管
+     * 商户超管及操作员
      */
     public static final String ROLE_MERCHANT_ROOT = "MERCHANT_ROOT";
+    public static final String ROLE_MERCHANT_OPERATOR = "MERCHANT_OPERATOR";
     /**
-     * 门店超管
+     * 门店超管及操作员
      */
     public static final String ROLE_STORE_ROOT = "STORE_ROOT";
+    public static final String ROLE_STORE_OPERATOR = "STORE_OPERATOR";
     public static final String ROLE_REPRESENT = "REPRESENT";
     /**
      * 审核门店

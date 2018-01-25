@@ -226,7 +226,7 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
                 FieldBuilder.asName(Merchant.class, "id")
                         .addSelect(merchantRoot -> merchantRoot.get(Merchant_.id))
                         .build()
-                , FieldBuilder.asName(Merchant.class, "userName")
+                , FieldBuilder.asName(Merchant.class, "username")
                         .addSelect(merchantRoot -> merchantRoot.join(Merchant_.login, JoinType.LEFT).get(Login_.loginName))
                         .build()
                 , FieldBuilder.asName(Merchant.class, "enabled")
