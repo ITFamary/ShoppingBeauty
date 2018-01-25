@@ -9,8 +9,10 @@ import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.service.LoginService;
 import me.jiangcai.crud.controller.AbstractCrudController;
 import me.jiangcai.crud.row.FieldDefinition;
+import me.jiangcai.crud.row.RowCustom;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.field.Fields;
+import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.domain.Specification;
@@ -19,12 +21,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.persistence.criteria.Predicate;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -35,6 +44,7 @@ import java.util.stream.Collectors;
 @Controller
 @RequestMapping("/manage")
 @PreAuthorize("hasAnyRole('ROOT')")
+@RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
 public class ManageController extends AbstractCrudController<Login, Long> {
     @Autowired
     private LoginService loginService;
@@ -64,7 +74,7 @@ public class ManageController extends AbstractCrudController<Login, Long> {
     public void manageable(@PathVariable long id, Map<String, Boolean> putData) {
         final String param = "manageable";
         if (putData.get(param) != null) {
-            loginService.upOrDowngradeToRoot(id,putData.get(param));
+            loginService.upOrDowngradeToRoot(id, putData.get(param));
         } else {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), param), null));
@@ -87,7 +97,7 @@ public class ManageController extends AbstractCrudController<Login, Long> {
                             return levelSet.stream().map(ManageLevel::title).collect(Collectors.joining(","));
                         })
                         .build()
-                , FieldBuilder.asName(Login.class, "createtime")
+                , FieldBuilder.asName(Login.class, "createTime")
                         .addSelect(loginRoot -> loginRoot.get(Login_.createTime))
                         .addFormat((data, type) -> conversionService.convert(data, String.class))
                         .build()

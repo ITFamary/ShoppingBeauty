@@ -13,6 +13,7 @@ import org.springframework.util.CollectionUtils;
 import javax.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -147,9 +148,7 @@ public class Login implements UserDetails,CrudFriendly<Long> {
         if (levelSet == null) {
             levelSet = new HashSet<>();
         }
-        for(ManageLevel manageLevel : manageLevels){
-            levelSet.add(manageLevel);
-        }
+        levelSet.addAll(Arrays.asList(manageLevels));
     }
 
 

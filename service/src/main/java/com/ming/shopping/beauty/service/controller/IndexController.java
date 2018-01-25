@@ -143,7 +143,7 @@ public class IndexController {
             response.setStatus(HttpStatusCustom.SC_ACCEPTED);
             String text = systemService.toUrl("/managerLogin/" + sessionId);
             result.put("id", loginRequest.getId());
-            result.put("url", qrController.urlForText(text).toString());
+            result.put("url", text);
         } else if (authentication instanceof LoginAuthentication) {
             Login login = (Login) authentication.getPrincipal();
             result.put("id", login.getId());
@@ -157,7 +157,7 @@ public class IndexController {
             if (login.getStore() != null) {
                 result.put("storeId", login.getStore().getStoreId());
             }
-            result.put("createtime", conversionService.convert(login.getCreateTime(), String.class));
+            result.put("createTime", conversionService.convert(login.getCreateTime(), String.class));
             response.setStatus(HttpStatusCustom.SC_OK);
         }
         return result;
