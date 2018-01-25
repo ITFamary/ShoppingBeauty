@@ -51,7 +51,6 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
     @Override
     @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
     @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_STORE_ROOT + "' ,'" + Login.ROLE_MERCHANT_ROOT + "')")
-    @ResponseStatus(HttpStatus.OK)
     public RowDefinition<Store> list(@RequestBody(required = false) Map<String, Object> queryData) {
         return super.list(queryData);
     }
@@ -307,6 +306,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
         return (root, cq, cb) ->
                 cb.and(
                         cb.isFalse(root.get(Store_.manageable))
+                        // TODO 这里有问题
                         , cb.equal(root.get("store").get("id"), storeId)
                 );
     }

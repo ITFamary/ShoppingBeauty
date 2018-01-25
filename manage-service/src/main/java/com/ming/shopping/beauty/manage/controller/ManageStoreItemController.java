@@ -15,12 +15,11 @@ import me.jiangcai.crud.row.FieldDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.criteria.Predicate;
 import java.net.URI;
@@ -54,6 +53,7 @@ public class ManageStoreItemController extends AbstractCrudController<StoreItem,
      */
     @PostMapping
     @Override
+    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity addOne(StoreItem postData, Map<String, Object> otherData) throws URISyntaxException {
         final String storeId = "storeId";
         final String itemId = "itemId";
@@ -73,6 +73,8 @@ public class ManageStoreItemController extends AbstractCrudController<StoreItem,
      * @param putData 操作的信息
      * @return 成功失败的数量
      */
+    @PutMapping("/recommended")
+    @ResponseBody
     public ApiResult batchRecommended(@RequestBody Map<String, Object> putData) {
         final String recommended = "recommended";
         final String storeItems = "storeItems";
@@ -115,6 +117,8 @@ public class ManageStoreItemController extends AbstractCrudController<StoreItem,
      * @param putData 操作的信息
      * @return 成功失败的数量
      */
+    @PutMapping("/enabled")
+    @ResponseBody
     public ApiResult batchEnable(@RequestBody Map<String, Object> putData) {
         final String enabled = "enabled";
         final String storeItems = "storeItems";

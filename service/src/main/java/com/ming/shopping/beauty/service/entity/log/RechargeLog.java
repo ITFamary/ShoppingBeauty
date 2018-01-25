@@ -35,6 +35,11 @@ public class RechargeLog {
      */
     private String payOrderId;
 
+    /**
+     * 充值类型
+     */
+    private RechargeType rechargeType;
+
     @Column(columnDefinition = Constant.DATE_COLUMN_DEFINITION)
     private LocalDateTime createTime;
 }

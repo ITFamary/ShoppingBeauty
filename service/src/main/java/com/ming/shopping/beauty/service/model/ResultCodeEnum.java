@@ -34,6 +34,7 @@ public enum ResultCodeEnum {
     ALREADY_MANAGEABLE(1011,"请勿重复操作"),
     REPRESENT_NOT_EXIST(1012,"门店代表不存在"),
     MANAGER_NOT_EXIST(1013,"不存在该管理权限"),
+    USER_NOT_EXIST(1014,"用户不存在"),
     /**
      * 用户、推荐：[2000,2999]
      */
@@ -62,9 +63,11 @@ public enum ResultCodeEnum {
     CARD_NOT_EXIST(5000,"充值卡无效"),
     CARD_ALREADY_USED(5001,"充值卡失效"),
     NO_MONEY_CARD(5002,"请输入充值金额或者充值卡卡密"),
-    RECHARGE_MONEY_NOT_ENOUGH(5003,"充值金额必须大于{0}")
+    RECHARGE_MONEY_NOT_ENOUGH(5003,"充值金额必须大于{0}"),
+    CARD_FAILURE(5004,"手动充值失败")
 
-    
+
+
     ;
     private int code;
     private String message;

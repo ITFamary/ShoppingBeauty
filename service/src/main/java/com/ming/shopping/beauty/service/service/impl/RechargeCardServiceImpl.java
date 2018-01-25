@@ -4,6 +4,7 @@ import com.ming.shopping.beauty.service.aop.BusinessSafe;
 import com.ming.shopping.beauty.service.entity.item.RechargeCard;
 import com.ming.shopping.beauty.service.entity.item.RechargeCard_;
 import com.ming.shopping.beauty.service.entity.log.RechargeLog;
+import com.ming.shopping.beauty.service.entity.log.RechargeType;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
@@ -115,6 +116,8 @@ public class RechargeCardServiceImpl implements RechargeCardService {
         log.setUser(user);
         log.setRechargeCardId(rechargeCard.getId());
         log.setCreateTime(LocalDateTime.now());
+        //TODO 添加了一个新的充值卡充值类型
+        log.setRechargeType(RechargeType.RECHARGE_CARD);
         rechargeLogRepository.save(log);
 
     }
