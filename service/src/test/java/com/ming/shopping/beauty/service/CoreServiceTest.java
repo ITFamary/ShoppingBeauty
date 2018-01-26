@@ -13,6 +13,7 @@ import com.ming.shopping.beauty.service.model.request.ItemSearcherBody;
 import com.ming.shopping.beauty.service.model.request.LoginOrRegisterBody;
 import com.ming.shopping.beauty.service.service.*;
 import com.ming.shopping.beauty.service.utils.Constant;
+import com.ming.shopping.beauty.service.utils.LoginAuthentication;
 import me.jiangcai.lib.test.SpringWebTest;
 import me.jiangcai.wx.model.Gender;
 import me.jiangcai.wx.model.WeixinUserDetail;
@@ -21,6 +22,7 @@ import me.jiangcai.wx.test.WeixinTestConfig;
 import me.jiangcai.wx.test.WeixinUserMocker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -34,6 +36,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -63,6 +66,8 @@ public abstract class CoreServiceTest extends SpringWebTest {
     @Autowired
     private RechargeCardService rechargeCardService;
 
+    protected Login allRunWith;
+
     private static final String firstName = "赵钱孙李周吴郑王冯陈褚卫蒋沈韩杨朱秦尤许何吕施张孔曹严华金魏陶姜戚谢邹喻柏水窦章云苏潘葛奚范彭郎鲁韦昌马苗凤花方俞任袁柳酆鲍史唐费廉岑薛雷贺倪汤滕殷罗毕郝邬安常乐于时傅皮卞齐康伍余元卜顾孟平黄和穆萧尹姚邵湛汪祁毛禹狄米贝明臧计伏成戴谈宋茅庞熊纪舒屈项祝董梁杜阮蓝闵席季麻强贾路娄危江童颜郭梅盛林刁钟徐邱骆高夏蔡田樊胡凌霍虞万支柯咎管卢莫经房裘缪干解应宗宣丁贲邓郁单杭洪包诸左石崔吉钮龚程嵇邢滑裴陆荣翁荀羊於惠甄魏加封芮羿储靳汲邴糜松井段富巫乌焦巴弓牧隗山谷车侯宓蓬全郗班仰秋仲伊宫宁仇栾暴甘钭厉戎祖武符刘姜詹束龙叶幸司韶郜黎蓟薄印宿白怀蒲台从鄂索咸籍赖卓蔺屠蒙池乔阴郁胥能苍双闻莘党翟谭贡劳逄姬申扶堵冉宰郦雍却璩桑桂濮牛寿通边扈燕冀郏浦尚农温别庄晏柴瞿阎充慕连茹习宦艾鱼容向古易慎戈廖庚终暨居衡步都耿满弘匡国文寇广禄阙东殴殳沃利蔚越夔隆师巩厍聂晁勾敖融冷訾辛阚那简饶空曾毋沙乜养鞠须丰巢关蒯相查后江红游竺权逯盖益桓公万俟司马上官欧阳夏侯诸葛闻人东方赫连皇甫尉迟公羊澹台公冶宗政濮阳淳于仲孙太叔申屠公孙乐正轩辕令狐钟离闾丘长孙慕容鲜于宇文司徒司空亓官司寇仉督子车颛孙端木巫马公西漆雕乐正壤驷公良拓拔夹谷宰父谷粱晋楚阎法汝鄢涂钦段干百里东郭南门呼延归海羊舌微生岳帅缑亢况后有琴梁丘左丘东门西门商牟佘佴伯赏南宫墨哈谯笪年爱阳佟第五言福百家姓续";
 
     protected static final String RESULT_CODE_PATH = "$.resultCode";
@@ -70,6 +75,33 @@ public abstract class CoreServiceTest extends SpringWebTest {
     protected static final String RESULT_DATA_PATH = "$.data";
     protected final ObjectMapper objectMapper = new ObjectMapper();
 
+    /**
+     * 可以覆盖该方法设定每次测试都将以该身份进行
+     *
+     * @return 模拟身份
+     */
+    protected Login allRunWith() {
+        return allRunWith;
+    }
+
+    /**
+     * 将以target为当前身份运行之后所有的程序
+     *
+     * @param target
+     * @see #allRunWith()
+     */
+    protected void updateAllRunWith(Login target) {
+        allRunWith = target;
+    }
+
+
+    @Override
+    protected final Authentication autoAuthentication() {
+        Login login = allRunWith();
+        if (login == null)
+            return null;
+        return new LoginAuthentication(login.getId(), loginService);
+    }
 
     /**
      * @return 生成一个新的微信帐号，并且应用在系统中
@@ -173,6 +205,10 @@ public abstract class CoreServiceTest extends SpringWebTest {
                 , randomMobile(), randomChinese(3), null);
     }
 
+    protected Login mockRoot() throws Exception{
+        Login login = mockLogin();
+        return loginService.upOrDowngradeToRoot(login.getId(),true);
+    }
     /**
      * 生成一个商户管理员
      *

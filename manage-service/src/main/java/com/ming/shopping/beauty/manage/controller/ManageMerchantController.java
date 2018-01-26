@@ -18,6 +18,7 @@ import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,9 +28,12 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
+import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -81,7 +85,7 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "请求数据"), null));
         }
-        Merchant merchant = merchantService.addMerchant((long) otherData.get(param), postData);
+        Merchant merchant = merchantService.addMerchant(Long.parseLong(otherData.get(param).toString()), postData);
         return ResponseEntity
                 .created(new URI("/merchant/" + merchant.getId()))
                 .build();
@@ -91,18 +95,17 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
      * 启用/禁用 商户
      *
      * @param loginId
-     * @param putData
+     * @param enable
      */
     @PutMapping("/{merchantId}")
     @PreAuthorize("hasAnyRole('ROOT')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void setEnable(@PathVariable("merchantId") long loginId, Map<String, Boolean> putData) {
-        final String param = "enable";
-        if (putData.get(param) != null) {
-            merchantService.freezeOrEnable(loginId, putData.get(param));
+    public void setEnable(@PathVariable("merchantId") long loginId,@RequestBody Boolean enable) {
+        if (enable != null) {
+            merchantService.freezeOrEnable(loginId, enable);
         } else {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
-                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), param), null));
+                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), enable), null));
         }
     }
 
@@ -154,6 +157,7 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
      */
     @PostMapping("/{merchantId}/manage/{manageId}")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
+    @ResponseStatus(HttpStatus.CREATED)
     public void addMerchantManage(@PathVariable long merchantId, @PathVariable long manageId) {
         merchantService.addMerchant(manageId, merchantId);
     }
@@ -163,24 +167,24 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
      *
      * @param merchantId
      * @param manageId
-     * @param putData
+     * @param enable
      */
     @PutMapping("/{merchantId}/manage/{manageId}")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
-    public void enableMerchantManage(@PathVariable long merchantId, @PathVariable long manageId, Map<String, Boolean> putData) {
-        final String param = "enable";
-        if (putData.get(param) != null) {
-            merchantService.freezeOrEnable(manageId, putData.get(param));
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void enableMerchantManage(@PathVariable long merchantId, @PathVariable long manageId, @RequestBody Boolean enable) {
+        if (enable != null) {
+            merchantService.freezeOrEnable(manageId, enable);
         } else {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
-                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), param), null));
+                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), enable), null));
         }
     }
 
     @Override
     protected List<FieldDefinition<Merchant>> listFields() {
         return Arrays.asList(
-                FieldBuilder.asName(Merchant.class, "loginId")
+                FieldBuilder.asName(Merchant.class, "merchantId")
                         .addSelect(merchantRoot -> merchantRoot.get(Merchant_.id))
                         .build()
                 , FieldBuilder.asName(Merchant.class, "username")
@@ -202,7 +206,7 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
                 , FieldBuilder.asName(Merchant.class, "enabled")
                         .addSelect(merchantRoot -> merchantRoot.get(Merchant_.enabled))
                         .build()
-                , FieldBuilder.asName(Merchant.class, "createtime")
+                , FieldBuilder.asName(Merchant.class, "createTime")
                         .addSelect(merchantRoot -> merchantRoot.get(Merchant_.createTime))
                         .addFormat((data, type) -> conversionService.convert(data, String.class))
                         .build()
@@ -232,15 +236,20 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
                 , FieldBuilder.asName(Merchant.class, "enabled")
                         .addSelect(merchantRoot -> merchantRoot.get(Merchant_.enabled))
                         .build()
-                , FieldBuilder.asName(Merchant.class, "level")
+                //TODO ManageLevel的问题
+                /*, FieldBuilder.asName(Merchant.class, "level")
                         .addSelect(merchantRoot -> merchantRoot.join(Merchant_.login, JoinType.LEFT).get(Login_.levelSet))
                         .addFormat((data, type) -> {
                             Set<ManageLevel> levelSet = (Set<ManageLevel>) data;
                             return levelSet.stream().map(ManageLevel::title).collect(Collectors.joining(","));
                         })
-                        .build()
-                , FieldBuilder.asName(Merchant.class, "createtime")
+                        .build()*/
+                , FieldBuilder.asName(Merchant.class, "createTime")
                         .addSelect(merchantRoot -> merchantRoot.get(Merchant_.createTime))
+                        .addFormat((data,type)-> {
+                            String format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(((LocalDateTime) data));
+                            return format;
+                        })
                         .build()
         );
     }
