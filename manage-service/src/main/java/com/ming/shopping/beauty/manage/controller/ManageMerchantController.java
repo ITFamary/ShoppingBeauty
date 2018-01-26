@@ -4,7 +4,6 @@ import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Login_;
 import com.ming.shopping.beauty.service.entity.login.Merchant;
 import com.ming.shopping.beauty.service.entity.login.Merchant_;
-import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
@@ -15,10 +14,10 @@ import me.jiangcai.crud.row.RowCustom;
 import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
+import me.jiangcai.crud.row.supplier.SingleRowDramatizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,14 +27,15 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
-import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author helloztt
@@ -91,6 +91,43 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
                 .build();
     }
 
+    @Override
+    @GetMapping("/{merchantId}")
+    @PreAuthorize("hasAnyRole('ROOT')")
+    @RowCustom(distinct = true, dramatizer = SingleRowDramatizer.class)
+    public RowDefinition<Merchant> getOne(@PathVariable("merchantId") Long merchantId) {
+        return new RowDefinition<Merchant>() {
+
+            @Override
+            public Class<Merchant> entityClass() {
+                return Merchant.class;
+            }
+
+            @Override
+            public List<FieldDefinition<Merchant>> fields() {
+                return Arrays.asList(
+                        FieldBuilder.asName(Merchant.class, "id")
+                                .build()
+                        , FieldBuilder.asName(Merchant.class, "name")
+                                .build()
+                        , FieldBuilder.asName(Merchant.class, "telephone")
+                                .build()
+                        , FieldBuilder.asName(Merchant.class, "contact")
+                                .build()
+                        , FieldBuilder.asName(Merchant.class, "enabled")
+                                .build()
+                        , FieldBuilder.asName(Merchant.class, "stores")
+                                .build()
+                );
+            }
+
+            @Override
+            public Specification<Merchant> specification() {
+                return ((root, query, cb) -> cb.equal(root.get(Merchant_.id), merchantId));
+            }
+        };
+    }
+
     /**
      * 启用/禁用 商户
      *
@@ -100,7 +137,7 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
     @PutMapping("/{merchantId}")
     @PreAuthorize("hasAnyRole('ROOT')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void setEnable(@PathVariable("merchantId") long loginId,@RequestBody Boolean enable) {
+    public void setEnable(@PathVariable("merchantId") long loginId, @RequestBody Boolean enable) {
         if (enable != null) {
             merchantService.freezeOrEnable(loginId, enable);
         } else {
@@ -246,7 +283,7 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
                         .build()*/
                 , FieldBuilder.asName(Merchant.class, "createTime")
                         .addSelect(merchantRoot -> merchantRoot.get(Merchant_.createTime))
-                        .addFormat((data,type)-> {
+                        .addFormat((data, type) -> {
                             String format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(((LocalDateTime) data));
                             return format;
                         })
@@ -261,4 +298,5 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
                         , cb.equal(root.join(Merchant_.merchant, JoinType.LEFT).get(Merchant_.id), merchantId)
                 );
     }
+
 }
