@@ -6,20 +6,36 @@ import com.ming.shopping.beauty.service.config.ServiceConfig;
 import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.item.RechargeCard;
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
-import com.ming.shopping.beauty.service.entity.login.*;
+import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.entity.login.Merchant;
+import com.ming.shopping.beauty.service.entity.login.Represent;
+import com.ming.shopping.beauty.service.entity.login.Store;
+import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.support.AuditStatus;
+import com.ming.shopping.beauty.service.model.definition.DefinitionModel;
 import com.ming.shopping.beauty.service.model.request.ItemSearcherBody;
 import com.ming.shopping.beauty.service.model.request.LoginOrRegisterBody;
-import com.ming.shopping.beauty.service.service.*;
+import com.ming.shopping.beauty.service.service.ItemService;
+import com.ming.shopping.beauty.service.service.LoginService;
+import com.ming.shopping.beauty.service.service.MainOrderService;
+import com.ming.shopping.beauty.service.service.MerchantService;
+import com.ming.shopping.beauty.service.service.RechargeCardService;
+import com.ming.shopping.beauty.service.service.RepresentService;
+import com.ming.shopping.beauty.service.service.StoreItemService;
+import com.ming.shopping.beauty.service.service.StoreService;
+import com.ming.shopping.beauty.service.service.SystemService;
 import com.ming.shopping.beauty.service.utils.Constant;
 import com.ming.shopping.beauty.service.utils.LoginAuthentication;
+import me.jiangcai.crud.row.IndefiniteFieldDefinition;
 import me.jiangcai.lib.test.SpringWebTest;
 import me.jiangcai.wx.model.Gender;
 import me.jiangcai.wx.model.WeixinUserDetail;
 import me.jiangcai.wx.standard.entity.StandardWeixinUser;
 import me.jiangcai.wx.test.WeixinTestConfig;
 import me.jiangcai.wx.test.WeixinUserMocker;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -36,8 +52,9 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -205,10 +222,11 @@ public abstract class CoreServiceTest extends SpringWebTest {
                 , randomMobile(), randomChinese(3), null);
     }
 
-    protected Login mockRoot() throws Exception{
+    protected Login mockRoot() throws Exception {
         Login login = mockLogin();
-        return loginService.upOrDowngradeToRoot(login.getId(),true);
+        return loginService.upOrDowngradeToRoot(login.getId(), true);
     }
+
     /**
      * 生成一个商户管理员
      *
@@ -348,5 +366,49 @@ public abstract class CoreServiceTest extends SpringWebTest {
     protected <T extends Enum> T randomEnum(Class<T> enumCls) {
         T[] enumArr = enumCls.getEnumConstants();
         return enumArr[random.nextInt(enumArr.length)];
+    }
+
+    /**
+     * @param model 特定Model
+     * @return 生成一个Matcher 可以比较响应跟Model约定的区别
+     */
+    protected Matcher<?> matchModel(DefinitionModel<?> model) {
+        return new Matcher<Object>() {
+            @Override
+            public boolean matches(Object item) {
+                assertThat(item)
+                        .describedAs("不可为空")
+                        .isNotNull()
+                        .describedAs("必须是一个Map")
+                        .isInstanceOf(Map.class);
+                @SuppressWarnings("unchecked")
+                Map<String, ?> map = (Map<String, ?>) item;
+                assertThat(
+                        map.keySet()
+                )
+                        .describedAs("键值必须满足" + model + "所定义")
+                        .hasSameElementsAs(
+                                model.getDefinitions().stream()
+                                        .map(IndefiniteFieldDefinition::name)
+                                        .collect(Collectors.toSet())
+                        );
+                return true;
+            }
+
+            @Override
+            public void describeMismatch(Object item, Description mismatchDescription) {
+                mismatchDescription.appendText("不满足" + model + "的定义");
+            }
+
+            @Override
+            public void _dont_implement_Matcher___instead_extend_BaseMatcher_() {
+
+            }
+
+            @Override
+            public void describeTo(Description description) {
+
+            }
+        };
     }
 }

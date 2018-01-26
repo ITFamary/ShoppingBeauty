@@ -34,6 +34,7 @@ public class Store implements CrudFriendly<Long> {
     /**
      * 所属门店
      */
+    @ManyToOne
     private Store store;
     /**
      * 门店名称

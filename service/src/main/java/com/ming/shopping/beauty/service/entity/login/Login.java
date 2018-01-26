@@ -10,8 +10,15 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.CollectionUtils;
 
-import javax.persistence.*;
-
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToOne;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,7 +38,7 @@ import static com.ming.shopping.beauty.service.utils.Constant.DATE_COLUMN_DEFINI
 @Entity
 @Setter
 @Getter
-public class Login implements UserDetails,CrudFriendly<Long> {
+public class Login implements UserDetails, CrudFriendly<Long> {
     /**
      * 商户超管及操作员
      */
@@ -106,8 +113,7 @@ public class Login implements UserDetails,CrudFriendly<Long> {
      */
     private boolean manageable;
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
+    public static Collection<? extends GrantedAuthority> getGrantedAuthorities(Set<ManageLevel> levelSet) {
         if (CollectionUtils.isEmpty(levelSet)) {
             return Collections.emptySet();
         }
@@ -117,6 +123,11 @@ public class Login implements UserDetails,CrudFriendly<Long> {
                 .map(ManageLevel::roleNameToRole)
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return getGrantedAuthorities(levelSet);
     }
 
     @Override
