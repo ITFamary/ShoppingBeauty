@@ -3,7 +3,7 @@ package com.ming.shopping.beauty.service.model.request;
 import lombok.Data;
 
 /**
- * @author
+ * @author lxf
  */
 @Data
 public class NewMerchantBody {

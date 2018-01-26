@@ -24,6 +24,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * @author lxf
+ */
 public class ManageMerchantControllerTest extends ManageConfigTest {
 
     @Autowired
@@ -94,6 +97,12 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse().getHeader("Location");
+
+        //访问详情
+        MvcResult mvcResult = mockMvc.perform(get(merchantCreationUri))
+                .andDo(print())
+                .andReturn();
+        String contentAsString = mvcResult.getResponse().getContentAsString();
         //启用
         enableMerchant(willMerchant.getId());
 
@@ -169,10 +178,10 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
                 .isFalse();
 
         //查看详情
-        manageDetail(willMerchantManage.getId(),merchant.getMerchantId());
+        manageDetail(willMerchantManage.getId(), merchant.getMerchantId());
     }
 
-    private void manageDetail(long id, long merchantId)throws Exception {
+    private void manageDetail(long id, long merchantId) throws Exception {
 //        mockMvc.perform(get("/merchant/"+merchantId+"/manage/"+id))
 //                .andDo(print())
 //                .andReturn();

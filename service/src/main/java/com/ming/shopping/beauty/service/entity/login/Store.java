@@ -31,6 +31,9 @@ public class Store implements CrudFriendly<Long> {
     @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.PERSIST}, optional = false)
     @PrimaryKeyJoinColumn(name = "id", referencedColumnName = "id")
     private Login login;
+
+    @ManyToOne
+    private Merchant merchant;
     /**
      * 所属门店
      */

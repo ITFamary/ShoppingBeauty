@@ -71,7 +71,7 @@ public class Merchant implements CrudFriendly<Long> {
      */
     @OneToMany
     @OrderBy("createTime desc")
-    private List<Store> Stores;
+    private List<Store> stores;
 
     @Column(columnDefinition = DATE_COLUMN_DEFINITION)
     private LocalDateTime createTime;
