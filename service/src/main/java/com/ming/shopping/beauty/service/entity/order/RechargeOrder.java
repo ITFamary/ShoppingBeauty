@@ -34,6 +34,9 @@ public class RechargeOrder implements PayableOrder {
     @Column(columnDefinition = Constant.DATE_COLUMN_DEFINITION)
     private LocalDateTime createTime;
 
+    @Column(columnDefinition = Constant.DATE_NULLABLE_COLUMN_DEFINITION)
+    private LocalDateTime payTime;
+
     @Override
     public Serializable getPayableOrderId() {
         return "recharge-" + getOrderId();

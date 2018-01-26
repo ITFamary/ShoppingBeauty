@@ -33,7 +33,7 @@
         <fastjson.version>1.2.8</fastjson.version>
         <vc.version>1.4.1</vc.version>
         <jiangcai.notice.version>3.1</jiangcai.notice.version>
-        <wx.version>2.1.3</wx.version>
+        <wx.version>2.1.4</wx.version>
     </properties>
 
     <distributionManagement>

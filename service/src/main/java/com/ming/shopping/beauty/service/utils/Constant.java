@@ -17,7 +17,7 @@ public class Constant {
     /**
      * 非空时间类型
      */
-    public static final String DATE_COLUMN_DEFINITION = "timestamp";
+    public static final String DATE_COLUMN_DEFINITION = "timestamp  NOT NULL DEFAULT CURRENT_TIMESTAMP";
     /**
      * 可为空的时间类型
      */
