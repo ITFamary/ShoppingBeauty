@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html  xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${title}">支付中</title>
+</head>
+<body>
+
+</body>
+<script>
+    var payJs = /*[[${payIs}]]*/ "";
+    if(payJs.length > 0){
+        document.write(payJs);
+    }
+</script>
+</html>

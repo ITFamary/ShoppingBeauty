@@ -18,6 +18,7 @@
         <property name="packagesToScan">
             <array>
                 <value>me.jiangcai.jpa.entity</value>
+                <value>me.jiangcai.payment.entity</value>
                 <value>me.jiangcai.wx.standard.entity</value>
                 <value>com.huotu.verification.entity</value>
                 <value>me.jiangcai.lib.sys.entity</value>

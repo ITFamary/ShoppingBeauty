@@ -31,6 +31,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Order;
@@ -41,7 +42,9 @@ import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author helloztt
@@ -91,9 +94,8 @@ public class CapitalController {
         };
     }
 
-    @PostMapping(value = "/deposit",produces = "application/x-www-form-urlencoded")
-    @ResponseStatus(HttpStatus.OK)
-    public void deposit(@AuthenticationPrincipal Login login, @Valid @RequestBody DepositBody postData
+    @PostMapping(value = "/deposit", produces = "application/x-www-form-urlencoded")
+    public ModelAndView deposit(@AuthenticationPrincipal Login login, @Valid @RequestBody DepositBody postData
             , BindingResult bindingResult, HttpServletRequest request, HttpServletResponse response) throws SystemMaintainException {
         if (bindingResult.hasErrors()) {
             throw new ApiResultException(
@@ -110,14 +112,20 @@ public class CapitalController {
             }
             //先新增一个支付订单
             RechargeOrder rechargeOrder = rechargeOrderService.newOrder(login.getUser(), postData.getDepositSum());
-            paymentService.startPay(request, rechargeOrder, weixinPaymentForm, null);
-            // TODO: 2018/1/16 走支付流程
+            //走支付流程
+            Map<String,Object> additionalParam = new HashMap<>(1);
+            additionalParam.put("redirectUrl",postData.getRedirectUrl());
+            return paymentService.startPay(request, rechargeOrder, weixinPaymentForm, additionalParam);
         } else if (!StringUtils.isEmpty(postData.getCdKey())) {
             //使用充值卡
             rechargeCardService.useCard(postData.getCdKey(), login.getId());
         } else {
             throw new ApiResultException((ApiResult.withError(ResultCodeEnum.NO_MONEY_CARD)));
         }
+        ModelAndView model = new ModelAndView();
+        model.setViewName("success");
+        model.addObject("redirectUrl",postData.getRedirectUrl());
+        return model;
     }
 
     private List<FieldDefinition<CapitalFlow>> listFields() {

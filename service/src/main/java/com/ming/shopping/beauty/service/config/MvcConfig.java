@@ -2,22 +2,32 @@ package com.ming.shopping.beauty.service.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ming.shopping.beauty.service.entity.support.AuditStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
-import org.springframework.http.MediaType;
 import org.springframework.http.converter.AbstractHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.ViewResolverRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
+import org.thymeleaf.extras.springsecurity4.dialect.SpringSecurityDialect;
+import org.thymeleaf.spring4.SpringTemplateEngine;
+import org.thymeleaf.spring4.templateresolver.SpringResourceTemplateResolver;
+import org.thymeleaf.spring4.view.ThymeleafViewResolver;
+import org.thymeleaf.templatemode.TemplateMode;
+import org.thymeleaf.templateresolver.ITemplateResolver;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,15 +37,16 @@ import java.util.List;
  */
 @Configuration
 @EnableWebMvc
-@Import({ServiceConfig.class})
-@ComponentScan({"com.ming.shopping.beauty.service.controller","com.ming.shopping.beauty.service.converter"})
+@Import({ServiceConfig.class, MvcConfig.ThymeleafConfig.class})
+@ComponentScan({"com.ming.shopping.beauty.service.controller", "com.ming.shopping.beauty.service.converter"})
 public class MvcConfig extends WebMvcConfigurerAdapter {
 
     private final ObjectMapper mapper = new ObjectMapper();
+
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
         super.configureMessageConverters(converters);
-        converters.add(new AbstractHttpMessageConverter<AuditStatus>(){
+        converters.add(new AbstractHttpMessageConverter<AuditStatus>() {
             @Override
             protected boolean supports(Class<?> clazz) {
                 return AuditStatus.class.equals(clazz);
@@ -44,13 +55,13 @@ public class MvcConfig extends WebMvcConfigurerAdapter {
             @Override
             protected AuditStatus readInternal(Class<? extends AuditStatus> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
                 String inputString = mapper.readTree(inputMessage.getBody()).asText();
-                logger.debug("greeting AuditStatus for "+inputString);
+                logger.debug("greeting AuditStatus for " + inputString);
                 return AuditStatus.valueOf(inputString);
             }
 
             @Override
             protected void writeInternal(AuditStatus status, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
-throw new HttpMessageNotWritableException("我不干");
+                throw new HttpMessageNotWritableException("我不干");
             }
         });
     }
@@ -80,5 +91,57 @@ throw new HttpMessageNotWritableException("我不干");
     @Bean
     public CommonsMultipartResolver multipartResolver() {
         return new CommonsMultipartResolver();
+    }
+
+    @Autowired
+    private ThymeleafViewResolver thymeleafViewResolver;
+
+    @Override
+    public void configureViewResolvers(ViewResolverRegistry registry) {
+        super.configureViewResolvers(registry);
+        registry.viewResolver(thymeleafViewResolver);
+    }
+
+    @Import(ThymeleafConfig.ThymeleafTemplateConfig.class)
+    static class ThymeleafConfig {
+        @Autowired
+        private TemplateEngine engine;
+
+        @Bean
+        private ThymeleafViewResolver thymeleafViewResolver() {
+            ThymeleafViewResolver viewResolver = new ThymeleafViewResolver();
+            viewResolver.setTemplateEngine(engine);
+            viewResolver.setCharacterEncoding("UTF-8");
+            viewResolver.setContentType("text/html;charset=UTF-8");
+            return viewResolver;
+        }
+
+        @ComponentScan("me.jiangcai.dating.web.thymeleaf")
+        static class ThymeleafTemplateConfig {
+
+            @Autowired
+            private WebApplicationContext webApplicationContext;
+
+            @Bean
+            public TemplateEngine templateEngine() throws IOException {
+                SpringTemplateEngine engine = new SpringTemplateEngine();
+                engine.setEnableSpringELCompiler(true);
+                engine.setTemplateResolver(templateResolver());
+                engine.addDialect(new Java8TimeDialect());
+                engine.addDialect(new SpringSecurityDialect());
+                return engine;
+            }
+
+            private ITemplateResolver templateResolver() throws IOException {
+                SpringResourceTemplateResolver resolver = new SpringResourceTemplateResolver();
+                resolver.setApplicationContext(webApplicationContext);
+                resolver.setCharacterEncoding("UTF-8");
+                resolver.setPrefix("/views/");
+                resolver.setSuffix(".html");
+                resolver.setTemplateMode(TemplateMode.HTML);
+                return resolver;
+            }
+        }
+
     }
 }
