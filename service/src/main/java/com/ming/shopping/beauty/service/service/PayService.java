@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * @author helloztt
  */
-public interface PayService extends PayableSystemService {
+public interface PayService {
 
     @EventListener(OrderPaySuccess.class)
     @Transactional

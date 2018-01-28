@@ -8,6 +8,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -23,16 +24,24 @@ public class ExceptionController {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @ExceptionHandler(ApiResultException.class)
-    @ResponseBody
-    public ApiResult noHandlerFound(ApiResultException exception, HttpServletResponse response) throws IOException {
-        // TODO: 2018-01-26 根据请求类型返回
+    public ModelAndView noHandlerFound(ApiResultException exception, HttpServletRequest request, HttpServletResponse response) throws IOException {
         //如果没有返回提示，获取原始message
+        String errorMsg;
         if (exception.getApiResult() == null) {
-            response.sendError(exception.getHttpStatus(), HttpStatus.valueOf(exception.getHttpStatus()).getReasonPhrase());
-            return null;
+            errorMsg = HttpStatus.valueOf(exception.getHttpStatus()).getReasonPhrase();
         } else {
-            response.sendError(exception.getHttpStatus(), exception.getApiResult().getMessage());
-            return exception.getApiResult();
+            errorMsg = exception.getApiResult().getMessage();
+        }
+        if(isAjaxRequestOrBackJson(request)){
+            response.sendError(exception.getHttpStatus(),errorMsg);
+            response.getOutputStream().print(objectMapper.writeValueAsString(exception.getApiResult()));
+            return null;
+        }else{
+            ModelAndView modelAndView = new ModelAndView();
+            modelAndView.setViewName("/views/error");
+            modelAndView.addObject("status", exception.getHttpStatus());
+            modelAndView.addObject("exception", errorMsg);
+            return modelAndView;
         }
     }
 

@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -47,12 +48,12 @@ public class CapitalControllerTest extends ClientConfigTest {
                 .session(loginSession)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(postData)))
-                .andExpect(status().is(HttpStatusCustom.SC_DATA_NOT_VALIDATE))
-                .andExpect(jsonPath(RESULT_CODE_PATH).value(ResultCodeEnum.NO_MONEY_CARD.getCode()));
+                .andExpect(model().attribute("status",HttpStatusCustom.SC_DATA_NOT_VALIDATE))
+                .andExpect(model().attribute("message",ResultCodeEnum.NO_MONEY_CARD.getMessage()));
         postData.setDepositSum(BigDecimal.ONE);
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .content(objectMapper.writeValueAsString(postData)))
                 .andExpect(status().is(HttpStatusCustom.SC_DATA_NOT_VALIDATE))
                 .andExpect(jsonPath(RESULT_CODE_PATH).value(ResultCodeEnum.RECHARGE_MONEY_NOT_ENOUGH.getCode()));
@@ -60,7 +61,7 @@ public class CapitalControllerTest extends ClientConfigTest {
         postData.setCdKey("123");
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .content(objectMapper.writeValueAsString(postData)))
                 .andExpect(status().is(HttpStatusCustom.SC_DATA_NOT_VALIDATE))
                 .andExpect(jsonPath(RESULT_CODE_PATH).value(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()));
@@ -68,7 +69,7 @@ public class CapitalControllerTest extends ClientConfigTest {
         postData.setCdKey(String.format("%20d", 0));
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .content(objectMapper.writeValueAsString(postData)))
                 .andExpect(status().is(HttpStatusCustom.SC_DATA_NOT_VALIDATE))
                 .andExpect(jsonPath(RESULT_CODE_PATH).value(ResultCodeEnum.CARD_NOT_EXIST.getCode()));

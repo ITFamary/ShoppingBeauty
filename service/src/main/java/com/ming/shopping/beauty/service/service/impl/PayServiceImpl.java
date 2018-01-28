@@ -32,45 +32,6 @@ public class PayServiceImpl implements PayService {
     private RechargeOrderRepository rechargeOrderRepository;
 
     @Override
-    public ModelAndView paySuccess(HttpServletRequest request, PayableOrder payableOrder, PayOrder payOrder) {
-        if (payOrder instanceof WeixinPayOrder) {
-            return new ModelAndView("redirect:" + ((WeixinPayOrder) payOrder).getRedirectUrl());
-        } else {
-            throw new IllegalStateException("暂时不支持：" + payableOrder);
-        }
-    }
-
-    @Override
-    @Transactional(rollbackFor = RuntimeException.class)
-    public ModelAndView pay(HttpServletRequest request, PayableOrder order, PayOrder payOrder, Map<String, Object> additionalParameters) {
-        ModelAndView modelAndView = new ModelAndView();
-        if (payOrder instanceof WeixinPayOrder) {
-            WeixinPayOrder weixinPayOrder = (WeixinPayOrder) payOrder;
-            weixinPayOrder.setRedirectUrl(additionalParameters.get("redirectUrl").toString());
-            modelAndView.setViewName("paying");
-            modelAndView.addObject("title", order.getOrderBody());
-            if (!StringUtils.isEmpty(weixinPayOrder.getJavascriptToPay())) {
-                //公众号H5支付
-                modelAndView.addObject("payJs", weixinPayOrder.getJavascriptToPay());
-            } else if (!StringUtils.isEmpty(weixinPayOrder.getCodeUrl())) {
-                //微信扫码支付
-                modelAndView.addObject("codeUrl", weixinPayOrder.getCodeUrl());
-            }
-        }
-        return modelAndView;
-    }
-
-    @Override
-    public boolean isPaySuccess(String id) {
-        return false;
-    }
-
-    @Override
-    public PayableOrder getOrder(String id) {
-        return null;
-    }
-
-    @Override
     public void paySuccess(OrderPaySuccess event) {
         log.info("处理付款成功事件");
         if (event.getPayableOrder() instanceof RechargeOrder) {
