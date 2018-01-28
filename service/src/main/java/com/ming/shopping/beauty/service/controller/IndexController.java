@@ -6,11 +6,13 @@ import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
+import com.ming.shopping.beauty.service.model.definition.ManagerModel;
 import com.ming.shopping.beauty.service.model.request.LoginOrRegisterBody;
 import com.ming.shopping.beauty.service.service.LoginRequestService;
 import com.ming.shopping.beauty.service.service.LoginService;
 import com.ming.shopping.beauty.service.service.SystemService;
 import com.ming.shopping.beauty.service.utils.LoginAuthentication;
+import me.jiangcai.crud.row.RowService;
 import me.jiangcai.wx.OpenId;
 import me.jiangcai.wx.model.WeixinUserDetail;
 import org.apache.commons.logging.Log;
@@ -18,8 +20,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpRequestResponseHolder;
@@ -28,7 +29,12 @@ import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -133,33 +139,23 @@ public class IndexController {
      */
     @GetMapping(value = "/managerLoginRequest")
     @ResponseBody
-    public Object managerLoginRequest(HttpServletRequest request, HttpServletResponse response) {
+    public Object managerLoginRequest(@AuthenticationPrincipal Object principal, HttpServletRequest request, HttpServletResponse response) {
         //判断是否登录
         String sessionId = request.getSession().getId();
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Map<String, Object> result = new HashMap<>();
-        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+        final Map<String, Object> result;
+        if (principal instanceof String) {
             LoginRequest loginRequest = loginRequestService.newRequest(sessionId);
             response.setStatus(HttpStatusCustom.SC_ACCEPTED);
-            String text = systemService.toUrl("/managerLogin/" + sessionId);
+            String text = systemService.toUrl("/managerLogin/" + loginRequest.getId());
+            result = new HashMap<>();
             result.put("id", loginRequest.getId());
             result.put("url", text);
-        } else if (authentication instanceof LoginAuthentication) {
-            Login login = (Login) authentication.getPrincipal();
-            result.put("id", login.getId());
-            result.put("username", authentication.getName());
-            result.put("nickname", login.getNickName());
-            result.put("enabled", true);
-            result.put("authorities", authentication.getAuthorities().toArray());
-            if (login.getMerchant() != null) {
-                result.put("merchantId", login.getMerchant().getMerchantId());
-            }
-            if (login.getStore() != null) {
-                result.put("storeId", login.getStore().getStoreId());
-            }
-            result.put("createTime", conversionService.convert(login.getCreateTime(), String.class));
+        } else if (principal instanceof Login) {
+            Login login = (Login) principal;
+            result = RowService.drawEntityToRow(login, new ManagerModel(conversionService).getDefinitions(), null);
             response.setStatus(HttpStatusCustom.SC_OK);
-        }
+        } else
+            throw new IllegalStateException("这是什么登录情况：" + principal);
         return result;
     }
 
@@ -186,30 +182,42 @@ public class IndexController {
 //            loginRequestService.remove(requestId);
         } else {
             //执行登录
-            loginToSecurity(login, request, response);
+            loginToSecurity(login, request, response); // TODO 微信端扫码用户还需要再次登录么？
             loginRequestService.login(requestId, login);
             response.setStatus(HttpStatusCustom.SC_OK);
         }
     }
 
+    @GetMapping("/currentManager")
+    @ResponseBody
+    public Object currentManager(@AuthenticationPrincipal Object principal, HttpServletResponse response) {
+        if (principal instanceof String) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return null;
+        } else {
+            return RowService.drawEntityToRow(principal, new ManagerModel(conversionService).getDefinitions(), null);
+        }
+    }
+
     /**
      * 管理登录结果
-     *
-     * @param requestId
-     * @param response
      */
     @GetMapping("/manageLoginResult/{requestId}")
     @ResponseBody
-    public void manageLoginResult(@PathVariable long requestId, HttpServletResponse response) {
+    public Object manageLoginResult(@PathVariable long requestId, HttpServletRequest request, HttpServletResponse response) {
         LoginRequest loginRequest = loginRequestService.findOne(requestId);
         if (loginRequest == null) {
             //session已失效，请重新获取二维码
             response.setStatus(HttpStatusCustom.SC_SESSION_TIMEOUT);
+            return null;
         } else if (loginRequest.getLogin() == null) {
             //登录尚未被获准
             response.setStatus(HttpStatusCustom.SC_NO_CONTENT);
+            return null;
         } else {
+            loginToSecurity(loginRequest.getLogin(), request, response);
             response.setStatus(HttpStatusCustom.SC_OK);
+            return RowService.drawEntityToRow(loginRequest.getLogin(), new ManagerModel(conversionService).getDefinitions(), null);
         }
     }
 

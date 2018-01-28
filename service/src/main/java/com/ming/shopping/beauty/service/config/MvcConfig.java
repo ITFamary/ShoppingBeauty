@@ -43,28 +43,28 @@ public class MvcConfig extends WebMvcConfigurerAdapter {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
-    @Override
-    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-        super.configureMessageConverters(converters);
-        converters.add(new AbstractHttpMessageConverter<AuditStatus>() {
-            @Override
-            protected boolean supports(Class<?> clazz) {
-                return AuditStatus.class.equals(clazz);
-            }
-
-            @Override
-            protected AuditStatus readInternal(Class<? extends AuditStatus> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
-                String inputString = mapper.readTree(inputMessage.getBody()).asText();
-                logger.debug("greeting AuditStatus for " + inputString);
-                return AuditStatus.valueOf(inputString);
-            }
-
-            @Override
-            protected void writeInternal(AuditStatus status, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
-                throw new HttpMessageNotWritableException("我不干");
-            }
-        });
-    }
+//    @Override
+//    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+//        super.configureMessageConverters(converters);
+//        converters.add(new AbstractHttpMessageConverter<AuditStatus>() {
+//            @Override
+//            protected boolean supports(Class<?> clazz) {
+//                return AuditStatus.class.equals(clazz);
+//            }
+//
+//            @Override
+//            protected AuditStatus readInternal(Class<? extends AuditStatus> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
+//                String inputString = mapper.readTree(inputMessage.getBody()).asText();
+//                logger.debug("greeting AuditStatus for " + inputString);
+//                return AuditStatus.valueOf(inputString);
+//            }
+//
+//            @Override
+//            protected void writeInternal(AuditStatus status, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
+//                throw new HttpMessageNotWritableException("我不干");
+//            }
+//        });
+//    }
 
     @Override
     public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
@@ -83,6 +83,24 @@ public class MvcConfig extends WebMvcConfigurerAdapter {
             converters.remove(json);
             converters.add(index, json);
         }
+        converters.add(new AbstractHttpMessageConverter<AuditStatus>() {
+            @Override
+            protected boolean supports(Class<?> clazz) {
+                return AuditStatus.class.equals(clazz);
+            }
+
+            @Override
+            protected AuditStatus readInternal(Class<? extends AuditStatus> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
+                String inputString = mapper.readTree(inputMessage.getBody()).asText();
+                logger.debug("greeting AuditStatus for " + inputString);
+                return AuditStatus.valueOf(inputString);
+            }
+
+            @Override
+            protected void writeInternal(AuditStatus status, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
+                throw new HttpMessageNotWritableException("我不干");
+            }
+        });
     }
 
     /**

@@ -118,7 +118,7 @@ public class MerchantServiceImpl implements MerchantService {
         if (merchant == null) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.LOGIN_NOT_EXIST));
         }
-        if (merchant.isMerchantUsable()) {
+        if (!merchant.isMerchantUsable()) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.MERCHANT_NOT_ENABLE));
         }
         if (!merchant.isManageable() && !merchant.isEnabled()) {

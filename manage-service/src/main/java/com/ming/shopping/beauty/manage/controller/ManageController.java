@@ -6,6 +6,7 @@ import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
+import com.ming.shopping.beauty.service.model.definition.ManagerModel;
 import com.ming.shopping.beauty.service.service.LoginService;
 import me.jiangcai.crud.controller.AbstractCrudController;
 import me.jiangcai.crud.row.FieldDefinition;
@@ -84,24 +85,7 @@ public class ManageController extends AbstractCrudController<Login, Long> {
 
     @Override
     protected List<FieldDefinition<Login>> listFields() {
-        return Arrays.asList(
-                Fields.asBasic("id")
-                , FieldBuilder.asName(Login.class, "username")
-                        .addSelect(loginRoot -> loginRoot.get(Login_.loginName))
-                        .build()
-                , Fields.asBasic("enabled")
-                , FieldBuilder.asName(Login.class, "level")
-                        .addSelect(loginRoot -> loginRoot.get(Login_.levelSet))
-                        .addFormat((data, type) -> {
-                            Set<ManageLevel> levelSet = (Set<ManageLevel>) data;
-                            return levelSet.stream().map(ManageLevel::title).collect(Collectors.joining(","));
-                        })
-                        .build()
-                , FieldBuilder.asName(Login.class, "createTime")
-                        .addSelect(loginRoot -> loginRoot.get(Login_.createTime))
-                        .addFormat((data, type) -> conversionService.convert(data, String.class))
-                        .build()
-        );
+        return new ManagerModel(conversionService).getDefinitions();
     }
 
     @Override

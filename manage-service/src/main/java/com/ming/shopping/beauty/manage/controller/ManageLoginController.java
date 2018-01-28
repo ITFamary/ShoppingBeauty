@@ -42,8 +42,10 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
      */
     @Override
     @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
-    public Object getOne(Long aLong) {
-        return super.getOne(aLong);
+    @GetMapping("/{id}")
+    @ResponseBody
+    public Object getOne(@PathVariable("id") Long aLong) {
+        return loginService.findOne(aLong);
     }
 
     /**
