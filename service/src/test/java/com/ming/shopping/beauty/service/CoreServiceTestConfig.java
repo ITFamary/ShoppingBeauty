@@ -31,7 +31,7 @@ import java.util.List;
  * @author helloztt
  */
 @Configuration
-@ImportResource("classpath:/datasource_local.xml")
+@ImportResource("classpath:/service_config_test.xml")
 @PropertySource({"classpath:/test_wx.properties"})
 @Import({WeixinTestConfig.class, VerificationCodeTestConfig.class
         , ServiceConfig.class, MvcConfig.class, SecurityConfig.class})

@@ -7,15 +7,14 @@ import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.model.request.DepositBody;
 import org.junit.Test;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * @author helloztt
@@ -46,51 +45,54 @@ public class CapitalControllerTest extends ClientConfigTest {
         //1、格式错误
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(postData)))
-                .andExpect(model().attribute("status",HttpStatusCustom.SC_DATA_NOT_VALIDATE))
-                .andExpect(model().attribute("message",ResultCodeEnum.NO_MONEY_CARD.getMessage()));
+                .header(HttpHeaders.ACCEPT,MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .content(objectMapper.writeValueAsString(postData))
+                .contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(model().attribute("status",HttpStatusCustom.SC_DATA_NOT_VALIDATE));
         postData.setDepositSum(BigDecimal.ONE);
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .header(HttpHeaders.ACCEPT,MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(objectMapper.writeValueAsString(postData)))
-                .andExpect(status().is(HttpStatusCustom.SC_DATA_NOT_VALIDATE))
-                .andExpect(jsonPath(RESULT_CODE_PATH).value(ResultCodeEnum.RECHARGE_MONEY_NOT_ENOUGH.getCode()));
+                .andExpect(model().attribute("status",HttpStatusCustom.SC_DATA_NOT_VALIDATE));
         postData.setDepositSum(null);
         postData.setCdKey("123");
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .header(HttpHeaders.ACCEPT,MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(objectMapper.writeValueAsString(postData)))
-                .andExpect(status().is(HttpStatusCustom.SC_DATA_NOT_VALIDATE))
-                .andExpect(jsonPath(RESULT_CODE_PATH).value(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()));
+                .andExpect(model().attribute("status",HttpStatusCustom.SC_DATA_NOT_VALIDATE));
         //2、错误的充值卡
         postData.setCdKey(String.format("%20d", 0));
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .header(HttpHeaders.ACCEPT,MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(objectMapper.writeValueAsString(postData)))
-                .andExpect(status().is(HttpStatusCustom.SC_DATA_NOT_VALIDATE))
-                .andExpect(jsonPath(RESULT_CODE_PATH).value(ResultCodeEnum.CARD_NOT_EXIST.getCode()));
+                .andExpect(model().attribute("status",HttpStatusCustom.SC_DATA_NOT_VALIDATE))
+                .andExpect(status().is(HttpStatusCustom.SC_DATA_NOT_VALIDATE));
         //3、正确的充值卡
         RechargeCard rechargeCard = mockRechargeCard(null, null);
         postData.setCdKey(rechargeCard.getCode());
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
-                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.ACCEPT,MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(objectMapper.writeValueAsString(postData)))
-                .andExpect(status().isOk());
+                .andExpect(status().isFound());
         mockLogin = loginService.findOne(mockLogin.getId());
         assertThat(mockLogin.getUser().isActive()).isTrue();
         assertThat(mockLogin.getUser().getCurrentAmount().compareTo(rechargeCard.getAmount())).isEqualTo(0);
         //4、已被使用的充值卡
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
-                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.ACCEPT,MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(objectMapper.writeValueAsString(postData)))
                 .andExpect(status().is(HttpStatusCustom.SC_DATA_NOT_VALIDATE))
-                .andExpect(jsonPath(RESULT_CODE_PATH).value(ResultCodeEnum.CARD_ALREADY_USED.getCode()));
+                .andExpect(model().attribute("status",HttpStatusCustom.SC_DATA_NOT_VALIDATE));
         //5、查询流水
         mockMvc.perform(get(FLOW)
                 .session(loginSession))

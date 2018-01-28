@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -32,15 +33,15 @@ public class ExceptionController {
         } else {
             errorMsg = exception.getApiResult().getMessage();
         }
+        response.sendError(exception.getHttpStatus(),errorMsg);
         if(isAjaxRequestOrBackJson(request)){
-            response.sendError(exception.getHttpStatus(),errorMsg);
-            response.getOutputStream().print(objectMapper.writeValueAsString(exception.getApiResult()));
+            response.getWriter().write(objectMapper.writeValueAsString(exception.getApiResult()));
             return null;
         }else{
             ModelAndView modelAndView = new ModelAndView();
             modelAndView.setViewName("/views/error");
             modelAndView.addObject("status", exception.getHttpStatus());
-            modelAndView.addObject("exception", errorMsg);
+            modelAndView.addObject("message", errorMsg);
             return modelAndView;
         }
     }
@@ -53,9 +54,7 @@ public class ExceptionController {
     private boolean isAjaxRequestOrBackJson(HttpServletRequest request) {
         String accept = request.getHeader("accept");
         String x_request_with = request.getHeader("X-Requested-With");
-        if (!StringUtils.isEmpty(accept) && accept.toLowerCase().contains("application/json")) return true;
-        if (!StringUtils.isEmpty(x_request_with) && x_request_with.toLowerCase().contains("xmlhttprequest"))
-            return true;
-        return false;
+        if (!StringUtils.isEmpty(accept) && accept.toLowerCase().contains(MediaType.APPLICATION_FORM_URLENCODED_VALUE)) return false;
+        return true;
     }
 }

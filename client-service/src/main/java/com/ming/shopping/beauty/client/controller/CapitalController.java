@@ -123,8 +123,7 @@ public class CapitalController {
             throw new ApiResultException((ApiResult.withError(ResultCodeEnum.NO_MONEY_CARD)));
         }
         ModelAndView model = new ModelAndView();
-        model.setViewName("success");
-        model.addObject("redirectUrl",postData.getRedirectUrl());
+        model.setViewName("redirect:" + postData.getRedirectUrl());
         return model;
     }
 

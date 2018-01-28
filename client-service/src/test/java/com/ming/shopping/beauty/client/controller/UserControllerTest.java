@@ -38,6 +38,7 @@ public class UserControllerTest extends ClientConfigTest {
         //未激活用户请求会员卡
         mockMvc.perform(get(vipCardUrl)
                 .session(unActiveUserSession))
+                .andDo(print())
                 .andExpect(status().is(HttpStatusCustom.SC_DATA_NOT_VALIDATE))
                 .andExpect(jsonPath(RESULT_CODE_PATH).value(ResultCodeEnum.USER_NOT_ACTIVE.getCode()));
 

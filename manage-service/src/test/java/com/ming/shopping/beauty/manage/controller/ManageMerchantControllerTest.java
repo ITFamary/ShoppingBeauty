@@ -52,11 +52,13 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
         Long id = merchant.getId();
         //查看商户列表看是否有这个商户
         MvcResult mvcResult = mockMvc.perform(get("/merchant"))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn();
         String contentAsString = mvcResult.getResponse().getContentAsString();
         //有这个id的
-        assertThat(id).isEqualTo(objectMapper.readTree(contentAsString).get("list").get(0).get("loginId").asLong());
+        System.out.println("merchantList:" + contentAsString);
+        assertThat(id).isEqualTo(objectMapper.readTree(contentAsString).get("list").get(0).get("id").asLong());
         //再添加一个商户
         Merchant merchant1 = mockMerchant();
         Long id1 = merchant1.getId();
@@ -71,8 +73,8 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
 
         //获取的商户列表所有id
         List<Long> idList = new ArrayList<>();
-        idList.add(objectMapper.readTree(contentAsString1).get("list").get(0).get("loginId").asLong());
-        idList.add(objectMapper.readTree(contentAsString1).get("list").get(1).get("loginId").asLong());
+        idList.add(objectMapper.readTree(contentAsString1).get("list").get(0).get("id").asLong());
+        idList.add(objectMapper.readTree(contentAsString1).get("list").get(1).get("id").asLong());
 
         //他们应该是一样的
         assertThat(idList.containsAll(oldlist)).isEqualTo(true);

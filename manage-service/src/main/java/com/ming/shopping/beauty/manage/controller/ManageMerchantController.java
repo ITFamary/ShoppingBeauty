@@ -221,7 +221,7 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
     @Override
     protected List<FieldDefinition<Merchant>> listFields() {
         return Arrays.asList(
-                FieldBuilder.asName(Merchant.class, "merchantId")
+                FieldBuilder.asName(Merchant.class, "id")
                         .addSelect(merchantRoot -> merchantRoot.get(Merchant_.id))
                         .build()
                 , FieldBuilder.asName(Merchant.class, "username")
