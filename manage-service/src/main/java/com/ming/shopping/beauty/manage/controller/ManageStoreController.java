@@ -1,7 +1,6 @@
 package com.ming.shopping.beauty.manage.controller;
 
 import com.ming.shopping.beauty.service.entity.login.*;
-import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
@@ -23,15 +22,15 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.criteria.*;
-import javax.ws.rs.Path;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author lxf
@@ -209,14 +208,14 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
 
     /**
      * 移除角色和门店代表的关联
+     * @param storeId
      * @param representId
      */
     @DeleteMapping("/{storeId}/represent/{representId}")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void removeRepresent(@PathVariable("representId") long representId){
-        //未完成的
-        representService.removerRepresent(representId);
+    public void removeRepresent(@PathVariable("storeId")long storeId,@PathVariable("representId") long representId){
+        representService.removerRepresent(storeId,representId);
     }
 
     //门店

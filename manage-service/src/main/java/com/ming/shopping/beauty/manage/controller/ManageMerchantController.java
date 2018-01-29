@@ -238,7 +238,12 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
                         .build()
                 , FieldBuilder.asName(Merchant.class, "address")
                         .addSelect(merchantRoot -> merchantRoot.get(Merchant_.address))
-                        .addFormat((data,type)-> data.toString())
+                        .addFormat((data, type) -> {
+                            if (data != null) {
+                                return data.toString();
+                            }
+                            return null;
+                        })
                         .build()
                 , FieldBuilder.asName(Merchant.class, "enabled")
                         .addSelect(merchantRoot -> merchantRoot.get(Merchant_.enabled))
