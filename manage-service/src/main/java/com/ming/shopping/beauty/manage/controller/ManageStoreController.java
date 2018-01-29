@@ -127,92 +127,17 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
      * 启用/禁用 门店
      *
      * @param loginId
-     * @param putData
+     * @param enable
      */
-    @PutMapping("/{storeId}")
-    @PreAuthorize("hassAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
+    @PutMapping("/{storeId}/enabled")
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void setEnable(@PathVariable("storeId") long loginId, Map<String, Boolean> putData) {
-        final String param = "enable";
-        if (putData.get(param) != null) {
-            storeService.freezeOrEnable(loginId, putData.get(param));
+    public void setEnable(@PathVariable("storeId") long loginId,@RequestBody Boolean enable) {
+        if (enable != null) {
+            storeService.freezeOrEnable(loginId, enable);
         } else {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
-                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), param), null));
-        }
-    }
-
-    /**
-     * 门店操作员列表
-     *
-     * @param storeId
-     * @return
-     */
-    @GetMapping("/{storeId}/manage")
-    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
-    @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
-    @ResponseStatus(HttpStatus.OK)
-    public RowDefinition<Store> listForManage(@PathVariable long storeId) {
-        return new RowDefinition<Store>() {
-            @Override
-            public Class<Store> entityClass() {
-                return Store.class;
-            }
-
-            @Override
-            public List<FieldDefinition<Store>> fields() {
-                return listFieldsForManage();
-            }
-
-            @Override
-            public Specification<Store> specification() {
-                return listSpecificationForManage(storeId);
-            }
-        };
-    }
-
-    /**
-     * 门店操作员详情
-     *
-     * @param manageId
-     * @return
-     */
-    @GetMapping("/{storeId}/manage/{manageId}")
-    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
-    public String manageDetail(@PathVariable long manageId) {
-        return "redirect:/login/" + manageId;
-    }
-
-    /**
-     * 新增门店操作员
-     *
-     * @param storeId  门店id
-     * @param manageId 要变成操作员的id
-     */
-    @PostMapping("/{storeId}/manage/{manageId}")
-    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
-    @ResponseStatus(HttpStatus.CREATED)
-    public void addStoreManage(@PathVariable long storeId, @PathVariable long manageId) {
-        storeService.addStore(manageId, storeId);
-    }
-
-    /**
-     * 启用/禁用门店操作员
-     *
-     * @param storeId  门店
-     * @param manageId 用户id
-     * @param putData  启用/禁用
-     */
-    @PutMapping("/{storeId}/manage/{manageId}")
-    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void enableStoreManage(@PathVariable(required = true) long storeId, @PathVariable(required = true) long manageId, Map<String, Boolean> putData) {
-        final String param = "enable";
-        if (putData.get(param) != null) {
-            storeService.freezeOrEnable(manageId, putData.get(param));
-        } else {
-            throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
-                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), param), null));
+                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), enable), null));
         }
     }
 
@@ -225,20 +150,20 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
     @GetMapping("/{storeId}/represent")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
     @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
-    public RowDefinition<Store> listForRepresent(@PathVariable long storeId) {
-        return new RowDefinition<Store>() {
+    public RowDefinition<Represent> listForRepresent(@PathVariable long storeId) {
+        return new RowDefinition<Represent>() {
             @Override
-            public Class<Store> entityClass() {
-                return Store.class;
+            public Class<Represent> entityClass() {
+                return Represent.class;
             }
 
             @Override
-            public List<FieldDefinition<Store>> fields() {
-                return listFieldsForManage();
+            public List<FieldDefinition<Represent>> fields() {
+                return listFieldsForRepresent();
             }
 
             @Override
-            public Specification<Store> specification() {
+            public Specification<Represent> specification() {
                 return listSpecificationForRepresent(storeId);
             }
         };
@@ -322,41 +247,6 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
         };
     }
 
-    //门店操作员
-
-    private List<FieldDefinition<Store>> listFieldsForManage() {
-        return Arrays.asList(
-                FieldBuilder.asName(Store.class, "id")
-                        .addSelect(merchantRoot -> merchantRoot.get(Store_.id))
-                        .build()
-                , FieldBuilder.asName(Store.class, "username")
-                        .addSelect(merchantRoot -> merchantRoot.join(Store_.login, JoinType.LEFT).get(Login_.loginName))
-                        .build()
-                , FieldBuilder.asName(Store.class, "enabled")
-                        .addSelect(merchantRoot -> merchantRoot.get(Store_.enabled))
-                        .build()
-                , FieldBuilder.asName(Store.class, "level")
-                        .addSelect(merchantRoot -> merchantRoot.join(Store_.login, JoinType.LEFT).get(Login_.levelSet))
-                        .addFormat((data, type) -> {
-                            Set<ManageLevel> levelSet = (Set<ManageLevel>) data;
-                            return levelSet.stream().map(ManageLevel::title).collect(Collectors.joining(","));
-                        })
-                        .build()
-                , FieldBuilder.asName(Store.class, "createtime")
-                        .addSelect(merchantRoot -> merchantRoot.get(Store_.createTime))
-                        .build()
-        );
-    }
-
-    private Specification<Store> listSpecificationForManage(long storeId) {
-        return (root, cq, cb) ->
-                cb.and(
-                        cb.isFalse(root.get(Store_.manageable))
-                        // TODO 这里有问题
-                        , cb.equal(root.get("store").get("id"), storeId)
-                );
-    }
-
     //门店代表
 
     private List<FieldDefinition<Represent>> listFieldsForRepresent() {
@@ -375,8 +265,8 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
         );
     }
 
-    private Specification<Store> listSpecificationForRepresent(long storeId) {
-        return (root, cq, cb) -> cb.equal(root.get(Store_.id), storeId);
+    private Specification<Represent> listSpecificationForRepresent(long storeId) {
+        return (root, cq, cb) -> cb.equal(root.join(Represent_.store).get(Store_.store), storeId);
     }
 
 

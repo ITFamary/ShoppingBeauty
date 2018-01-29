@@ -62,6 +62,7 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
         Long id1 = merchant1.getId();
 
         //所有创建的商户id
+
         List<Long> oldlist = new ArrayList<>();
         oldlist.add(id);
         oldlist.add(id1);
@@ -191,7 +192,7 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
     private void enableMerchant(long id) throws Exception {
         //现在启用商户.
         boolean enable = true;
-        mockMvc.perform(put("/merchant/" + id)
+        mockMvc.perform(put("/merchant/" + id+"/enabled")
                 .content(objectMapper.writeValueAsString(enable))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
@@ -200,7 +201,7 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
     private void freeMerchant(long id) throws Exception {
         //禁用商户
         boolean enable = false;
-        mockMvc.perform(put("/merchant/" + id)
+        mockMvc.perform(put("/merchant/" + id+"/enabled")
                 .content(objectMapper.writeValueAsString(enable))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
