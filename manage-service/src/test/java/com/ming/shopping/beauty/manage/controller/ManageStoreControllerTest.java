@@ -6,6 +6,7 @@ import com.ming.shopping.beauty.service.entity.login.Merchant;
 import com.ming.shopping.beauty.service.entity.login.Represent;
 import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.model.request.NewStoreBody;
+import com.ming.shopping.beauty.service.repository.LoginRepository;
 import com.ming.shopping.beauty.service.repository.RepresentRepository;
 import com.ming.shopping.beauty.service.repository.StoreRepository;
 import com.ming.shopping.beauty.service.service.StoreService;
@@ -28,6 +29,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 public class ManageStoreControllerTest extends ManageConfigTest {
 
+    @Autowired
+    private LoginRepository loginRepository;
     @Autowired
     private StoreService storeService;
     @Autowired
@@ -66,7 +69,6 @@ public class ManageStoreControllerTest extends ManageConfigTest {
         String location = mockMvc.perform(post(BASE_URL)
                 .content(objectMapper.writeValueAsString(rsb))
                 .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getHeader("Location");
         Store store = storeService.findStore(willStore.getId());
@@ -153,6 +155,15 @@ public class ManageStoreControllerTest extends ManageConfigTest {
         //查看他是否禁用
         Represent one = representRepository.getOne(login.getId());
         assertThat(one.isEnable()).isFalse();
+
+        //接触角色与门店代表关联
+        mockMvc.perform(delete("/store/" + store.getId() + "/represent/" + login.getId()))
+                .andDo(print())
+                .andExpect(status().isNoContent());
+        Login nowLogin = loginRepository.getOne(login.getId());
+        assertThat(nowLogin.getRepresent() == null).isTrue();
+        Store nowStore = storeRepository.getOne(store.getId());
+        assertThat(nowStore.getRepresents().contains(one)).isFalse();
     }
 
 }

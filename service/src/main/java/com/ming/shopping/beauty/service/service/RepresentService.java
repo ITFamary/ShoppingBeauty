@@ -38,10 +38,11 @@ public interface RepresentService {
     Represent findOne(long id);
 
     /**
+     * @param  storeId 要移除门店代表的门店
      * @param representId 移除的门店代表
      * 移除角色与门店代表的关联
      * @return 移除门店代表角色的用户
      */
     @Transactional
-    Login removerRepresent(long representId);
+    void removerRepresent(long storeId ,long representId);
 }
