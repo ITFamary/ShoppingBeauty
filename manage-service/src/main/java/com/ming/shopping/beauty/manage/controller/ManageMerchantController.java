@@ -25,8 +25,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
@@ -168,6 +167,11 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
             }
 
             @Override
+            public List<Order> defaultOrder(CriteriaBuilder criteriaBuilder, Root<Merchant> root) {
+                return Arrays.asList(criteriaBuilder.desc(root.get(Merchant_.createTime)));
+            }
+
+            @Override
             public Specification<Merchant> specification() {
                 return listSpecificationForManage(merchantId);
             }
@@ -299,4 +303,10 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
                 );
     }
 
+    @Override
+    protected List<Order> listOrder(CriteriaBuilder criteriaBuilder, Root<Merchant> root) {
+        return Arrays.asList(
+                criteriaBuilder.desc(root.get(Merchant_.id))
+        );
+    }
 }
