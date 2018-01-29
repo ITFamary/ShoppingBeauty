@@ -45,8 +45,8 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
                 .andExpect(status().isForbidden());
 
         //来个管理员
-        Login rootlogin = mockRoot();
-        updateAllRunWith(rootlogin);
+        Login rootLogin = mockRoot();
+        updateAllRunWith(rootLogin);
         //生成一个商户
         Merchant merchant = mockMerchant();
         Long id = merchant.getId();
@@ -63,9 +63,9 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
 
         //所有创建的商户id
 
-        List<Long> oldlist = new ArrayList<>();
-        oldlist.add(id);
-        oldlist.add(id1);
+        List<Long> oldList = new ArrayList<>();
+        oldList.add(id);
+        oldList.add(id1);
         //查看商户列表,是否两个商户都存在
         MvcResult mvcResult1 = mockMvc.perform(get("/merchant")).andExpect(status().isOk()).andReturn();
         String contentAsString1 = mvcResult1.getResponse().getContentAsString();
@@ -76,7 +76,7 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
         idList.add(objectMapper.readTree(contentAsString1).get("list").get(1).get("id").asLong());
 
         //他们应该是一样的
-        assertThat(idList.containsAll(oldlist)).isEqualTo(true);
+        assertThat(idList.containsAll(oldList)).isEqualTo(true);
 
     }
 

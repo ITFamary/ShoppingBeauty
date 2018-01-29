@@ -71,6 +71,7 @@ public class RepresentServiceImpl implements RepresentService {
     }
 
     @Override
+    @Transactional(rollbackFor = RuntimeException.class)
     public void removerRepresent(long storeId, long id) {
         Represent represent = representRepository.findOne(id);
         if (represent != null) {

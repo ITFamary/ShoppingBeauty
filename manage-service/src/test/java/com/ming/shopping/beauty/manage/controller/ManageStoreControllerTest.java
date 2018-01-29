@@ -6,6 +6,7 @@ import com.ming.shopping.beauty.service.entity.login.Merchant;
 import com.ming.shopping.beauty.service.entity.login.Represent;
 import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.model.request.NewStoreBody;
+import com.ming.shopping.beauty.service.repository.LoginRepository;
 import com.ming.shopping.beauty.service.repository.RepresentRepository;
 import com.ming.shopping.beauty.service.repository.StoreRepository;
 import com.ming.shopping.beauty.service.service.StoreService;
@@ -27,6 +28,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class ManageStoreControllerTest extends ManageConfigTest {
 
     @Autowired
+    private LoginRepository loginRepository;
+    @Autowired
     private StoreService storeService;
     @Autowired
     private StoreRepository storeRepository;
@@ -41,6 +44,7 @@ public class ManageStoreControllerTest extends ManageConfigTest {
         //身份运行
         updateAllRunWith(fackManage);
         mockMvc.perform(get("/store"))
+                .andDo(print())
                 .andExpect(status().isForbidden());
         //来个商户
         Merchant merchant = mockMerchant();
@@ -57,12 +61,10 @@ public class ManageStoreControllerTest extends ManageConfigTest {
         rsb.setTelephone("18799882273");
         rsb.setLoginId(willStore.getId());
         rsb.setMerchantId(merchant.getId());
-        System.out.println(objectMapper.writeValueAsString(rsb));
         //发送请求添加
         String location = mockMvc.perform(post("/store")
                 .content(objectMapper.writeValueAsString(rsb))
                 .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getHeader("Location");
         Store store = storeService.findStore(willStore.getId());
@@ -70,10 +72,7 @@ public class ManageStoreControllerTest extends ManageConfigTest {
         //再添加一个
         Store store1 = mockStore(merchant);
         //获取门店列表
-        String telephone = "{telephone:" + merchant.getTelephone() + "}";
-        String contentAsString = mockMvc.perform(get("/store")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(telephone))
+        String contentAsString = mockMvc.perform(get("/store"))
                 .andDo(print())
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         String s = objectMapper.readTree(contentAsString).get("list").get(0).get("storeId").asText();
@@ -127,7 +126,7 @@ public class ManageStoreControllerTest extends ManageConfigTest {
 
         boolean enable = false;
         //冻结启用门店代表
-        mockMvc.perform(put("/store/" + store.getId() + "/represent/" + login.getId())
+        mockMvc.perform(put("/store/" + store.getId() + "/represent/" + login.getId()+"/enabled")
                 .content(objectMapper.writeValueAsString(false))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -136,6 +135,15 @@ public class ManageStoreControllerTest extends ManageConfigTest {
         //查看他是否禁用
         Represent one = representRepository.getOne(login.getId());
         assertThat(one.isEnable()).isFalse();
+
+        //接触角色与门店代表关联
+        mockMvc.perform(delete("/store/" + store.getId() + "/represent/" + login.getId()))
+                .andDo(print())
+                .andExpect(status().isNoContent());
+        Login nowLogin = loginRepository.getOne(login.getId());
+        assertThat(nowLogin.getRepresent() == null).isTrue();
+        Store nowStore = storeRepository.getOne(store.getId());
+        assertThat(nowStore.getRepresents().contains(one)).isFalse();
     }
 
 }
