@@ -1,5 +1,6 @@
 package com.ming.shopping.beauty.service.service;
 
+import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Represent;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,4 +36,12 @@ public interface RepresentService {
      * @return
      */
     Represent findOne(long id);
+
+    /**
+     * @param representId 移除的门店代表
+     * 移除角色与门店代表的关联
+     * @return 移除门店代表角色的用户
+     */
+    @Transactional
+    Login removerRepresent(long representId);
 }

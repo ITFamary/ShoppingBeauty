@@ -22,8 +22,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.*;
 import javax.ws.rs.Path;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -158,6 +157,14 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
             }
 
             @Override
+            public List<Order> defaultOrder(CriteriaBuilder criteriaBuilder, Root<Represent> root) {
+                return Arrays.asList(
+                        criteriaBuilder.asc(root.get("enable"))
+                        , criteriaBuilder.desc(root.get("createTime"))
+                );
+            }
+
+            @Override
             public List<FieldDefinition<Represent>> fields() {
                 return listFieldsForRepresent();
             }
@@ -186,19 +193,30 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
      * 启用禁用门店代表
      *
      * @param representId 门店代表id
-     * @param putData
+     * @param enable
      */
-    @PutMapping("/{storeId}/represent/{representId}")
+    @PutMapping("/{storeId}/represent/{representId}/enabled")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void enableRepresent(@PathVariable(required = true) long representId, Map<String, Boolean> putData) {
-        final String param = "enable";
-        if (putData.get(param) != null) {
-            representService.freezeOrEnable(representId, putData.get(param));
+    public void enableRepresent(@PathVariable(required = true) long representId, @RequestBody Boolean enable) {
+        if (enable != null) {
+            representService.freezeOrEnable(representId, enable);
         } else {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
-                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), param), null));
+                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), enable), null));
         }
+    }
+
+    /**
+     * 移除角色和门店代表的关联
+     * @param representId
+     */
+    @DeleteMapping("/{storeId}/represent/{representId}")
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeRepresent(@PathVariable("representId") long representId){
+        //未完成的
+        representService.removerRepresent(representId);
     }
 
     //门店
@@ -206,7 +224,8 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
     @Override
     protected List<FieldDefinition<Store>> listFields() {
         return Arrays.asList(
-                FieldBuilder.asName(Store.class, "id")
+                FieldBuilder.asName(Store.class, "storeId")
+                        .addSelect(storeRoot -> storeRoot.get(Store_.id))
                         .build()
                 , FieldBuilder.asName(Store.class, "username")
                         .addSelect(storeRoot -> storeRoot.join(Store_.login, JoinType.LEFT).get(Login_.loginName))
@@ -225,8 +244,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
                         .build()
                 , FieldBuilder.asName(Store.class, "createTime")
                         .addFormat((data,type)->{
-                            String format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(((LocalDateTime) data));
-                            return format;
+                            return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(((LocalDateTime) data));
                         })
                         .build()
 
@@ -238,7 +256,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
         return (root, cq, cb) -> {
             List<Predicate> conditionList = new ArrayList<>();
             if(queryData.get("telephone") != null){
-                conditionList.add(cb.equal(root.join(Store_.merchant).join(Merchant_.telephone),queryData.get("telephone")));
+                conditionList.add(cb.equal(root.join(Store_.telephone),queryData.get("telephone")));
             }
             if (queryData.get("username") != null) {
                 conditionList.add(cb.equal(root.join(Store_.login).get(Login_.loginName), queryData.get("username")));
@@ -258,15 +276,17 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
                 , FieldBuilder.asName(Represent.class, "mobile")
                         .addSelect(representRoot -> representRoot.join(Represent_.login, JoinType.LEFT).get(Login_.loginName))
                         .build()
-                , FieldBuilder.asName(Represent.class, "createtime")
-                        .addSelect(representRoot -> representRoot.join(Represent_.login, JoinType.LEFT).get(Login_.createTime))
+                , FieldBuilder.asName(Represent.class, "createTime")
+                        .addFormat((data, type) -> {
+                            return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(((LocalDateTime) data));
+                        })
                         .build()
                 //TODO 应该还有一个业绩相关的.
         );
     }
 
     private Specification<Represent> listSpecificationForRepresent(long storeId) {
-        return (root, cq, cb) -> cb.equal(root.join(Represent_.store).get(Store_.store), storeId);
+        return (root, cq, cb) -> cb.equal(root.join(Represent_.store).get(Store_.id), storeId);
     }
 
 

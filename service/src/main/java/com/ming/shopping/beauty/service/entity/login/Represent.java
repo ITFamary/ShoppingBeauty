@@ -5,6 +5,9 @@ import lombok.Setter;
 import me.jiangcai.wx.model.Gender;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
+
+import static com.ming.shopping.beauty.service.utils.Constant.DATE_COLUMN_DEFINITION;
 
 /**
  * 门店代表：其实就是门店的收营员，负责帮用户下单
@@ -27,6 +30,9 @@ public class Represent {
      */
     @ManyToOne
     private Store store;
+
+    @Column(columnDefinition = DATE_COLUMN_DEFINITION)
+    private LocalDateTime createTime;
 
     private boolean enable = true;
 }

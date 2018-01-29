@@ -206,7 +206,7 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
      * @param manageId
      * @param enable
      */
-    @PutMapping("/{merchantId}/manage/{manageId}")
+    @PutMapping("/{merchantId}/manage/{manageId}/enabled")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void enableMerchantManage(@PathVariable long merchantId, @PathVariable long manageId, @RequestBody Boolean enable) {
@@ -221,7 +221,7 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
     @Override
     protected List<FieldDefinition<Merchant>> listFields() {
         return Arrays.asList(
-                FieldBuilder.asName(Merchant.class, "merchantId")
+                FieldBuilder.asName(Merchant.class, "id")
                         .addSelect(merchantRoot -> merchantRoot.get(Merchant_.id))
                         .build()
                 , FieldBuilder.asName(Merchant.class, "username")
@@ -237,8 +237,8 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
                         .addSelect(merchantRoot -> merchantRoot.get(Merchant_.telephone))
                         .build()
                 , FieldBuilder.asName(Merchant.class, "address")
-                        // TODO: 2018/1/18
                         .addSelect(merchantRoot -> merchantRoot.get(Merchant_.address))
+                        .addFormat((data,type)-> data.toString())
                         .build()
                 , FieldBuilder.asName(Merchant.class, "enabled")
                         .addSelect(merchantRoot -> merchantRoot.get(Merchant_.enabled))

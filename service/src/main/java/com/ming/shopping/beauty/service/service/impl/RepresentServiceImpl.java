@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 /**
  * @author helloztt
  */
@@ -39,6 +41,7 @@ public class RepresentServiceImpl implements RepresentService {
         represent.setId(loginId);
         represent.setLogin(login);
         represent.setStore(store);
+        represent.setCreateTime(LocalDateTime.now());
         login.setRepresent(represent);
         login.addLevel(ManageLevel.represent);
         return representRepository.save(represent);
@@ -59,4 +62,14 @@ public class RepresentServiceImpl implements RepresentService {
         }
         return represent;
     }
+
+    @Override
+    public Login removerRepresent(long id) {
+        Represent represent = representRepository.findOne(id);
+        if (represent != null) {
+        }else
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.REPRESENT_NOT_EXIST));
+        return null;
+    }
+
 }

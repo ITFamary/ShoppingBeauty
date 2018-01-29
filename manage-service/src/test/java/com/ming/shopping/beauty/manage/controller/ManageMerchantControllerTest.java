@@ -56,7 +56,7 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
                 .andReturn();
         String contentAsString = mvcResult.getResponse().getContentAsString();
         //有这个id的
-        assertThat(id).isEqualTo(objectMapper.readTree(contentAsString).get("list").get(0).get("loginId").asLong());
+        assertThat(id).isEqualTo(objectMapper.readTree(contentAsString).get("list").get(0).get("id").asLong());
         //再添加一个商户
         Merchant merchant1 = mockMerchant();
         Long id1 = merchant1.getId();
@@ -72,8 +72,8 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
 
         //获取的商户列表所有id
         List<Long> idList = new ArrayList<>();
-        idList.add(objectMapper.readTree(contentAsString1).get("list").get(0).get("loginId").asLong());
-        idList.add(objectMapper.readTree(contentAsString1).get("list").get(1).get("loginId").asLong());
+        idList.add(objectMapper.readTree(contentAsString1).get("list").get(0).get("id").asLong());
+        idList.add(objectMapper.readTree(contentAsString1).get("list").get(1).get("id").asLong());
 
         //他们应该是一样的
         assertThat(idList.containsAll(oldlist)).isEqualTo(true);
@@ -101,7 +101,6 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
 
         //访问详情
         MvcResult mvcResult = mockMvc.perform(get(merchantCreationUri))
-                .andDo(print())
                 .andReturn();
         String contentAsString = mvcResult.getResponse().getContentAsString();
         //启用
@@ -168,7 +167,7 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
         assertThat(manage != null).isTrue();
         //禁用操作员
         boolean enable = false;
-        mockMvc.perform(put("/merchant/" + merchant.getId() + "/manage/" + willMerchantManage.getId())
+        mockMvc.perform(put("/merchant/" + merchant.getId() + "/manage/" + willMerchantManage.getId()+"/enabled")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(enable)))
                 .andExpect(status().isNoContent());
