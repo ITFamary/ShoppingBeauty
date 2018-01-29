@@ -3,11 +3,13 @@ package com.ming.shopping.beauty.client.controller;
 import com.ming.shopping.beauty.service.entity.log.CapitalFlow;
 import com.ming.shopping.beauty.service.entity.log.CapitalFlow_;
 import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.entity.order.RechargeOrder;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.model.request.DepositBody;
 import com.ming.shopping.beauty.service.service.RechargeCardService;
+import com.ming.shopping.beauty.service.service.RechargeOrderService;
 import me.jiangcai.crud.row.DefaultRowDramatizer;
 import me.jiangcai.crud.row.FieldDefinition;
 import me.jiangcai.crud.row.RowCustom;
@@ -15,25 +17,34 @@ import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
 import me.jiangcai.lib.sys.service.SystemStringService;
+import me.jiangcai.payment.entity.PayOrder;
+import me.jiangcai.payment.exception.SystemMaintainException;
+import me.jiangcai.payment.service.PaymentService;
+import me.jiangcai.wx.standard.service.WeixinPaymentForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Root;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author helloztt
@@ -46,7 +57,13 @@ public class CapitalController {
     @Autowired
     private RechargeCardService rechargeCardService;
     @Autowired
+    private RechargeOrderService rechargeOrderService;
+    @Autowired
     private SystemStringService systemStringService;
+    @Autowired
+    private PaymentService paymentService;
+    @Autowired
+    private WeixinPaymentForm weixinPaymentForm;
 
     @GetMapping("/flow")
     @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
@@ -77,10 +94,9 @@ public class CapitalController {
         };
     }
 
-    @PostMapping("/deposit")
-    @ResponseStatus(HttpStatus.OK)
-    public void deposit(@AuthenticationPrincipal Login login, @Valid @RequestBody DepositBody postData
-            , BindingResult bindingResult, HttpServletResponse response) {
+    @PostMapping(value = "/deposit", produces = "application/x-www-form-urlencoded")
+    public ModelAndView deposit(@AuthenticationPrincipal Login login, @Valid @RequestBody DepositBody postData
+            , BindingResult bindingResult, HttpServletRequest request, HttpServletResponse response) throws SystemMaintainException {
         if (bindingResult.hasErrors()) {
             throw new ApiResultException(
                     //提示 XXX格式错误
@@ -94,13 +110,21 @@ public class CapitalController {
                 throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.RECHARGE_MONEY_NOT_ENOUGH.getCode()
                         , MessageFormat.format(ResultCodeEnum.RECHARGE_MONEY_NOT_ENOUGH.getMessage(), minAmount.toString()), null));
             }
-            // TODO: 2018/1/16 走支付流程
+            //先新增一个支付订单
+            RechargeOrder rechargeOrder = rechargeOrderService.newOrder(login.getUser(), postData.getDepositSum());
+            //走支付流程
+            Map<String,Object> additionalParam = new HashMap<>(1);
+            additionalParam.put("redirectUrl",postData.getRedirectUrl());
+            return paymentService.startPay(request, rechargeOrder, weixinPaymentForm, additionalParam);
         } else if (!StringUtils.isEmpty(postData.getCdKey())) {
             //使用充值卡
             rechargeCardService.useCard(postData.getCdKey(), login.getId());
         } else {
             throw new ApiResultException((ApiResult.withError(ResultCodeEnum.NO_MONEY_CARD)));
         }
+        ModelAndView model = new ModelAndView();
+        model.setViewName("redirect:" + postData.getRedirectUrl());
+        return model;
     }
 
     private List<FieldDefinition<CapitalFlow>> listFields() {

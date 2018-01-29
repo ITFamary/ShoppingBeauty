@@ -207,6 +207,7 @@ public abstract class CoreServiceTest extends SpringWebTest {
         mockMvc.perform(makeWechat(post(SystemService.LOGIN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerBody))))
+                .andDo(print())
                 .andExpect(status().isOk());
         return loginService.findOne(mobile);
     }

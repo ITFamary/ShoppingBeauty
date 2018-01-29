@@ -62,6 +62,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         // TODO: 2018/1/8 一下地址都需要与接口核对
         registry
+                //test
+                .antMatchers("/hello","test").permitAll()
                 //登录前的校验
                 .antMatchers("/isExist", "/isRegister/**", "/sendAuthCode/**", SystemService.LOGIN).permitAll()
                 //管理后台登录

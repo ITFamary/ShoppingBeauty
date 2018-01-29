@@ -44,6 +44,8 @@ public class MyPublicAccount extends PublicAccount implements PublicAccountSuppl
         this.systemStringService = systemStringService;
         setAppID(environment.getRequiredProperty("huotao.weixin.appId"));
         setAppSecret(environment.getRequiredProperty("huotao.weixin.appSecret"));
+        setMchID(environment.getRequiredProperty("huotao.weixin.mchId"));
+        setApiKey(environment.getRequiredProperty("huotao.weixin.apiKey"));
         setInterfaceURL(environment.getRequiredProperty("huotao.weixin.url"));
         setInterfaceToken(environment.getRequiredProperty("huotao.weixin.token"));
         //

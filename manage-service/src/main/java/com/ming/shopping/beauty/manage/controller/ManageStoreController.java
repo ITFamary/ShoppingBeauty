@@ -159,7 +159,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
             public List<Order> defaultOrder(CriteriaBuilder criteriaBuilder, Root<Represent> root) {
                 return Arrays.asList(
                         criteriaBuilder.asc(root.get("enable"))
-                        , criteriaBuilder.desc(root.get("createTime"))
+                        , criteriaBuilder.desc(root.get("id"))
                 );
             }
 
