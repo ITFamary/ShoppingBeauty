@@ -222,7 +222,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
     @Override
     protected List<FieldDefinition<Store>> listFields() {
         return Arrays.asList(
-                FieldBuilder.asName(Store.class, "storeId")
+                FieldBuilder.asName(Store.class, "id")
                         .addSelect(storeRoot -> storeRoot.get(Store_.id))
                         .build()
                 , FieldBuilder.asName(Store.class, "username")
@@ -261,6 +261,13 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
             }
             return cb.and(conditionList.toArray(new Predicate[conditionList.size()]));
         };
+    }
+
+    @Override
+    protected List<Order> listOrder(CriteriaBuilder criteriaBuilder, Root<Store> root) {
+        return Arrays.asList(
+                criteriaBuilder.desc(root.get(Store_.createTime))
+        );
     }
 
     //门店代表

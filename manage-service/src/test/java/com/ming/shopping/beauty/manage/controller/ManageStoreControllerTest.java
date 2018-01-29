@@ -10,6 +10,7 @@ import com.ming.shopping.beauty.service.repository.RepresentRepository;
 import com.ming.shopping.beauty.service.repository.StoreRepository;
 import com.ming.shopping.beauty.service.service.StoreService;
 import org.junit.Test;
+import org.mockito.internal.matchers.GreaterOrEqual;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.MediaType;
@@ -72,26 +73,24 @@ public class ManageStoreControllerTest extends ManageConfigTest {
         assertThat(store != null).isTrue();
         //再添加一个
         Store store1 = mockStore(merchant);
-        //不带参数，获取门店列表
-        String contentAsString = mockMvc.perform(get(BASE_URL))
-                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        String s = objectMapper.readTree(contentAsString).get("list").get(0).get("storeId").asText();
-        List<Long> oldIdList = new ArrayList<>();
-        oldIdList.add(store.getId());
-        oldIdList.add(store1.getId());
-        assertThat(oldIdList.contains(Long.parseLong(s))).isTrue();
+        //不带参数，获取门店列表,第一条记录必定是最新添加的
+        mockMvc.perform(get(BASE_URL))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.pagination.total").value(new GreaterOrEqual(2)))
+                .andExpect(jsonPath("$.list[0].id").value(store1.getId()))
+                .andExpect(jsonPath("$.list[1].id").value(rsb.getLoginId()));
 
         //查找特定门店
         mockMvc.perform(get(BASE_URL)
                 .param("telephone",rsb.getTelephone()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.pagination.total").value(1))
-                .andExpect(jsonPath("$.list[0].storeId").value(rsb.getLoginId()));
+                .andExpect(jsonPath("$.list[0].id").value(rsb.getLoginId()));
         mockMvc.perform(get(BASE_URL)
                 .param("username",willStore.getLoginName()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.pagination.total").value(1))
-                .andExpect(jsonPath("$.list[0].storeId").value(rsb.getLoginId()));
+                .andExpect(jsonPath("$.list[0].id").value(rsb.getLoginId()));
 
         //找一个不存在的门店
         mockMvc.perform(get(BASE_URL)
@@ -145,7 +144,7 @@ public class ManageStoreControllerTest extends ManageConfigTest {
 
         boolean enable = false;
         //冻结启用门店代表
-        mockMvc.perform(put("/store/" + store.getId() + "/represent/" + login.getId())
+        mockMvc.perform(put("/store/" + store.getId() + "/represent/" + login.getId() + "/enabled")
                 .content(objectMapper.writeValueAsString(false))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
