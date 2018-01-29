@@ -26,6 +26,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.criteria.*;
+import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
@@ -51,14 +52,14 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
     /**
      * 商户列表
      *
-     * @param queryData 查询参数
+     * @param request
      * @return
      */
     @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
     @PreAuthorize("hasAnyRole('ROOT')")
     @Override
-    public RowDefinition<Merchant> list(Map<String, Object> queryData) {
-        return super.list(queryData);
+    public RowDefinition<Merchant> list(HttpServletRequest request) {
+        return super.list(request);
     }
 
 
@@ -242,7 +243,7 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
                         .build()
                 , FieldBuilder.asName(Merchant.class, "address")
                         .addSelect(merchantRoot -> merchantRoot.get(Merchant_.address))
-                        .addFormat((data,type)-> data != null ? data.toString() : null)
+                        .addFormat((data, type) -> data != null ? data.toString() : null)
                         .build()
                 , FieldBuilder.asName(Merchant.class, "enabled")
                         .addSelect(merchantRoot -> merchantRoot.get(Merchant_.enabled))

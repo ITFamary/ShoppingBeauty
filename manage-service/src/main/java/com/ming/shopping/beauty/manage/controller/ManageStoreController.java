@@ -1,7 +1,6 @@
 package com.ming.shopping.beauty.manage.controller;
 
 import com.ming.shopping.beauty.service.entity.login.*;
-import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
@@ -23,15 +22,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.criteria.*;
-import javax.ws.rs.Path;
+import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author lxf
@@ -48,14 +45,14 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
     /**
      * 门店列表
      *
-     * @param queryData 查询参数
+     * @param request
      * @return
      */
     @Override
     @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
-    public RowDefinition<Store> list(Map<String, Object> queryData) {
-        return super.list(queryData);
+    public RowDefinition<Store> list(HttpServletRequest request) {
+        return super.list(request);
     }
 
     /**
@@ -109,7 +106,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
                                 .build()
                         , FieldBuilder.asName(Store.class, "contact")
                                 .build()
-                        , FieldBuilder.asName(Store.class,"represents")
+                        , FieldBuilder.asName(Store.class, "represents")
                                 .build()
                 );
             }
@@ -117,7 +114,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
             @Override
             public Specification<Store> specification() {
                 return (root, query, cb) ->
-                    cb.equal(root.get(Store_.id),storeId);
+                        cb.equal(root.get(Store_.id), storeId);
             }
         };
     }
@@ -131,7 +128,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
     @PutMapping("/{storeId}/enabled")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void setEnable(@PathVariable("storeId") long loginId,@RequestBody Boolean enable) {
+    public void setEnable(@PathVariable("storeId") long loginId, @RequestBody Boolean enable) {
         if (enable != null) {
             storeService.freezeOrEnable(loginId, enable);
         } else {
@@ -209,12 +206,13 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
 
     /**
      * 移除角色和门店代表的关联
+     *
      * @param representId
      */
     @DeleteMapping("/{storeId}/represent/{representId}")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void removeRepresent(@PathVariable("representId") long representId){
+    public void removeRepresent(@PathVariable("representId") long representId) {
         //未完成的
         representService.removerRepresent(representId);
     }
@@ -243,7 +241,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
                 , FieldBuilder.asName(Store.class, "enabled")
                         .build()
                 , FieldBuilder.asName(Store.class, "createTime")
-                        .addFormat((data,type)->{
+                        .addFormat((data, type) -> {
                             return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(((LocalDateTime) data));
                         })
                         .build()
@@ -255,8 +253,8 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
     protected Specification<Store> listSpecification(Map<String, Object> queryData) {
         return (root, cq, cb) -> {
             List<Predicate> conditionList = new ArrayList<>();
-            if(queryData.get("telephone") != null){
-                conditionList.add(cb.equal(root.join(Store_.telephone),queryData.get("telephone")));
+            if (queryData.get("telephone") != null) {
+                conditionList.add(cb.equal(root.get(Store_.telephone), queryData.get("telephone").toString()));
             }
             if (queryData.get("username") != null) {
                 conditionList.add(cb.equal(root.join(Store_.login).get(Login_.loginName), queryData.get("username")));
