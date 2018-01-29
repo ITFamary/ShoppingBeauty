@@ -81,13 +81,15 @@ public class ManageStoreControllerTest extends ManageConfigTest {
                 .andExpect(jsonPath("$.pagination.total").value(new GreaterOrEqual(2)))
                 .andExpect(jsonPath("$.list[0].id").value(store1.getId()))
                 .andExpect(jsonPath("$.list[1].id").value(rsb.getLoginId()));
+        mockMvc.perform(get(BASE_URL)
+                .param("merchantId", String.valueOf(merchant.getMerchantId())))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.pagination.total").value(new GreaterOrEqual(2)))
+                .andExpect(jsonPath("$.list[0].id").value(store1.getId()))
+                .andExpect(jsonPath("$.list[1].id").value(rsb.getLoginId()));
 
         //查找特定门店
-        mockMvc.perform(get(BASE_URL)
-                .param("telephone",rsb.getTelephone()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.pagination.total").value(1))
-                .andExpect(jsonPath("$.list[0].id").value(rsb.getLoginId()));
         mockMvc.perform(get(BASE_URL)
                 .param("username",willStore.getLoginName()))
                 .andExpect(status().isOk())

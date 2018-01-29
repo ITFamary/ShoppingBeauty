@@ -185,7 +185,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
     public ResponseEntity addRepresent(@PathVariable(required = true) long storeId, @PathVariable(required = true) long representId) throws URISyntaxException {
         representService.addRepresent(representId, storeId);
         return ResponseEntity
-                .created(new URI("/store/" + storeId+"/represent/"+ representId))
+                .created(new URI("/store/" + storeId + "/represent/" + representId))
                 .build();
     }
 
@@ -216,8 +216,8 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
     @DeleteMapping("/{storeId}/represent/{representId}")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void removeRepresent(@PathVariable("storeId")long storeId,@PathVariable("representId") long representId){
-        representService.removerRepresent(storeId,representId);
+    public void removeRepresent(@PathVariable("storeId") long storeId, @PathVariable("representId") long representId) {
+        representService.removerRepresent(storeId, representId);
     }
 
     //门店
@@ -256,11 +256,8 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
     protected Specification<Store> listSpecification(Map<String, Object> queryData) {
         return (root, cq, cb) -> {
             List<Predicate> conditionList = new ArrayList<>();
-            if(queryData.get("merchantId") != null){
-                conditionList.add(cb.equal(root.join(Store_.merchant).get(Merchant_.id),queryData.get("merchantId")));
-            }
-            if(queryData.get("telephone") != null){
-                conditionList.add(cb.equal(root.join(Store_.merchant).get(Merchant_.telephone),queryData.get("telephone")));
+            if (queryData.get("merchantId") != null) {
+                conditionList.add(cb.equal(root.join(Store_.merchant, JoinType.LEFT).get(Merchant_.id), Long.valueOf(queryData.get("merchantId").toString())));
             }
             if (queryData.get("username") != null) {
                 conditionList.add(cb.equal(root.join(Store_.login).get(Login_.loginName), queryData.get("username")));
