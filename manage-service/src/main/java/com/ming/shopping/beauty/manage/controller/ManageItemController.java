@@ -143,28 +143,36 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
      * 项目状态改变/审核
      *
      * @param itemId  项目id
-     * @param status  状态
-     * @param message 审核结果备注
+     * @param auditStatus 审核的状态以及备注
      */
     @PutMapping("/{itemId}/auditStatus")
     @PreAuthorize("hasAnyRole('ROOT')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void setAuditStatus(@PathVariable("itemId") long itemId, @RequestBody AuditStatus status, @RequestHeader("comment") String message) {
-        itemService.auditItem(itemId, status, message);
+    public void setAuditStatus(@PathVariable("itemId") long itemId, @RequestBody Map<String,String> auditStatus) {
+        if(auditStatus.get("status") != null && auditStatus.get("comment") != null){
+            itemService.auditItem(itemId, AuditStatus.valueOf(auditStatus.get("status")), auditStatus.get("comment"));
+        }else{
+            throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), auditStatus), null));
+        }
     }
 
     /**
      * 提交项目审核
      *
      * @param itemId  项目id
-     * @param status  状态
-     * @param message 提交审核备注
+     * @param auditStatus    审核的状态以及备注
      */
     @PutMapping("/{itemId}/commit")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ROOT + "')")
-    public void commitItem(@PathVariable("itemId") long itemId, @RequestBody AuditStatus status, @RequestHeader("comment") String message) {
-        itemService.auditItem(itemId, status, message);
+    public void commitItem(@PathVariable("itemId") long itemId, @RequestBody Map<String,String> auditStatus) {
+        if(auditStatus.get("status") != null && auditStatus.get("comment") != null){
+            itemService.auditItem(itemId, AuditStatus.valueOf(auditStatus.get("status")), auditStatus.get("comment"));
+        }else{
+            throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), auditStatus), null));
+        }
     }
 
     /**
@@ -282,6 +290,10 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
             }
             if (queryData.get("merchantId") != null) {
                 conditions.add(cb.equal(root.join(Item_.merchant).get(Merchant_.id), queryData.get("merchantId")));
+            }
+            if (queryData.get("auditStatus") != null){
+                conditions.add(cb.equal(root.get(Item_.auditStatus)
+                        ,AuditStatus.valueOf(queryData.get("auditStatus").toString())));
             }
             if (queryData.get("enabled") != null) {
                 if ((boolean) queryData.get("enabled"))

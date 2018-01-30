@@ -4,8 +4,10 @@ import com.ming.shopping.beauty.manage.ManageConfigTest;
 import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Merchant;
+import com.ming.shopping.beauty.service.entity.support.AuditStatus;
 import com.ming.shopping.beauty.service.model.request.NewItemBody;
 import com.ming.shopping.beauty.service.repository.ItemRepository;
+import lombok.Data;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -106,64 +108,82 @@ public class ManageItemControllerTest extends ManageConfigTest {
                 .andExpect(jsonPath("$.pagination.total").value(1))
                 .andExpect(jsonPath("$.list[0].name").value(ib.getName()));
         //写一个不可能的商户id 获取
-        mockMvc.perform(get("/item").param("merchantId", String.valueOf(random.nextInt(123))))
+        mockMvc.perform(get("/item").param("merchantId", String.valueOf(random.nextInt(1234))))
                 .andDo(print())
                 .andExpect(jsonPath("$.pagination.total").value(0));
 
         String status = "AUDIT_FAILED";
+        //根据项目审核状态去查询
+        mockMvc.perform(get("/item")
+                .param("auditStatus", "AUDIT_FAILED"))
+                .andDo(print())
+                .andExpect(jsonPath("$.pagination.total").value(0));
+        //模拟添加的是通过审核的.发送请求的是没有没提交审核的 这里应该是一个
+        mockMvc.perform(get("/item")
+                .param("auditStatus", "NOT_SUBMIT"))
+                .andDo(print())
+                .andExpect(jsonPath("$.pagination.total").value(1));
+
+
+        Audit audit = new Audit();
+        audit.setStatus("AUDIT_FAILED");
+        audit.setComment("没通过");
+
         //非 root 权限审核
         updateAllRunWith(merchant.getLogin());
-        mockMvc.perform(put(BASE_URL+"/"+item.getId()+"/auditStatus")
-                .content(objectMapper.writeValueAsString(status))
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("comment","没通过"))
+        //这里就无所为了.因为没有权限
+        mockMvc.perform(put(BASE_URL + "/" + item.getId() + "/auditStatus")
+                .content(objectMapper.writeValueAsString(audit))
+                .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isForbidden());
 
-        //回到root权限
-        updateAllRunWith(login);
-        status = "TO_AUDIT";
+        //回到merchant权限
+        updateAllRunWith(merchant.getLogin());
+
+        audit.setStatus("TO_AUDIT");
+        audit.setComment("测试提交审核");
         //提交审核
-        mockMvc.perform(put(BASE_URL+"/"+item.getId()+"/commit")
+        mockMvc.perform(put(BASE_URL + "/" + item.getId() + "/commit")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(status))
-                .header("comment","测试提交审核"))
+                .content(objectMapper.writeValueAsString(audit)))
                 .andDo(print())
                 .andExpect(status().isNoContent());
+
+        //回到root 审核
+        updateAllRunWith(login);
 
         item = itemRepository.getOne(item.getId());
         assertThat("TO_AUDIT".equals(item.getAuditStatus().toString())).isTrue();
         assertThat("测试提交审核".equals(item.getAuditComment())).isTrue();
 
-        status = "AUDIT_FAILED";
+        audit.setStatus("AUDIT_FAILED");
+        audit.setComment("没通过");
         //审核不通过
-        mockMvc.perform(put(BASE_URL+"/"+item.getId()+"/auditStatus")
-                .content(objectMapper.writeValueAsString(status))
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("comment","没通过"))
+        mockMvc.perform(put(BASE_URL + "/" + item.getId() + "/auditStatus")
+                .content(objectMapper.writeValueAsString(audit))
+                .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNoContent());
 
         item = itemRepository.getOne(item.getId());
         assertThat("AUDIT_FAILED".equals(item.getAuditStatus().toString())).isTrue();
 
-        status = "TO_AUDIT";
-
+        audit.setStatus("TO_AUDIT");
+        audit.setComment("测试提交审核");
         //再次提交审核
-        mockMvc.perform(put(BASE_URL+"/"+item.getId()+"/commit")
+        mockMvc.perform(put(BASE_URL + "/" + item.getId() + "/commit")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(status))
-                .header("comment","测试提交审核"))
+                .content(objectMapper.writeValueAsString(audit)))
                 .andDo(print())
                 .andExpect(status().isNoContent());
 
-        status = "AUDIT_PASS";
-
+        audit.setStatus("AUDIT_PASS");
+        audit.setComment("审核通过");
         //通过
-        mockMvc.perform(put(BASE_URL+"/"+item.getId()+"/auditStatus")
-                .content(objectMapper.writeValueAsString(status))
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("comment","审核通过"))
+        mockMvc.perform(put(BASE_URL + "/" + item.getId() + "/auditStatus")
+                .content(objectMapper.writeValueAsString(audit))
+                .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNoContent());
 
@@ -172,25 +192,23 @@ public class ManageItemControllerTest extends ManageConfigTest {
     }
 
     @Test
-    public void putTest()throws Exception{
-        //root权限
-        Login login = mockRoot();
-        updateAllRunWith(login);
+    public void putTest() throws Exception {
 
         Merchant merchant = mockMerchant();
+        updateAllRunWith(merchant.getLogin());
 
         Item item = mockItem(merchant);
         Item item1 = mockItem(merchant);
         Item item2 = mockItem(merchant);
 
         //单个上架/下架
-        Map<String,Object> putData = new HashMap<>();
+        Map<String, Object> putData = new HashMap<>();
 
         List<Long> items = new ArrayList<>();
         items.add(item.getId());
-        putData.put("items",items);
-        putData.put("enabled",true);
-        mockMvc.perform(put(BASE_URL+"/enabled")
+        putData.put("items", items);
+        putData.put("enabled", true);
+        mockMvc.perform(put(BASE_URL + "/enabled")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(putData)))
                 .andDo(print())
@@ -198,8 +216,8 @@ public class ManageItemControllerTest extends ManageConfigTest {
         Item one = itemRepository.getOne(item.getId());
         assertThat(one.isEnabled()).isTrue();
 
-        putData.put("enabled",false);
-        mockMvc.perform(put(BASE_URL+"/enabled")
+        putData.put("enabled", false);
+        mockMvc.perform(put(BASE_URL + "/enabled")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(putData)))
                 .andDo(print())
@@ -211,8 +229,8 @@ public class ManageItemControllerTest extends ManageConfigTest {
         //批量操作 成功三个
         items.add(item1.getId());
         items.add(item2.getId());
-        putData.put("enabled",true);
-        mockMvc.perform(put(BASE_URL+"/enabled")
+        putData.put("enabled", true);
+        mockMvc.perform(put(BASE_URL + "/enabled")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(putData)))
                 .andDo(print())
@@ -221,8 +239,8 @@ public class ManageItemControllerTest extends ManageConfigTest {
         Item one1 = itemRepository.getOne(item1.getId());
         assertThat(one1.isEnabled()).isTrue();
 
-        putData.put("enabled",false);
-        mockMvc.perform(put(BASE_URL+"/enabled")
+        putData.put("enabled", false);
+        mockMvc.perform(put(BASE_URL + "/enabled")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(putData)))
                 .andDo(print())
@@ -236,8 +254,8 @@ public class ManageItemControllerTest extends ManageConfigTest {
         items.clear();
         items.add(item.getId());
         //推荐/取消推荐
-        putData.put("recommended",true);
-        mockMvc.perform(put(BASE_URL+"/recommended")
+        putData.put("recommended", true);
+        mockMvc.perform(put(BASE_URL + "/recommended")
                 .content(objectMapper.writeValueAsString(putData))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -247,8 +265,8 @@ public class ManageItemControllerTest extends ManageConfigTest {
         assertThat(one3.isRecommended()).isTrue();
 
         //取消推荐
-        putData.put("recommended",false);
-        mockMvc.perform(put(BASE_URL+"/recommended")
+        putData.put("recommended", false);
+        mockMvc.perform(put(BASE_URL + "/recommended")
                 .content(objectMapper.writeValueAsString(putData))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -260,8 +278,8 @@ public class ManageItemControllerTest extends ManageConfigTest {
         //批量操作
         items.add(item1.getId());
         items.add(item2.getId());
-        putData.put("recommended",true);
-        mockMvc.perform(put(BASE_URL+"/recommended")
+        putData.put("recommended", true);
+        mockMvc.perform(put(BASE_URL + "/recommended")
                 .content(objectMapper.writeValueAsString(putData))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -269,8 +287,8 @@ public class ManageItemControllerTest extends ManageConfigTest {
         Item one5 = itemRepository.getOne(item1.getId());
         assertThat(one5.isRecommended()).isTrue();
 
-        putData.put("recommended",false);
-        mockMvc.perform(put(BASE_URL+"/recommended")
+        putData.put("recommended", false);
+        mockMvc.perform(put(BASE_URL + "/recommended")
                 .content(objectMapper.writeValueAsString(putData))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -279,4 +297,14 @@ public class ManageItemControllerTest extends ManageConfigTest {
         assertThat(one6.isRecommended()).isFalse();
     }
 
+    /**
+     * 用于测试, 项目审核/状态改变/提交审核
+     */
+    @Data
+    private class Audit {
+        private String status;
+
+        private String comment;
+    }
 }
+

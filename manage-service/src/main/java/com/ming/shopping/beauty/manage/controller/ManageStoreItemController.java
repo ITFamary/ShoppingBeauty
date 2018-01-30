@@ -35,13 +35,11 @@ import java.util.Map;
  */
 @Controller
 @RequestMapping("/storeItem")
-@PreAuthorize("hassAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
+@PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
 public class ManageStoreItemController extends AbstractCrudController<StoreItem, Long> {
 
     @Autowired
     private StoreItemService storeItemService;
-    @Autowired
-    private ItemService itemService;
 
     /**
      * 添加/编辑门店项目
