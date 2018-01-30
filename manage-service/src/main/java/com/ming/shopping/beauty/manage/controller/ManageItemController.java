@@ -13,7 +13,10 @@ import com.ming.shopping.beauty.service.service.ItemService;
 import com.ming.shopping.beauty.service.service.MerchantService;
 import me.jiangcai.crud.controller.AbstractCrudController;
 import me.jiangcai.crud.row.FieldDefinition;
+import me.jiangcai.crud.row.RowCustom;
+import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
+import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
@@ -23,8 +26,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
@@ -38,7 +40,7 @@ import java.util.Map;
  */
 @RequestMapping("/item")
 @Controller
-@PreAuthorize("hassAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
+@PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
 public class ManageItemController extends AbstractCrudController<Item, Long> {
 
     @Autowired
@@ -54,6 +56,13 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
         return super.getOne(aLong);
     }
 
+    @Override
+    @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ROOT + "')")
+    @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
+    public RowDefinition<Item> list(Map<String, Object> queryData) {
+        return super.list(queryData);
+    }
+
     /**
      * 添加项目/编辑项目
      *
@@ -64,7 +73,8 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
     @PostMapping
     @Override
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity addOne(@RequestBody Item item,@RequestBody Map<String, Object> otherData) throws URISyntaxException {
+    @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ROOT + "')")
+    public ResponseEntity addOne(@RequestBody Item item, @RequestBody Map<String, Object> otherData) throws URISyntaxException {
         final String param = "merchantId";
 
         if (otherData.get(param) == null) {
@@ -75,7 +85,7 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "请求数据"), null));
         }
-        Merchant merchant = merchantService.findOne((long) otherData.get(param));
+        Merchant merchant = merchantService.findOne(Long.parseLong(otherData.get(param).toString()));
         Item responseItem = itemService.addItem(merchant, item);
         return ResponseEntity
                 .created(new URI("/item/" + responseItem.getId()))
@@ -85,12 +95,12 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
     /**
      * 项目状态改变/审核
      *
-     * @param itemId 项目id
-     * @param status 状态
+     * @param itemId  项目id
+     * @param status  状态
      * @param message 审核结果备注
      */
     @PutMapping("/{itemId}/auditStatus")
-    @PreAuthorize("hassAnyRole('ROOT')")
+    @PreAuthorize("hasAnyRole('ROOT')")
     @ResponseStatus(HttpStatus.OK)
     public void setAuditStatus(@PathVariable("itemId") long itemId, @RequestBody AuditStatus status, @RequestHeader("comment") String message) {
         itemService.auditItem(itemId, status, message);
@@ -99,12 +109,13 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
     /**
      * 提交项目审核
      *
-     * @param itemId 项目id
-     * @param status 状态
+     * @param itemId  项目id
+     * @param status  状态
      * @param message 提交审核备注
      */
     @PutMapping("/{itemId}/commit")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ROOT + "')")
     public void commitItem(@PathVariable("itemId") long itemId, @RequestBody AuditStatus status, @RequestHeader("comment") String message) {
         itemService.auditItem(itemId, status, message);
     }
@@ -112,28 +123,29 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
     /**
      * 项目批量上架下架
      *
-     * @param putData   上下架
+     * @param putData 上下架
      */
     @PutMapping("/enabled")
     @ResponseBody
+    @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ROOT + "')")
     public ApiResult enabled(@RequestBody Map<String, Object> putData) {
         final String param = "enabled";
         final String items = "items";
         //失败的个数
         int count = 0;
-        List<Long> itemList = (List<Long>)putData.get(items);
+        List<Long> itemList = (List<Long>) putData.get(items);
         //总个数
         int size = itemList.size();
         if (putData.get(param) != null) {
             if (itemList.size() != 0) {
-                for (Long id : itemList){
+                for (Long id : itemList) {
                     try {
                         itemService.freezeOrEnable(id, (boolean) putData.get(param));
-                    }catch(Exception e){
+                    } catch (Exception e) {
                         count++;
                     }
                 }
-            }else{
+            } else {
                 throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                         , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), items), null));
             }
@@ -141,37 +153,39 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), param), null));
         }
-        return ApiResult.withOk("总数:"+size +",成功数:"+(size - count)+",失败数:"+count);
+        return ApiResult.withOk("总数:" + size + ",成功数:" + (size - count) + ",失败数:" + count);
     }
 
     /**
      * 项目批量推荐/取消推荐
+     *
      * @param putData
      */
     @PutMapping("/recommended")
     @ResponseBody
-    public ApiResult recommended(@RequestBody Map<String, Object> putData){
+    @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ROOT + "')")
+    public ApiResult recommended(@RequestBody Map<String, Object> putData) {
         final String param = "recommended";
         final String items = "items";
         //失败的个数
         int count = 0;
-        List<Long> itemList = (List<Long>)putData.get(items);
+        List<Long> itemList = (List<Long>) putData.get(items);
         //总个数
         int size = itemList.size();
-        if(putData.get(param) != null){
-            if(itemList.size() != 0){
+        if (putData.get(param) != null) {
+            if (itemList.size() != 0) {
                 for (Long id : itemList) {
-                    itemService.recommended(id,(boolean)putData.get(param));
+                    itemService.recommended(id, (boolean) putData.get(param));
                 }
-            }else{
+            } else {
                 throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                         , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), items), null));
             }
-        }else{
+        } else {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), param), null));
         }
-        return ApiResult.withOk("总数:"+size +",成功数:"+(size - count)+",失败数:"+count);
+        return ApiResult.withOk("总数:" + size + ",成功数:" + (size - count) + ",失败数:" + count);
     }
 
 
@@ -195,10 +209,7 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
                         .build()
                 , FieldBuilder.asName(Item.class, "auditStatus")
                         .addFormat((data, type) -> {
-                            AuditStatus status = (AuditStatus) data;
-                            if (status == null)
-                                return null;
-                            return status.getMessage();
+                            return data == null ? null : ((AuditStatus) data).getMessage();
                         })
                         .build()
                 , FieldBuilder.asName(Item.class, "enable")
@@ -243,4 +254,10 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
         });
     }
 
+    @Override
+    protected List<Order> listOrder(CriteriaBuilder criteriaBuilder, Root<Item> root) {
+        return Arrays.asList(
+                criteriaBuilder.desc(root.get(Item_.id))
+        );
+    }
 }

@@ -86,28 +86,34 @@ public class ItemServiceImpl implements ItemService {
         item.setRecommended(recommended);
         return itemRepository.save(item);
     }
+
     @Override
     @Transactional
-    public Item addItem(Merchant merchant,Item item){
-
-        Item findOld = findOne(item.getId());
-        if(findOld != null){
-            //编辑
-            if(!findOld.isEnable()){
-                //下架才可以编辑
+    public Item addItem(Merchant merchant, Item item) {
+            if (item.getId() != null) {
+                //编辑
+                Item findOld = findOne(item.getId());
+                if (!findOld.isEnable()) {
+                    //下架才可以编辑
+                    findOld.setName(item.getName());
+                    findOld.setThumbnailUrl(item.getThumbnailUrl());
+                    findOld.setPrice(item.getPrice());
+                    findOld.setSalesPrice(item.getSalesPrice());
+                    findOld.setCostPrice(item.getCostPrice());
+                    findOld.setDescription(item.getDescription());
+                    findOld.setRichDescription(item.getRichDescription());
+                    item.setAuditStatus(AuditStatus.NOT_SUBMIT);
+                } else {
+                    throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                            , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "请求数据"), null));
+                }
+            } else {
+                //新增
+                if (merchant != null) {
+                    item.setMerchant(merchant);
+                }
                 item.setAuditStatus(AuditStatus.NOT_SUBMIT);
-            }else{
-                throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
-                        , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "请求数据"), null));
             }
-        }else{
-            //新增
-            if (merchant != null) {
-            item.setMerchant(merchant);
-        }
-        item.setAuditStatus(AuditStatus.NOT_SUBMIT);
-        }
-
         return itemRepository.save(item);
     }
 
@@ -124,7 +130,7 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     public Item freezeOrEnable(long id, boolean enable) {
         Item item = findOne(id);
-        if(item.getAuditStatus() == AuditStatus.AUDIT_PASS)
+        if (item.getAuditStatus() == AuditStatus.AUDIT_PASS)
             item.setEnable(enable);
         else
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.ITEM_NOT_AUDIT));

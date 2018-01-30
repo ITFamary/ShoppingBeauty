@@ -66,6 +66,7 @@ public class ManageStoreControllerTest extends ManageConfigTest {
                 .content(objectMapper.writeValueAsString(rsb))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
+                .andDo(print())
                 .andReturn().getResponse().getHeader("Location");
         Store store = storeService.findStore(willStore.getId());
         assertThat(store != null).isTrue();
