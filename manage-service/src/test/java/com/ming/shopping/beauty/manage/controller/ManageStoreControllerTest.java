@@ -11,6 +11,7 @@ import com.ming.shopping.beauty.service.repository.RepresentRepository;
 import com.ming.shopping.beauty.service.repository.StoreRepository;
 import com.ming.shopping.beauty.service.service.StoreService;
 import org.junit.Test;
+import org.mockito.internal.matchers.GreaterOrEqual;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.MediaType;
@@ -20,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -36,6 +38,8 @@ public class ManageStoreControllerTest extends ManageConfigTest {
     @Autowired
     private RepresentRepository representRepository;
 
+    private static final String BASE_URL = "/store";
+
     @Test
     public void storeList() throws Exception {
         //首先是不具有管理员权限的人访问,拒绝访问
@@ -43,8 +47,7 @@ public class ManageStoreControllerTest extends ManageConfigTest {
         Login fackManage = mockLogin();
         //身份运行
         updateAllRunWith(fackManage);
-        mockMvc.perform(get("/store"))
-                .andDo(print())
+        mockMvc.perform(get(BASE_URL))
                 .andExpect(status().isForbidden());
         //来个商户
         Merchant merchant = mockMerchant();
@@ -61,8 +64,9 @@ public class ManageStoreControllerTest extends ManageConfigTest {
         rsb.setTelephone("18799882273");
         rsb.setLoginId(willStore.getId());
         rsb.setMerchantId(merchant.getId());
+        System.out.println(objectMapper.writeValueAsString(rsb));
         //发送请求添加
-        String location = mockMvc.perform(post("/store")
+        String location = mockMvc.perform(post(BASE_URL)
                 .content(objectMapper.writeValueAsString(rsb))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
@@ -72,19 +76,37 @@ public class ManageStoreControllerTest extends ManageConfigTest {
         assertThat(store != null).isTrue();
         //再添加一个
         Store store1 = mockStore(merchant);
-        //获取门店列表
-        String contentAsString = mockMvc.perform(get("/store"))
+        //不带参数，获取门店列表,第一条记录必定是最新添加的
+        mockMvc.perform(get(BASE_URL))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.pagination.total").value(new GreaterOrEqual(2)))
+                .andExpect(jsonPath("$.list[0].id").value(store1.getId()))
+                .andExpect(jsonPath("$.list[1].id").value(rsb.getLoginId()));
+        mockMvc.perform(get(BASE_URL)
+                .param("merchantId", String.valueOf(merchant.getMerchantId())))
                 .andDo(print())
-                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        String s = objectMapper.readTree(contentAsString).get("list").get(0).get("storeId").asText();
-        List<Long> oldIdList = new ArrayList<>();
-        oldIdList.add(store.getId());
-        oldIdList.add(store1.getId());
-        assertThat(oldIdList.contains(Long.parseLong(s))).isTrue();
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.pagination.total").value(new GreaterOrEqual(2)))
+                .andExpect(jsonPath("$.list[0].id").value(store1.getId()))
+                .andExpect(jsonPath("$.list[1].id").value(rsb.getLoginId()));
+
+        //查找特定门店
+        mockMvc.perform(get(BASE_URL)
+                .param("username",willStore.getLoginName()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.pagination.total").value(1))
+                .andExpect(jsonPath("$.list[0].id").value(rsb.getLoginId()));
+
+        //找一个不存在的门店
+        mockMvc.perform(get(BASE_URL)
+                .param("merchantId","-" + random.nextInt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.pagination.total").value(0))
+                .andExpect(jsonPath("$.list").isEmpty());
 
         boolean enable = false;
         //禁用门店
-        mockMvc.perform(put("/store/" + store.getId() + "/enabled")
+        mockMvc.perform(put(BASE_URL + "/" + store.getId() + "/enabled")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(enable)))
                 .andDo(print())
@@ -127,7 +149,7 @@ public class ManageStoreControllerTest extends ManageConfigTest {
 
         boolean enable = false;
         //冻结启用门店代表
-        mockMvc.perform(put("/store/" + store.getId() + "/represent/" + login.getId()+"/enabled")
+        mockMvc.perform(put("/store/" + store.getId() + "/represent/" + login.getId() + "/enabled")
                 .content(objectMapper.writeValueAsString(false))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())

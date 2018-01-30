@@ -22,15 +22,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.criteria.*;
+import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author lxf
@@ -47,14 +45,14 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
     /**
      * 门店列表
      *
-     * @param queryData 查询参数
+     * @param request
      * @return
      */
     @Override
     @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
-    public RowDefinition<Store> list(Map<String, Object> queryData) {
-        return super.list(queryData);
+    public RowDefinition<Store> list(HttpServletRequest request) {
+        return super.list(request);
     }
 
     /**
@@ -108,7 +106,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
                                 .build()
                         , FieldBuilder.asName(Store.class, "contact")
                                 .build()
-                        , FieldBuilder.asName(Store.class,"represents")
+                        , FieldBuilder.asName(Store.class, "represents")
                                 .build()
                 );
             }
@@ -116,7 +114,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
             @Override
             public Specification<Store> specification() {
                 return (root, query, cb) ->
-                    cb.equal(root.get(Store_.id),storeId);
+                        cb.equal(root.get(Store_.id), storeId);
             }
         };
     }
@@ -130,7 +128,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
     @PutMapping("/{storeId}/enabled")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void setEnable(@PathVariable("storeId") long loginId,@RequestBody Boolean enable) {
+    public void setEnable(@PathVariable("storeId") long loginId, @RequestBody Boolean enable) {
         if (enable != null) {
             storeService.freezeOrEnable(loginId, enable);
         } else {
@@ -159,7 +157,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
             public List<Order> defaultOrder(CriteriaBuilder criteriaBuilder, Root<Represent> root) {
                 return Arrays.asList(
                         criteriaBuilder.asc(root.get("enable"))
-                        , criteriaBuilder.desc(root.get("id"))
+                        , criteriaBuilder.desc(root.get("createTime"))
                 );
             }
 
@@ -187,7 +185,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
     public ResponseEntity addRepresent(@PathVariable(required = true) long storeId, @PathVariable(required = true) long representId) throws URISyntaxException {
         representService.addRepresent(representId, storeId);
         return ResponseEntity
-                .created(new URI("/store/" + storeId+"/represent/"+ representId))
+                .created(new URI("/store/" + storeId + "/represent/" + representId))
                 .build();
     }
 
@@ -211,14 +209,15 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
 
     /**
      * 移除角色和门店代表的关联
+     *
      * @param storeId
      * @param representId
      */
     @DeleteMapping("/{storeId}/represent/{representId}")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void removeRepresent(@PathVariable("storeId")long storeId,@PathVariable("representId") long representId){
-        representService.removerRepresent(storeId,representId);
+    public void removeRepresent(@PathVariable("storeId") long storeId, @PathVariable("representId") long representId) {
+        representService.removerRepresent(storeId, representId);
     }
 
     //门店
@@ -226,7 +225,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
     @Override
     protected List<FieldDefinition<Store>> listFields() {
         return Arrays.asList(
-                FieldBuilder.asName(Store.class, "storeId")
+                FieldBuilder.asName(Store.class, "id")
                         .addSelect(storeRoot -> storeRoot.get(Store_.id))
                         .build()
                 , FieldBuilder.asName(Store.class, "username")
@@ -245,7 +244,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
                 , FieldBuilder.asName(Store.class, "enabled")
                         .build()
                 , FieldBuilder.asName(Store.class, "createTime")
-                        .addFormat((data,type)->{
+                        .addFormat((data, type) -> {
                             return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(((LocalDateTime) data));
                         })
                         .build()
@@ -257,17 +256,21 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
     protected Specification<Store> listSpecification(Map<String, Object> queryData) {
         return (root, cq, cb) -> {
             List<Predicate> conditionList = new ArrayList<>();
-            if(queryData.get("merchantId") != null){
-                conditionList.add(cb.equal(root.join(Store_.merchant).get(Merchant_.id),queryData.get("merchantId")));
-            }
-            if(queryData.get("telephone") != null){
-                conditionList.add(cb.equal(root.join(Store_.merchant).get(Merchant_.telephone),queryData.get("telephone")));
+            if (queryData.get("merchantId") != null) {
+                conditionList.add(cb.equal(root.join(Store_.merchant, JoinType.LEFT).get(Merchant_.id), Long.valueOf(queryData.get("merchantId").toString())));
             }
             if (queryData.get("username") != null) {
                 conditionList.add(cb.equal(root.join(Store_.login).get(Login_.loginName), queryData.get("username")));
             }
             return cb.and(conditionList.toArray(new Predicate[conditionList.size()]));
         };
+    }
+
+    @Override
+    protected List<Order> listOrder(CriteriaBuilder criteriaBuilder, Root<Store> root) {
+        return Arrays.asList(
+                criteriaBuilder.desc(root.get(Store_.createTime))
+        );
     }
 
     //门店代表
@@ -308,10 +311,4 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
     }
 
 
-    @Override
-    protected List<Order> listOrder(CriteriaBuilder criteriaBuilder, Root<Store> root) {
-        return Arrays.asList(
-                criteriaBuilder.desc(root.get(Store_.id))
-        );
-    }
 }

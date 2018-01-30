@@ -47,6 +47,7 @@ public class StoreServiceImpl implements StoreService {
         Store store = new Store();
         store.setId(loginId);
         store.setLogin(login);
+        store.setMerchant(merchant);
         store.setName(name);
         store.setTelephone(telephone);
         store.setAddress(address);
@@ -72,6 +73,7 @@ public class StoreServiceImpl implements StoreService {
         manage.setId(loginId);
         manage.setLogin(login);
         manage.setStore(store);
+        manage.setMerchant(store.getMerchant());
         manage.setCreateTime(LocalDateTime.now());
         login.setStore(store);
         login.addLevel(ManageLevel.storeRoot);
