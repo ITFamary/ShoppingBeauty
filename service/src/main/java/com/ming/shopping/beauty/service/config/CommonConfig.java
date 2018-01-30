@@ -4,7 +4,7 @@ import com.huotu.verification.VerificationCodeConfig;
 import com.ming.shopping.beauty.service.service.SystemService;
 import me.jiangcai.crud.CrudConfig;
 import me.jiangcai.lib.jdbc.JdbcSpringConfig;
-import me.jiangcai.lib.resource.ResourceSpringConfig;
+import me.jiangcai.lib.resource.web.WebResourceSpringConfig;
 import me.jiangcai.lib.spring.logging.LoggingConfig;
 import me.jiangcai.lib.sys.SystemStringConfig;
 import me.jiangcai.lib.thread.ThreadConfig;
@@ -25,7 +25,7 @@ import org.springframework.context.support.ResourceBundleMessageSource;
  * Created by helloztt on 2018/1/5.
  */
 @Configuration
-@Import({ResourceSpringConfig.class, JdbcSpringConfig.class
+@Import({WebResourceSpringConfig.class, JdbcSpringConfig.class
         , VerificationCodeConfig.class
         , CrudConfig.class
         , WeixinSpringConfig.class, StandardWeixinConfig.class
