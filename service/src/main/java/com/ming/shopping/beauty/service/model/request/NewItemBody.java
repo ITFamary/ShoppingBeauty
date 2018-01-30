@@ -9,6 +9,8 @@ import java.math.BigDecimal;
  */
 @Data
 public class NewItemBody {
+    //id
+    private Long id;
     //所属商户
     private long merchantId;
     //

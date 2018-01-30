@@ -85,11 +85,11 @@ public class Item implements CrudFriendly<Long> {
     /**
      * 是否推荐
      */
-    private boolean recommended;
+    private boolean recommended = false;
     /**
      * 是否上架
      */
-    private boolean enable = false;
+    private boolean enabled = false;
     /**
      * 含义上跟enable完全不同；该值为true 则该货品不会在系统中可见！
      */

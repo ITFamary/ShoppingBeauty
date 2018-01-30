@@ -44,7 +44,7 @@ public class ItemServiceImpl implements ItemService {
                         .get(Merchant_.id), searcher.getMerchantId()));
             }
             if (searcher.getEnabled() != null) {
-                conditionList.add(cb.equal(root.get(Item_.enable), searcher.getEnabled()));
+                conditionList.add(cb.equal(root.get(Item_.enabled), searcher.getEnabled()));
             }
             if (searcher.getRecommended() != null) {
                 conditionList.add(cb.equal(root.get(Item_.recommended), searcher.getRecommended()));
@@ -93,7 +93,7 @@ public class ItemServiceImpl implements ItemService {
             if (item.getId() != null) {
                 //编辑
                 Item findOld = findOne(item.getId());
-                if (!findOld.isEnable()) {
+                if (!findOld.isEnabled()) {
                     //下架才可以编辑
                     findOld.setName(item.getName());
                     findOld.setThumbnailUrl(item.getThumbnailUrl());
@@ -102,7 +102,8 @@ public class ItemServiceImpl implements ItemService {
                     findOld.setCostPrice(item.getCostPrice());
                     findOld.setDescription(item.getDescription());
                     findOld.setRichDescription(item.getRichDescription());
-                    item.setAuditStatus(AuditStatus.NOT_SUBMIT);
+                    findOld.setAuditStatus(AuditStatus.NOT_SUBMIT);
+                    return itemRepository.save(findOld);
                 } else {
                     throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                             , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "请求数据"), null));
@@ -131,7 +132,7 @@ public class ItemServiceImpl implements ItemService {
     public Item freezeOrEnable(long id, boolean enable) {
         Item item = findOne(id);
         if (item.getAuditStatus() == AuditStatus.AUDIT_PASS)
-            item.setEnable(enable);
+            item.setEnabled(enable);
         else
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.ITEM_NOT_AUDIT));
         return itemRepository.save(item);
