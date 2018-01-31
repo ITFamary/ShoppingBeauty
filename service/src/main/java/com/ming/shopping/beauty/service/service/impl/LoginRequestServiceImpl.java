@@ -52,4 +52,9 @@ public class LoginRequestServiceImpl implements LoginRequestService {
     public void remove(long requestId) {
         loginRequestRepository.delete(requestId);
     }
+
+    @Override
+    public void remove(String sessionId, Login login) {
+        loginRequestRepository.delete(loginRequestRepository.findBySessionIdAndLogin(sessionId, login));
+    }
 }

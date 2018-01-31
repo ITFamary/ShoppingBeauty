@@ -221,6 +221,16 @@ public class IndexController {
         }
     }
 
+    @GetMapping(SystemService.LOGINOUT)
+    @ResponseStatus(HttpStatus.OK)
+    public void logout(@AuthenticationPrincipal Object principal, HttpServletRequest request) {
+        // TODO: 2018/1/31 单元测试
+        String sessionId = request.getSession().getId();
+        if (principal instanceof Login) {
+            loginRequestService.remove(sessionId, (Login) principal);
+        }
+    }
+
     private void loginToSecurity(Login login, HttpServletRequest request, HttpServletResponse response) {
         //对 login 执行登录
 

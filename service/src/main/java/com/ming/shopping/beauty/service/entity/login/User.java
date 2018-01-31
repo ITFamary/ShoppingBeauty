@@ -4,6 +4,7 @@ import com.ming.shopping.beauty.service.utils.Constant;
 import lombok.Getter;
 import lombok.Setter;
 import me.jiangcai.wx.model.Gender;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -22,7 +23,7 @@ public class User {
      * share primary key
      */
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, optional = false)
-    @PrimaryKeyJoinColumn(name = "id",referencedColumnName = "id")
+    @PrimaryKeyJoinColumn(name = "id", referencedColumnName = "id")
     private Login login;
     /**
      * 姓
@@ -48,8 +49,11 @@ public class User {
      */
     @Column(length = 30)
     private String cardNo;
+
     /**
      * 是否激活（充钱了才算激活）
      */
-    private boolean active;
+    public boolean isActive() {
+        return !StringUtils.isEmpty(cardNo);
+    }
 }

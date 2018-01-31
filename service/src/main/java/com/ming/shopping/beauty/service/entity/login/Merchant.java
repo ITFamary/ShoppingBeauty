@@ -26,7 +26,7 @@ public class Merchant implements CrudFriendly<Long> {
     /**
      * share primary key
      */
-    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH,CascadeType.MERGE,CascadeType.PERSIST}, optional = false)
+    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.PERSIST}, optional = false)
     @PrimaryKeyJoinColumn(name = "id", referencedColumnName = "id")
     private Login login;
     /**
@@ -60,6 +60,7 @@ public class Merchant implements CrudFriendly<Long> {
     /**
      * 是否是个超级管理员
      */
+    // TODO: 2018/1/31 移除，直接通过merchant判断是否是超级管理员
     private boolean manageable;
     /**
      * 冻结或删除都应设置为 false
@@ -88,9 +89,10 @@ public class Merchant implements CrudFriendly<Long> {
 
     /**
      * 获取商户ID
+     *
      * @return
      */
-    public long getMerchantId(){
+    public long getMerchantId() {
         return manageable ? id : merchant.getId();
     }
 

@@ -38,4 +38,11 @@ public interface LoginRequestService {
      * @param requestId
      */
     void remove(long requestId);
+
+    /**
+     * 退出登录
+     *
+     * @param login
+     */
+    void remove(String sessionId, Login login);
 }

@@ -17,9 +17,15 @@ import java.util.stream.Stream;
 public enum ManageLevel {
     root("超级管理员", "ROOT"),
     /**
+     * 平台管理员，结算相关
+     */
+    rootSettlementManager("财务", Login.ROLE_ROOT_SETTLEMENT),
+    /**
      * 管理员， 审核项目
      */
-    rootManager("平台管理员", Login.ROLE_AUDIT_ITEM),
+    rootItemManager("平台管理员", Login.ROLE_AUDIT_ITEM),
+
+
     /**
      * 商户管理员
      */
@@ -27,7 +33,13 @@ public enum ManageLevel {
     /**
      * 商户操作员， 管理项目及门店项目
      */
-    merchantManager("商户操作员", Login.ROLE_MERCHANT_OPERATOR, Login.ROLE_MANAGE_ITEM),
+    merchantItemManager("商户操作员", Login.ROLE_MANAGE_ITEM),
+    /**
+     * 商户操作员，结算相关
+     */
+    merchantSettlementManager("商户财务", Login.ROLE_MERCHANT_SETTLEMENT),
+
+
     /**
      * 门店管理员
      */
@@ -35,7 +47,7 @@ public enum ManageLevel {
     /**
      * 门店操作员
      */
-    storeMerchant("门店操作员", Login.ROLE_STORE_OPERATOR),
+//    storeMerchant("门店操作员", Login.ROLE_STORE_OPERATOR),
     /**
      * 门店代表
      */

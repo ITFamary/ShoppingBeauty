@@ -112,7 +112,6 @@ public class LoginServiceImpl implements LoginService {
             //使用这张充值卡，如果不存在或者已经用过了，就抛出异常
             rechargeCardService.useCard(cardNo, login.getId());
             user.setCardNo(cardNo);
-            user.setActive(true);
         }
         return login;
     }
@@ -178,35 +177,11 @@ public class LoginServiceImpl implements LoginService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = RuntimeException.class)
     public void setManageLevel(long loginId, ManageLevel... manageLevel) {
-        /*if (manageLevel == null) {
-            //清空多余权限
-            Login login = loginRepository.findOne(loginId);
-            Set<ManageLevel> levelSet = login.getLevelSet();
-            levelSet.clear();
-
-            Merchant merchant = login.getMerchant();
-            Store store = login.getStore();
-            Represent represent = login.getRepresent();
-            //如果他是门店,或者商户,那就应该具有管理权限
-            if (merchant != null && merchant.isManageable())
-                //说明是个商户应该保留他的商户权限.
-                levelSet.add(ManageLevel.merchantRoot);
-
-            if (store != null && store.isManageable())
-                //说哦名是个门店,应该保留他的门店权限.
-                levelSet.add(ManageLevel.storeRoot);
-            if (represent != null ){
-                //说明是一个门店代表, 保留他的门店代表权限
-                levelSet.add(ManageLevel.represent);
-            }
-            loginRepository.save(login);
-        }
         Login login = loginRepository.findOne(loginId);
-        Set<ManageLevel> levelSet = login.getLevelSet();
-        levelSet.addAll(Arrays.asList(manageLevel));
-        loginRepository.save(login);*/
-        //TODO 等待新权限讨论出来后再重新实现.
+        login.getLevelSet().clear();
+        login.addLevel(manageLevel);
+        loginRepository.save(login);
     }
 }

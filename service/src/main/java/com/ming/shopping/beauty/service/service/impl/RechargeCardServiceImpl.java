@@ -104,9 +104,10 @@ public class RechargeCardServiceImpl implements RechargeCardService {
         rechargeCard.setUsed(true);
         rechargeCard.setUser(user);
 
+
         user.setCurrentAmount(user.getCurrentAmount().add(rechargeCard.getAmount()));
         if (!user.isActive()) {
-            user.setActive(true);
+            user.setCardNo(cardNo);
         }
         rechargeCardRepository.saveAndFlush(rechargeCard);
         userRepository.save(user);

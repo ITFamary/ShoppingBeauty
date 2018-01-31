@@ -20,11 +20,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,13 +44,34 @@ public class Login implements UserDetails, CrudFriendly<Long> {
      * 门店超管及操作员
      */
     public static final String ROLE_STORE_ROOT = "STORE_ROOT";
-    public static final String ROLE_STORE_OPERATOR = "STORE_OPERATOR";
+    //    public static final String ROLE_STORE_OPERATOR = "STORE_OPERATOR";
     public static final String ROLE_REPRESENT = "REPRESENT";
     /**
-     * 审核门店
+     * 审核项目
      */
     public static final String ROLE_AUDIT_ITEM = "AUDIT_ITEM";
     public static final String ROLE_MANAGE_ITEM = "MANAGE_ITEM";
+    /**
+     * 结算
+     */
+    public static final String ROLE_ROOT_SETTLEMENT = "ROOT_SETTLEMENT";
+    public static final String ROLE_MERCHANT_SETTLEMENT = "MERCHANT_SETTLEMENT";
+    /**
+     * 平台管理员有哪些角色
+     */
+    public static final List<ManageLevel> rootLevel = Arrays.asList(
+            ManageLevel.root
+            , ManageLevel.rootSettlementManager
+            , ManageLevel.rootItemManager
+    );
+    /**
+     * 商户操作员有哪些角色
+     */
+    public static final List<ManageLevel> merchantLevel = Arrays.asList(
+            ManageLevel.merchantRoot
+            , ManageLevel.merchantSettlementManager
+            , ManageLevel.merchantItemManager
+    );
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

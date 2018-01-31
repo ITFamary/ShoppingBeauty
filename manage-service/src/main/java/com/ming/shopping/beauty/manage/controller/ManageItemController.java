@@ -143,9 +143,7 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
                         , FieldBuilder.asName(Item.class, "salesPrice")
                                 .build()
                         , FieldBuilder.asName(Item.class, "auditStatus")
-                                .addFormat((data, type) -> {
-                                    return data == null ? null : ((AuditStatus) data).getMessage();
-                                })
+                                .addFormat((data, type) -> data == null ? null : ((AuditStatus) data).getMessage())
                                 .build()
                         , FieldBuilder.asName(Item.class, "enabled")
                                 .build()

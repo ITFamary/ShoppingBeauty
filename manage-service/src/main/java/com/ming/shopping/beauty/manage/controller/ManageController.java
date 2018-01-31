@@ -2,6 +2,7 @@ package com.ming.shopping.beauty.manage.controller;
 
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Login_;
+import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
@@ -11,6 +12,7 @@ import me.jiangcai.crud.controller.AbstractCrudController;
 import me.jiangcai.crud.row.FieldDefinition;
 import me.jiangcai.crud.row.RowCustom;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.domain.Specification;
@@ -27,6 +29,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 超级管理员
@@ -60,7 +63,8 @@ public class ManageController extends AbstractCrudController<Login, Long> {
      *
      * @param id 角色编号
      */
-    @PutMapping("/{id}/manageable/on")
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ROOT')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Transactional(rollbackFor = RuntimeException.class)
     public void manageable(@PathVariable long id, Map<String, Boolean> putData) {
@@ -83,7 +87,8 @@ public class ManageController extends AbstractCrudController<Login, Long> {
     @PreAuthorize("hasAnyRole('ROOT')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void setManageLevel(@PathVariable(value = "id", required = true) long loginId, @RequestBody String manageLevelMessage) {
-        /*String perface = manageLevelMessage.replace("\"", "");
+        // TODO: 2018/1/31 单元测试
+        String perface = manageLevelMessage.replace("\"", "");
         String[] manageArray = perface.split(",");
         if (manageArray.length > 1) {
             ManageLevel[] manageLevels = new ManageLevel[manageArray.length];
@@ -95,7 +100,7 @@ public class ManageController extends AbstractCrudController<Login, Long> {
             loginService.setManageLevel(loginId, null);
         } else {
             loginService.setManageLevel(loginId, ManageLevel.valueOf(perface));
-        }*/
+        }
     }
 
 
