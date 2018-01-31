@@ -4,12 +4,15 @@ import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.item.Item_;
 import com.ming.shopping.beauty.service.entity.login.Merchant_;
 import com.ming.shopping.beauty.service.entity.support.AuditStatus;
+import com.ming.shopping.beauty.service.utils.Utils;
 import me.jiangcai.crud.row.FieldDefinition;
 import me.jiangcai.crud.row.RowCustom;
 import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
 import me.jiangcai.crud.row.supplier.SingleRowDramatizer;
+import me.jiangcai.lib.resource.service.ResourceService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +27,9 @@ import java.util.List;
  */
 @Controller
 public class ClientItemController {
+
+    @Autowired
+    private ResourceService resourceService;
 
     @GetMapping("/items")
     @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
@@ -45,7 +51,7 @@ public class ClientItemController {
                                 .build()
                         , FieldBuilder.asName(Item.class, "itemType")
                                 .build()
-                        , FieldBuilder.asName(Item.class, "thumbnailUrl")
+                        , FieldBuilder.asName(Item.class, "mainImagePath")
                                 .build()
                         , FieldBuilder.asName(Item.class, "merchantName")
                                 .addSelect(itemRoot -> itemRoot.join(Item_.merchant).get(Merchant_.name))
@@ -88,8 +94,9 @@ public class ClientItemController {
                         FieldBuilder.asName(Item.class, "itemId")
                                 .addSelect(root -> root.get(Item_.id))
                                 .build()
-                        , FieldBuilder.asName(Item.class, "thumbnail")
-                                .addSelect(root -> root.get(Item_.thumbnailUrl))
+                        , FieldBuilder.asName(Item.class, "mainImagePath")
+                                .addSelect(root -> root.get(Item_.mainImagePath))
+                                .addFormat(Utils.formatResourcePathToURL(resourceService))
                                 .build()
                         , FieldBuilder.asName(Item.class, "title")
                                 .addSelect(root -> root.get(Item_.name))

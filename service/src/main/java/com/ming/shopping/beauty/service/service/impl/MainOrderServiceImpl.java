@@ -21,8 +21,10 @@ import com.ming.shopping.beauty.service.repository.OrderItemRepository;
 import com.ming.shopping.beauty.service.service.ItemService;
 import com.ming.shopping.beauty.service.service.MainOrderService;
 import com.ming.shopping.beauty.service.service.StoreItemService;
+import com.ming.shopping.beauty.service.utils.Utils;
 import me.jiangcai.crud.row.*;
 import me.jiangcai.crud.row.field.FieldBuilder;
+import me.jiangcai.lib.resource.service.ResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
@@ -308,6 +310,9 @@ public class MainOrderServiceImpl implements MainOrderService {
         );
     }
 
+    @Autowired
+    private ResourceService resourceService;
+
     private List<FieldDefinition<OrderItem>> orderItemListField() {
         return Arrays.asList(
                 FieldBuilder.asName(OrderItem.class, "orderId")
@@ -317,7 +322,8 @@ public class MainOrderServiceImpl implements MainOrderService {
                         .addSelect(orderItemRoot -> orderItemRoot.get(OrderItem_.itemId))
                         .build()
                 , FieldBuilder.asName(OrderItem.class, "thumbnail")
-                        .addSelect(orderItemRoot -> orderItemRoot.join(OrderItem_.item,JoinType.LEFT).get(Item_.thumbnailUrl))
+                        .addSelect(orderItemRoot -> orderItemRoot.join(OrderItem_.item, JoinType.LEFT).get(Item_.mainImagePath))
+                        .addFormat(Utils.formatResourcePathToURL(resourceService))
                         .build()
                 , FieldBuilder.asName(OrderItem.class, "title")
                         .addSelect(orderItemRoot -> orderItemRoot.get(OrderItem_.name))

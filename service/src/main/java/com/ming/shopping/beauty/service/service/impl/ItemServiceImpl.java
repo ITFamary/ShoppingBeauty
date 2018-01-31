@@ -13,17 +13,22 @@ import com.ming.shopping.beauty.service.repository.ItemRepository;
 import com.ming.shopping.beauty.service.repository.StoreItemRepository;
 import com.ming.shopping.beauty.service.service.ItemService;
 import com.ming.shopping.beauty.service.service.StoreService;
+import me.jiangcai.lib.resource.service.ResourceService;
+import me.jiangcai.lib.seext.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ItemServiceImpl implements ItemService {
@@ -64,16 +69,18 @@ public class ItemServiceImpl implements ItemService {
         return item;
     }
 
+    @Autowired
+    private ResourceService resourceService;
+
     @Override
     @Transactional
-    public Item addItem(Merchant merchant, String thumbnailUrl, String name, String itemType, BigDecimal price, BigDecimal salesPrice,
+    public Item addItem(Merchant merchant, String mainImagePath, String name, String itemType, BigDecimal price, BigDecimal salesPrice,
                         BigDecimal costPrice, String description, String richDescription, boolean recommended) {
         Item item = new Item();
         if (merchant != null) {
             item.setMerchant(merchant);
         }
         item.setName(name);
-        item.setThumbnailUrl(thumbnailUrl);
         item.setItemType(itemType);
         item.setPrice(price);
         item.setSalesPrice(salesPrice);
@@ -84,37 +91,62 @@ public class ItemServiceImpl implements ItemService {
             item.setRichDescription(richDescription);
         }
         item.setRecommended(recommended);
+        forImage(item, mainImagePath);
         return itemRepository.save(item);
+    }
+
+    /**
+     * 设置特定项目的主图，若原图已存在则需先行移除
+     *
+     * @param item          特定项目
+     * @param mainImagePath 新图的资源path
+     */
+    private void forImage(Item item, String mainImagePath) {
+        try {
+            if (!StringUtils.isEmpty(mainImagePath)) {
+                if (item.getMainImagePath() != null) {
+                    resourceService.deleteResource(item.getMainImagePath());
+                }
+                String path = "item/images/" + UUID.randomUUID().toString().replaceFirst("-", "")
+                        + "." + FileUtils.fileExtensionName(mainImagePath);
+                resourceService.moveResource(path, mainImagePath);
+                item.setMainImagePath(path);
+            }
+        } catch (IOException ex) {
+            throw new IllegalStateException("通常不会发生的", ex);
+        }
     }
 
     @Override
     @Transactional
-    public Item addItem(Merchant merchant, Item item) {
-            if (item.getId() != null) {
-                //编辑
-                Item findOld = findOne(item.getId());
-                if (!findOld.isEnabled()) {
-                    //下架才可以编辑
-                    findOld.setName(item.getName());
-                    findOld.setThumbnailUrl(item.getThumbnailUrl());
-                    findOld.setPrice(item.getPrice());
-                    findOld.setSalesPrice(item.getSalesPrice());
-                    findOld.setCostPrice(item.getCostPrice());
-                    findOld.setDescription(item.getDescription());
-                    findOld.setRichDescription(item.getRichDescription());
-                    findOld.setAuditStatus(AuditStatus.NOT_SUBMIT);
-                    return itemRepository.save(findOld);
-                } else {
-                    throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
-                            , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "请求数据"), null));
-                }
+    public Item addItem(Merchant merchant, Item item, String mainImagePath) {
+        if (item.getId() != null) {
+            //编辑
+            Item findOld = findOne(item.getId());
+            if (!findOld.isEnabled()) {
+                //下架才可以编辑
+                findOld.setName(item.getName());
+                findOld.setMainImagePath(item.getMainImagePath());
+                findOld.setPrice(item.getPrice());
+                findOld.setSalesPrice(item.getSalesPrice());
+                findOld.setCostPrice(item.getCostPrice());
+                findOld.setDescription(item.getDescription());
+                findOld.setRichDescription(item.getRichDescription());
+                findOld.setAuditStatus(AuditStatus.NOT_SUBMIT);
+                forImage(findOld, mainImagePath);
+                return itemRepository.save(findOld);
             } else {
-                //新增
-                if (merchant != null) {
-                    item.setMerchant(merchant);
-                }
-                item.setAuditStatus(AuditStatus.NOT_SUBMIT);
+                throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                        , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "请求数据"), null));
             }
+        } else {
+            //新增
+            forImage(item, mainImagePath);
+            if (merchant != null) {
+                item.setMerchant(merchant);
+            }
+            item.setAuditStatus(AuditStatus.NOT_SUBMIT);
+        }
         return itemRepository.save(item);
     }
 

@@ -16,8 +16,7 @@ public class NewItemBody {
     //
     //项目名
     private String name;
-    //图片url
-    private String thumbnailUrl;
+    private String imagePath;
     //itemType
     private String itemType;
 
