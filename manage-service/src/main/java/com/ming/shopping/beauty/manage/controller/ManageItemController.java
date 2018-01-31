@@ -11,12 +11,14 @@ import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.service.ItemService;
 import com.ming.shopping.beauty.service.service.MerchantService;
+import com.ming.shopping.beauty.service.utils.Utils;
 import me.jiangcai.crud.controller.AbstractCrudController;
 import me.jiangcai.crud.row.FieldDefinition;
 import me.jiangcai.crud.row.RowCustom;
 import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
+import me.jiangcai.lib.resource.service.ResourceService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
@@ -28,7 +30,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.criteria.*;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
@@ -49,6 +50,8 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
     private ItemService itemService;
     @Autowired
     private MerchantService merchantService;
+    @Autowired
+    private ResourceService resourceService;
 
     @Override
     @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
@@ -80,7 +83,7 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "请求数据"), null));
         }
         Merchant merchant = merchantService.findOne(Long.parseLong(otherData.get(param).toString()));
-        Item responseItem = itemService.addItem(merchant, item);
+        Item responseItem = itemService.addItem(merchant, item, null);
         return ResponseEntity
                 .created(new URI("/item/" + responseItem.getId()))
                 .build();
@@ -112,7 +115,8 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
                                 .build()
                         , FieldBuilder.asName(Item.class, "itemType")
                                 .build()
-                        , FieldBuilder.asName(Item.class, "thumbnailUrl")
+                        , FieldBuilder.asName(Item.class, "mainImagePath")
+                                .addFormat(Utils.formatResourcePathToURL(resourceService))
                                 .build()
                         , FieldBuilder.asName(Item.class, "merchantName")
                                 .addSelect(itemRoot -> itemRoot.join(Item_.merchant).get(Merchant_.name))
@@ -253,7 +257,8 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
                         .build()
                 , FieldBuilder.asName(Item.class, "itemType")
                         .build()
-                , FieldBuilder.asName(Item.class, "thumbnailUrl")
+                , FieldBuilder.asName(Item.class, "mainImagePath")
+                        .addFormat(Utils.formatResourcePathToURL(resourceService))
                         .build()
                 , FieldBuilder.asName(Item.class, "merchantName")
                         .addSelect(itemRoot -> itemRoot.join(Item_.merchant).get(Merchant_.name))

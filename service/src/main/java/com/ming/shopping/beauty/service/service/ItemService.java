@@ -1,9 +1,7 @@
 package com.ming.shopping.beauty.service.service;
 
 import com.ming.shopping.beauty.service.entity.item.Item;
-import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import com.ming.shopping.beauty.service.entity.login.Merchant;
-import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.support.AuditStatus;
 import com.ming.shopping.beauty.service.model.request.ItemSearcherBody;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +31,7 @@ public interface ItemService {
      * 添加新的项目，状态为待审核
      *
      * @param merchant        所属的商家
-     * @param thumbnailUrl    缩略图
+     * @param mainImagePath   缩略图路径
      * @param name            项目名称
      * @param itemType        项目类型
      * @param price           原价格
@@ -42,20 +40,22 @@ public interface ItemService {
      * @param description     简单描述
      * @param richDescription 详细描述
      * @param recommended     是否推荐
-     * @return
+     * @return 新增的项目
      */
     @Transactional
-    Item addItem(Merchant merchant, String thumbnailUrl, String name, String itemType, BigDecimal price,
+    Item addItem(Merchant merchant, String mainImagePath, String name, String itemType, BigDecimal price,
                  BigDecimal salesPrice, BigDecimal costPrice, String description, String richDescription, boolean recommended);
 
     /**
      * 添加新项目, 状态为待审核
+     *
      * @param merchant 所属上家
-     * @param item 添加的项目
+     * @param item     添加的项目
+     * @param mainImagePath 缩略图路径
      * @return item
      */
     @Transactional
-    Item addItem(Merchant merchant,Item item);
+    Item addItem(Merchant merchant, Item item, String mainImagePath);
 
 
     /**
@@ -101,8 +101,8 @@ public interface ItemService {
     /**
      * 项目是否推荐
      *
-     * @param id 项目id
-     * @param recommended  是否推荐
+     * @param id          项目id
+     * @param recommended 是否推荐
      * @return
      */
     @Transactional

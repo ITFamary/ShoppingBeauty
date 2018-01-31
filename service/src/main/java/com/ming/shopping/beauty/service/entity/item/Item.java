@@ -2,15 +2,19 @@ package com.ming.shopping.beauty.service.entity.item;
 
 import com.ming.shopping.beauty.service.entity.login.Merchant;
 import com.ming.shopping.beauty.service.entity.support.AuditStatus;
-import com.ming.shopping.beauty.service.entity.support.UserLevel;
 import com.ming.shopping.beauty.service.utils.Constant;
 import lombok.Getter;
 import lombok.Setter;
 import me.jiangcai.crud.CrudFriendly;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
 import java.math.BigDecimal;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -32,10 +36,12 @@ public class Item implements CrudFriendly<Long> {
     @ManyToOne
     private Merchant merchant;
     /**
-     * 缩略图
+     * 主要图片的资源路径
+     *
+     * @see me.jiangcai.lib.resource.service.ResourceService#getResource(String)
      */
-    @Column(length = 200)
-    private String thumbnailUrl;
+    @Column(length = 100)
+    private String mainImagePath;
 
     /**
      * 项目名称
@@ -70,6 +76,7 @@ public class Item implements CrudFriendly<Long> {
     /**
      * 审核备注
      */
+    @Column(length = 60)
     private String auditComment;
 
     /**
