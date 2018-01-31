@@ -7,6 +7,7 @@ import lombok.Data;
  */
 @Data
 public class NewMerchantBody {
+    Long id;
     /**
      * 商户名
      */

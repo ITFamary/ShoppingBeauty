@@ -4,24 +4,28 @@ import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Login_;
 import com.ming.shopping.beauty.service.entity.login.Merchant;
 import com.ming.shopping.beauty.service.entity.login.Merchant_;
+import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
+import com.ming.shopping.beauty.service.repository.MerchantRepository;
 import com.ming.shopping.beauty.service.service.MerchantService;
 import me.jiangcai.crud.controller.AbstractCrudController;
 import me.jiangcai.crud.row.FieldDefinition;
 import me.jiangcai.crud.row.RowCustom;
 import me.jiangcai.crud.row.RowDefinition;
+import me.jiangcai.crud.row.RowService;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
-import me.jiangcai.crud.row.supplier.SingleRowDramatizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,7 +49,8 @@ import java.util.Map;
 public class ManageMerchantController extends AbstractCrudController<Merchant, Long> {
     @Autowired
     private MerchantService merchantService;
-
+    @Autowired
+    private MerchantRepository merchantRepository;
     @Autowired
     private ConversionService conversionService;
 
@@ -91,41 +96,73 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
                 .build();
     }
 
+    /**
+     * 编辑商户信息.
+     *
+     * @param postData
+     */
+    @PutMapping
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
+    @Transactional
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateMerchant(@AuthenticationPrincipal Login login, @RequestBody Merchant postData) {
+        if (postData.getId() == null) {
+            throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), postData), null));
+        }
+        if (login.getLevelSet().contains(ManageLevel.root)) {
+            //说明是超管 可以修改所有的对象
+            updating(postData);
+        }else {
+            //仅仅是商户自身
+            if (login.getId().equals(postData.getId())){
+                updating(postData);
+            } else
+                throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                        , MessageFormat.format(ResultCodeEnum.LOGIN_NOT_MANAGE.getMessage(), login), null));
+        }
+    }
+
+    private void updating(Merchant postData){
+        Merchant merchant = merchantRepository.findOne(postData.getId());
+        if(postData.getName() != null){
+            merchant.setName(postData.getName());
+        }
+        if(postData.getTelephone() != null){
+            merchant.setTelephone(postData.getTelephone());
+        }
+        if(postData.getContact() != null){
+            merchant.setContact(postData.getContact());
+        }
+        merchantRepository.save(merchant);
+    }
+
     @Override
-    @GetMapping("/{merchantId}")
+    protected Object describeEntity(Merchant origin) {
+        return  RowService.drawEntityToRow(origin,Arrays.asList(
+                FieldBuilder.asName(Merchant.class, "id")
+                        .build()
+                , FieldBuilder.asName(Merchant.class, "name")
+                        .build()
+                , FieldBuilder.asName(Merchant.class, "telephone")
+                        .build()
+                , FieldBuilder.asName(Merchant.class, "contact")
+                        .build()
+        ), null);
+    }
+
+    /**
+     * 商户详情
+     *
+     * @param aLong
+     * @return
+     */
+    @Override
     @PreAuthorize("hasAnyRole('ROOT')")
-    @RowCustom(distinct = true, dramatizer = SingleRowDramatizer.class)
-    public RowDefinition<Merchant> getOne(@PathVariable("merchantId") Long merchantId) {
-        return new RowDefinition<Merchant>() {
-
-            @Override
-            public Class<Merchant> entityClass() {
-                return Merchant.class;
-            }
-
-            @Override
-            public List<FieldDefinition<Merchant>> fields() {
-                return Arrays.asList(
-                        FieldBuilder.asName(Merchant.class, "id")
-                                .build()
-                        , FieldBuilder.asName(Merchant.class, "name")
-                                .build()
-                        , FieldBuilder.asName(Merchant.class, "telephone")
-                                .build()
-                        , FieldBuilder.asName(Merchant.class, "contact")
-                                .build()
-                        , FieldBuilder.asName(Merchant.class, "enabled")
-                                .build()
-                        , FieldBuilder.asName(Merchant.class, "stores")
-                                .build()
-                );
-            }
-
-            @Override
-            public Specification<Merchant> specification() {
-                return ((root, query, cb) -> cb.equal(root.get(Merchant_.id), merchantId));
-            }
-        };
+    @ResponseBody
+    @GetMapping({"/{id}"})
+    public Object getOne(@PathVariable("id") Long aLong) {
+        return super.getOne(aLong);
     }
 
     /**
@@ -309,5 +346,17 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
         return Arrays.asList(
                 criteriaBuilder.desc(root.get(Merchant_.id))
         );
+    }
+
+    @Override
+    @PreAuthorize("denyAll()")
+    public void deleteOne(Long aLong) {
+        super.deleteOne(aLong);
+    }
+
+    @Override
+    @PreAuthorize("denyAll()")
+    public RowDefinition<Merchant> getDetail(Long aLong) {
+        return null;
     }
 }

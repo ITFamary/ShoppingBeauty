@@ -83,11 +83,14 @@ public class ManageItemControllerTest extends ManageConfigTest {
         ib.setId(objectMapper.readTree(contentAsString).get("list").get(0).get("id").asLong());
         ib.setName("测试编辑名字");
         //编辑
-        mockMvc.perform(post("/item")
+        mockMvc.perform(put("/item")
                 .content(objectMapper.writeValueAsString(ib))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isCreated());
+                .andExpect(status().isNoContent());
+        Item update = itemRepository.getOne(ib.getId());
+        assertThat("测试编辑名字".equals(update.getName())).isTrue();
+
 
         //获取项目列表
         mockMvc.perform(get("/item"))

@@ -35,6 +35,7 @@ public enum ResultCodeEnum {
     REPRESENT_NOT_EXIST(1012,"门店代表不存在"),
     MANAGER_NOT_EXIST(1013,"不存在该管理权限"),
     USER_NOT_EXIST(1014,"用户不存在"),
+    LOGIN_NOT_MANAGE(1015,"用户不具有该操作权限"),
     /**
      * 用户、推荐：[2000,2999]
      */

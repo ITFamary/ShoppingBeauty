@@ -2,16 +2,14 @@ package com.ming.shopping.beauty.client.controller;
 
 import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.item.Item_;
-import com.ming.shopping.beauty.service.entity.login.Merchant;
 import com.ming.shopping.beauty.service.entity.login.Merchant_;
-import com.ming.shopping.beauty.service.service.ItemService;
+import com.ming.shopping.beauty.service.entity.support.AuditStatus;
 import me.jiangcai.crud.row.FieldDefinition;
 import me.jiangcai.crud.row.RowCustom;
 import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
-import me.jiangcai.crud.row.supplier.JQueryDataTableDramatizer;
+import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
 import me.jiangcai.crud.row.supplier.SingleRowDramatizer;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,12 +26,55 @@ import java.util.List;
 public class ClientItemController {
 
     @GetMapping("/items")
-    @RowCustom(distinct = true , dramatizer = JQueryDataTableDramatizer.class)
-    public void itemList(String item_type,int lat,int lon){
+    @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
+    public RowDefinition<Item> itemList(String itemType, int lat, int lon) {
         //TODO 带坐标的还不会写.
+        return new RowDefinition<Item>() {
+
+            @Override
+            public Class<Item> entityClass() {
+                return Item.class;
+            }
+
+            @Override
+            public List<FieldDefinition<Item>> fields() {
+                return Arrays.asList(
+                        FieldBuilder.asName(Item.class, "id")
+                                .build()
+                        , FieldBuilder.asName(Item.class, "name")
+                                .build()
+                        , FieldBuilder.asName(Item.class, "itemType")
+                                .build()
+                        , FieldBuilder.asName(Item.class, "thumbnailUrl")
+                                .build()
+                        , FieldBuilder.asName(Item.class, "merchantName")
+                                .addSelect(itemRoot -> itemRoot.join(Item_.merchant).get(Merchant_.name))
+                                .build()
+                        , FieldBuilder.asName(Item.class, "price")
+                                .build()
+                        , FieldBuilder.asName(Item.class, "salesPrice")
+                                .build()
+                        , FieldBuilder.asName(Item.class, "auditStatus")
+                                .addFormat((data, type) -> {
+                                    return data == null ? null : ((AuditStatus) data).getMessage();
+                                })
+                                .build()
+                        , FieldBuilder.asName(Item.class, "enabled")
+                                .build()
+                        , FieldBuilder.asName(Item.class, "recommended")
+                                .build()
+                );
+            }
+
+            @Override
+            public Specification<Item> specification() {
+                return (root, query, cb) -> cb.isFalse(root.get(Item_.deleted));
+            }
+        }
     }
+
     @GetMapping("/items/{itemId}")
-    @RowCustom(distinct = true,dramatizer = SingleRowDramatizer.class)
+    @RowCustom(distinct = true, dramatizer = SingleRowDramatizer.class)
     public RowDefinition<Item> itemDetail(@PathVariable("itemId") long itemId) {
         return new RowDefinition<Item>() {
             @Override

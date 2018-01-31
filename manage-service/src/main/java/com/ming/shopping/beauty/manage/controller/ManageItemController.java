@@ -58,7 +58,7 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
     }
 
     /**
-     * 添加项目/编辑项目
+     * 添加项目
      *
      * @param item      项目
      * @param otherData 其他信息
@@ -84,6 +84,19 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
         return ResponseEntity
                 .created(new URI("/item/" + responseItem.getId()))
                 .build();
+    }
+
+    /**
+     * 编辑项目
+     * @param item  要编辑的项目信息
+     * @param otherData 其他的一些信息
+     * @throws URISyntaxException
+     */
+    @PutMapping
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ROOT + "')")
+    public void updateItem(@RequestBody Item item, @RequestBody Map<String, Object> otherData) throws URISyntaxException{
+        addOne(item,otherData);
     }
 
     /**

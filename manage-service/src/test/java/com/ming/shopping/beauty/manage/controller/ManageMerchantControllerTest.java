@@ -4,24 +4,18 @@ import com.ming.shopping.beauty.manage.ManageConfigTest;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Merchant;
 import com.ming.shopping.beauty.service.model.request.NewMerchantBody;
+import com.ming.shopping.beauty.service.repository.MerchantRepository;
 import com.ming.shopping.beauty.service.service.LoginService;
 import com.ming.shopping.beauty.service.service.MerchantService;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.hamcrest.core.StringStartsWith;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 
+import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -33,6 +27,8 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
     private MerchantService merchantService;
     @Autowired
     private LoginService loginService;
+    @Autowired
+    private MerchantRepository merchantRepository;
 
     @Test
     public void merchantList() throws Exception {
@@ -86,6 +82,7 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
         Login rootlogin = mockRoot();
         updateAllRunWith(rootlogin);
         Login willMerchant = mockLogin();
+
         NewMerchantBody merchantBody = new NewMerchantBody();
         merchantBody.setContact("王女士");
         merchantBody.setLoginId(willMerchant.getId());
@@ -101,8 +98,26 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
 
         //访问详情
         MvcResult mvcResult = mockMvc.perform(get(merchantCreationUri))
+                .andDo(print())
+                .andExpect(status().isOk())
                 .andReturn();
         String contentAsString = mvcResult.getResponse().getContentAsString();
+
+        //编辑商户信息
+        long id = objectMapper.readTree(contentAsString).get("id").asLong();
+        merchantBody.setId(id);
+        merchantBody.setName("编辑了一下商户名字");
+
+        //发送请求
+        mockMvc.perform(put("/merchant")
+                .content(objectMapper.writeValueAsString(merchantBody))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNoContent());
+        Merchant one1 = merchantRepository.getOne(id);
+        assertThat("编辑了一下商户名字".equals(one1.getName())).isTrue();
+
+
         //启用
         enableMerchant(willMerchant.getId());
 
