@@ -4,9 +4,7 @@ import com.huotu.verification.IllegalVerificationCodeException;
 import com.huotu.verification.service.VerificationCodeService;
 import com.ming.shopping.beauty.service.aop.BusinessSafe;
 import com.ming.shopping.beauty.service.config.ServiceConfig;
-import com.ming.shopping.beauty.service.entity.login.Login;
-import com.ming.shopping.beauty.service.entity.login.Login_;
-import com.ming.shopping.beauty.service.entity.login.User;
+import com.ming.shopping.beauty.service.entity.login.*;
 import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
@@ -26,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Set;
 
 /**
@@ -84,7 +83,7 @@ public class LoginServiceImpl implements LoginService {
         }
         //也许是初始化时未设置wechatUser的登录
         login = loginRepository.findByLoginName(mobile);
-        if(login != null && login.getWechatUser() == null){
+        if (login != null && login.getWechatUser() == null) {
             login.setWechatUser(standardWeixinUserRepository.findByOpenId(openId));
             return loginRepository.save(login);
         }
@@ -176,5 +175,38 @@ public class LoginServiceImpl implements LoginService {
             login.getLevelSet().remove(ManageLevel.root);
         }
         return loginRepository.save(login);
+    }
+
+    @Override
+    @Transactional
+    public void setManageLevel(long loginId, ManageLevel... manageLevel) {
+        /*if (manageLevel == null) {
+            //清空多余权限
+            Login login = loginRepository.findOne(loginId);
+            Set<ManageLevel> levelSet = login.getLevelSet();
+            levelSet.clear();
+
+            Merchant merchant = login.getMerchant();
+            Store store = login.getStore();
+            Represent represent = login.getRepresent();
+            //如果他是门店,或者商户,那就应该具有管理权限
+            if (merchant != null && merchant.isManageable())
+                //说明是个商户应该保留他的商户权限.
+                levelSet.add(ManageLevel.merchantRoot);
+
+            if (store != null && store.isManageable())
+                //说哦名是个门店,应该保留他的门店权限.
+                levelSet.add(ManageLevel.storeRoot);
+            if (represent != null ){
+                //说明是一个门店代表, 保留他的门店代表权限
+                levelSet.add(ManageLevel.represent);
+            }
+            loginRepository.save(login);
+        }
+        Login login = loginRepository.findOne(loginId);
+        Set<ManageLevel> levelSet = login.getLevelSet();
+        levelSet.addAll(Arrays.asList(manageLevel));
+        loginRepository.save(login);*/
+        //TODO 等待新权限讨论出来后再重新实现.
     }
 }

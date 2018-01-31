@@ -1,6 +1,8 @@
 package com.ming.shopping.beauty.manage.controller;
 
-import com.ming.shopping.beauty.service.entity.login.*;
+import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.entity.login.Login_;
+import com.ming.shopping.beauty.service.entity.login.User_;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
@@ -14,13 +16,15 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -54,10 +58,10 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
      * @param loginId
      * @param putData
      */
-    @PutMapping("/{id}")
+    @PutMapping("/{id}/enabled")
     @PreAuthorize("hasAnyRole('ROOT')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void setEnable(@PathVariable("id") long loginId, Map<String, Boolean> putData) {
+    public void setEnable(@PathVariable(value = "id",required = true) long loginId, Map<String, Boolean> putData) {
         final String param = "enable";
         if (putData.get(param) != null) {
             loginService.freezeOrEnable(loginId, putData.get(param));

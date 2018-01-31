@@ -2,7 +2,6 @@ package com.ming.shopping.beauty.manage.controller;
 
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Login_;
-import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
@@ -11,8 +10,6 @@ import com.ming.shopping.beauty.service.service.LoginService;
 import me.jiangcai.crud.controller.AbstractCrudController;
 import me.jiangcai.crud.row.FieldDefinition;
 import me.jiangcai.crud.row.RowCustom;
-import me.jiangcai.crud.row.field.FieldBuilder;
-import me.jiangcai.crud.row.field.Fields;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
@@ -22,20 +19,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.criteria.Predicate;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * 超级管理员
@@ -80,6 +71,31 @@ public class ManageController extends AbstractCrudController<Login, Long> {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), param), null));
         }
+    }
+
+    /**
+     * 给某个用户设置管理权限
+     *
+     * @param loginId            用户
+     * @param manageLevelMessage 权限信息
+     */
+    @PutMapping("/{id}/manageLevel")
+    @PreAuthorize("hasAnyRole('ROOT')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void setManageLevel(@PathVariable(value = "id", required = true) long loginId, @RequestBody String manageLevelMessage) {
+        /*String perface = manageLevelMessage.replace("\"", "");
+        String[] manageArray = perface.split(",");
+        if (manageArray.length > 1) {
+            ManageLevel[] manageLevels = new ManageLevel[manageArray.length];
+            for (int i = 0; i < manageArray.length; i++) {
+                manageLevels[i] = ManageLevel.valueOf(manageArray[i]);
+            }
+            loginService.setManageLevel(loginId, manageLevels);
+        } else if (StringUtils.isBlank(manageLevelMessage)) {
+            loginService.setManageLevel(loginId, null);
+        } else {
+            loginService.setManageLevel(loginId, ManageLevel.valueOf(perface));
+        }*/
     }
 
 

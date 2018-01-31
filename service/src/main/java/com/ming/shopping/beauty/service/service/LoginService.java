@@ -2,6 +2,7 @@ package com.ming.shopping.beauty.service.service;
 
 import com.huotu.verification.VerificationType;
 import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.utils.Constant;
@@ -114,4 +115,12 @@ public interface LoginService extends UserDetailsService {
             }
         };
     }
+
+    /**
+     * 给用户设置他的管理权限
+     * @param loginId  被操作的用户
+     * @param manageLevel 设置的等级
+     */
+    @Transactional
+    void setManageLevel(long loginId, ManageLevel... manageLevel);
 }
