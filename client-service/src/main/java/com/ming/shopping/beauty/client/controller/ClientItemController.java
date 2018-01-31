@@ -70,7 +70,7 @@ public class ClientItemController {
             public Specification<Item> specification() {
                 return (root, query, cb) -> cb.isFalse(root.get(Item_.deleted));
             }
-        }
+        };
     }
 
     @GetMapping("/items/{itemId}")
