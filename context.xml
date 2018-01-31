@@ -1,0 +1,14 @@
+<!--staging 的tomcat部署描述符,生产线上的描述符应该与其类似-->
+<Context>
+    <Resource name="jdbc/cs" maxWaitMillis="5000" maxTotal="20"
+              url="jdbc:mysql://mysql:3306/sb?useUnicode=true&amp;characterEncoding=utf8&amp;useServerPrepStmts=false&amp;autoReconnect=true"
+              type="javax.sql.DataSource"
+              driverClassName="com.mysql.jdbc.Driver" maxIdle="10"
+              username="sb" password="sb" validationQuery="select 1"/>
+
+    <Parameter name="me.jiangcai.lib.resource.home" value="/data/resources"/>
+    <Parameter name="me.jiangcai.lib.resource.http.uri" value="http://res.server.staging.sb.lmjia.cn/"/>
+    <!--系统的可访问URL-->
+    <Parameter name="shopping.url" value="http://staging.sb.lmjia.cn"/>
+
+</Context>
