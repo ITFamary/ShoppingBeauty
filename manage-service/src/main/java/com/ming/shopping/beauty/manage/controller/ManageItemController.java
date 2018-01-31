@@ -82,8 +82,12 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "请求数据"), null));
         }
+        if (StringUtils.isEmpty((String) otherData.get("imagePath"))) {
+            throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "请求数据"), null));
+        }
         Merchant merchant = merchantService.findOne(Long.parseLong(otherData.get(param).toString()));
-        Item responseItem = itemService.addItem(merchant, item, null);
+        Item responseItem = itemService.addItem(merchant, item, (String) otherData.get("imagePath"));
         return ResponseEntity
                 .created(new URI("/item/" + responseItem.getId()))
                 .build();

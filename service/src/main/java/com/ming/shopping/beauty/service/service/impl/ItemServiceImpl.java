@@ -109,7 +109,7 @@ public class ItemServiceImpl implements ItemService {
                 }
                 String path = "item/images/" + UUID.randomUUID().toString().replaceFirst("-", "")
                         + "." + FileUtils.fileExtensionName(mainImagePath);
-                resourceService.moveResource(mainImagePath, path);
+                resourceService.moveResource(path, mainImagePath);
                 item.setMainImagePath(path);
             }
         } catch (IOException ex) {

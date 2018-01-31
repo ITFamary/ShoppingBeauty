@@ -28,6 +28,7 @@ import com.ming.shopping.beauty.service.service.SystemService;
 import com.ming.shopping.beauty.service.utils.Constant;
 import com.ming.shopping.beauty.service.utils.LoginAuthentication;
 import me.jiangcai.crud.row.IndefiniteFieldDefinition;
+import me.jiangcai.lib.resource.service.ResourceService;
 import me.jiangcai.lib.test.SpringWebTest;
 import me.jiangcai.wx.model.Gender;
 import me.jiangcai.wx.model.WeixinUserDetail;
@@ -37,6 +38,7 @@ import me.jiangcai.wx.test.WeixinUserMocker;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.context.ActiveProfiles;
@@ -48,10 +50,12 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -82,6 +86,8 @@ public abstract class CoreServiceTest extends SpringWebTest {
     protected MainOrderService mainOrderService;
     @Autowired
     private RechargeCardService rechargeCardService;
+    @Autowired
+    private ResourceService resourceService;
 
     protected Login allRunWith;
 
@@ -273,13 +279,13 @@ public abstract class CoreServiceTest extends SpringWebTest {
      * @param merchant
      * @return
      */
-    protected Item mockItem(Merchant merchant) {
+    protected Item mockItem(Merchant merchant) throws IOException {
         BigDecimal price = BigDecimal.valueOf(random.nextInt(100));
         BigDecimal salesPrice = price.multiply(BigDecimal.valueOf(0.9))
                 .setScale(Constant.FLOAT_COLUMN_SCALE, Constant.ROUNDING_MODE);
         BigDecimal costPrice = price.multiply(BigDecimal.valueOf(0.8))
                 .setScale(Constant.FLOAT_COLUMN_SCALE, Constant.ROUNDING_MODE);
-        Item item = itemService.addItem(merchant, randomHttpURL(), randomString(), randomString()
+        Item item = itemService.addItem(merchant, randomTmpImagePath(), randomString(), randomString()
                 , price, salesPrice, costPrice, randomString(), randomString(), random.nextBoolean());
         itemService.auditItem(item.getId(), AuditStatus.AUDIT_PASS, null);
         return itemService.findOne(item.getId());
@@ -411,5 +417,14 @@ public abstract class CoreServiceTest extends SpringWebTest {
 
             }
         };
+    }
+
+    /**
+     * @return 一个新增的临时图片path
+     */
+    protected String randomTmpImagePath() throws IOException {
+        String path = "tmp/" + UUID.randomUUID().toString() + ".png";
+        resourceService.uploadResource(path, new ClassPathResource("/image.png").getInputStream());
+        return path;
     }
 }

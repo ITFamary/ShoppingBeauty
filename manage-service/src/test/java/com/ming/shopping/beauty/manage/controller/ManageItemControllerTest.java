@@ -52,7 +52,7 @@ public class ManageItemControllerTest extends ManageConfigTest {
         NewItemBody ib = new NewItemBody();
         ib.setName("测试项目名称");
         ib.setMerchantId(merchant.getId());
-        ib.setThumbnailUrl("/abc/hahahah.jpg");
+        ib.setImagePath(randomTmpImagePath());
         ib.setItemType("测试");
         ib.setPrice(BigDecimal.valueOf(188.9));
         ib.setSalesPrice(BigDecimal.valueOf(158.9));
@@ -82,6 +82,8 @@ public class ManageItemControllerTest extends ManageConfigTest {
 
         ib.setId(objectMapper.readTree(contentAsString).get("list").get(0).get("id").asLong());
         ib.setName("测试编辑名字");
+//        重新给资源
+        ib.setImagePath(randomTmpImagePath());
         //编辑
         mockMvc.perform(post("/item")
                 .content(objectMapper.writeValueAsString(ib))
