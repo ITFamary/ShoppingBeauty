@@ -6,10 +6,31 @@
               driverClassName="com.mysql.jdbc.Driver" maxIdle="10"
               username="sb" password="sb" validationQuery="select 1"/>
 
+    <!--我本地玩玩的-->
+    <!--<Resource name="jdbc/shoppingbeauty"-->
+    <!--type="javax.sql.DataSource"-->
+    <!--username=""-->
+    <!--password=""-->
+    <!--driverClassName="org.h2.Driver"-->
+    <!--url="jdbc:h2:mem:piwik;DB_CLOSE_DELAY=-1"-->
+    <!--maxTotal="8"-->
+    <!--maxIdle="4"/>-->
+
     <Parameter name="spring.profiles.active" value="container"/>
     <Parameter name="me.jiangcai.lib.resource.home" value="/data/resources"/>
     <Parameter name="me.jiangcai.lib.resource.http.uri" value="http://res.server.staging.sb.lmjia.cn/"/>
     <!--系统的可访问URL-->
     <Parameter name="shopping.url" value="http://staging.sb.lmjia.cn"/>
+
+    <!--微信相关-->
+    <Parameter name="huotao.weixin.appId" value="11"/>
+    <Parameter name="huotao.weixin.appSecret" value="11"/>
+    <Parameter name="huotao.weixin.mchId" value="11"/>
+    <Parameter name="huotao.weixin.apiKey" value="11"/>
+    <Parameter name="huotao.weixin.url" value="11"/>
+    <Parameter name="huotao.weixin.token" value="11"/>
+    <!--创蓝？ 可以通过com.huotu.notice.supplier 调整为阿里云-->
+    <Parameter name="com.huotu.sms.cl.account" value="1"/>
+    <Parameter name="com.huotu.sms.cl.password" value="1"/>
 
 </Context>
