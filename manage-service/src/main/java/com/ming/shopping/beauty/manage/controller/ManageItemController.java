@@ -95,19 +95,21 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
 
     /**
      * 编辑项目
-     * @param item  要编辑的项目信息
+     *
+     * @param item      要编辑的项目信息
      * @param otherData 其他的一些信息
      * @throws URISyntaxException
      */
     @PutMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ROOT + "')")
-    public void updateItem(@RequestBody Item item, @RequestBody Map<String, Object> otherData) throws URISyntaxException{
-        addOne(item,otherData);
+    public void updateItem(@RequestBody Item item, @RequestBody Map<String, Object> otherData) throws URISyntaxException {
+        addOne(item, otherData);
     }
 
     /**
      * 项目详情
+     *
      * @param id 获取详情的id
      * @return
      */
@@ -115,8 +117,8 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ROOT + "')")
     @Override
-    public RowDefinition<Item> getOne(@PathVariable(value = "itemId" ,required = true)Long id){
-        return new RowDefinition<Item>(){
+    public RowDefinition<Item> getOne(@PathVariable(value = "itemId", required = true) Long id) {
+        return new RowDefinition<Item>() {
 
             @Override
             public Class<Item> entityClass() {
@@ -154,23 +156,24 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
 
             @Override
             public Specification<Item> specification() {
-                return (root, query, cb) -> cb.equal(root.get(Item_.id),id);
+                return (root, query, cb) -> cb.equal(root.get(Item_.id), id);
             }
         };
     }
+
     /**
      * 项目状态改变/审核
      *
-     * @param itemId  项目id
+     * @param itemId      项目id
      * @param auditStatus 审核的状态以及备注
      */
     @PutMapping("/{itemId}/auditStatus")
     @PreAuthorize("hasAnyRole('ROOT')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void setAuditStatus(@PathVariable("itemId") long itemId, @RequestBody Map<String,String> auditStatus) {
-        if(auditStatus.get("status") != null && auditStatus.get("comment") != null){
+    public void setAuditStatus(@PathVariable("itemId") long itemId, @RequestBody Map<String, String> auditStatus) {
+        if (auditStatus.get("status") != null && auditStatus.get("comment") != null) {
             itemService.auditItem(itemId, AuditStatus.valueOf(auditStatus.get("status")), auditStatus.get("comment"));
-        }else{
+        } else {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), auditStatus), null));
         }
@@ -179,16 +182,16 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
     /**
      * 提交项目审核
      *
-     * @param itemId  项目id
-     * @param auditStatus    审核的状态以及备注
+     * @param itemId      项目id
+     * @param auditStatus 审核的状态以及备注
      */
     @PutMapping("/{itemId}/commit")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ROOT + "')")
-    public void commitItem(@PathVariable("itemId") long itemId, @RequestBody Map<String,String> auditStatus) {
-        if(auditStatus.get("status") != null && auditStatus.get("comment") != null){
+    public void commitItem(@PathVariable("itemId") long itemId, @RequestBody Map<String, String> auditStatus) {
+        if (auditStatus.get("status") != null && auditStatus.get("comment") != null) {
             itemService.auditItem(itemId, AuditStatus.valueOf(auditStatus.get("status")), auditStatus.get("comment"));
-        }else{
+        } else {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), auditStatus), null));
         }
@@ -210,7 +213,7 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
         List<Integer> itemList = (List<Integer>) putData.get(items);
         //总个数
         int size = itemList.size();
-        if (putData.get(param) != null) {
+        if (putData.get(param) != null || putData.get(items) != null) {
             if (itemList.size() != 0) {
                 for (Integer id : itemList) {
                     try {
@@ -311,9 +314,9 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
             if (queryData.get("merchantId") != null) {
                 conditions.add(cb.equal(root.join(Item_.merchant).get(Merchant_.id), queryData.get("merchantId")));
             }
-            if (queryData.get("auditStatus") != null){
+            if (queryData.get("auditStatus") != null) {
                 conditions.add(cb.equal(root.get(Item_.auditStatus)
-                        ,AuditStatus.valueOf(queryData.get("auditStatus").toString())));
+                        , AuditStatus.valueOf(queryData.get("auditStatus").toString())));
             }
             if (queryData.get("enabled") != null) {
                 if ((boolean) queryData.get("enabled"))
