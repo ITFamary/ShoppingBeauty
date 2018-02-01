@@ -54,7 +54,7 @@ public class RechargeCardServiceImpl implements RechargeCardService {
     public List<RechargeCard> newCard(int num, Long guideId, Long manageId) {
         List<RechargeCard> cardList = new ArrayList<>(num);
         RechargeCard rechargeCard = new RechargeCard();
-        //这里就不去校验对应的用户是否存在了
+        //这里就不去校验对应的用户是否存在了,总是从推荐者列表中获取
         if(guideId != null){
             rechargeCard.setGuideUser(loginRepository.findOne(guideId));
         }

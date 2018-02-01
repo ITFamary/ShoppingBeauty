@@ -8,9 +8,13 @@ import com.ming.shopping.beauty.service.service.LoginService;
 import com.ming.shopping.beauty.service.service.RechargeCardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.text.MessageFormat;
 
@@ -18,6 +22,7 @@ import java.text.MessageFormat;
  * @author lxf
  */
 @Controller
+@PreAuthorize("hasAnyRole('ROOT')")
 public class ManageRechargeCardController {
 
     @Autowired
@@ -32,14 +37,19 @@ public class ManageRechargeCardController {
      * @param guideUserId 推荐者
      * @param num         生成的数量
      */
-    @PostMapping("/recharge/{guideUserId}")
-    public ApiResult massProduction(@AuthenticationPrincipal Login login, long guideUserId, int num) {
+    @PostMapping("/recharge/{guideId}")
+    @ResponseBody
+    public ApiResult massProduction(@AuthenticationPrincipal Login login, @PathVariable("guideId") long guideUserId, @RequestBody Integer num) {
         final Login one = loginService.findOne(guideUserId);
         //生成失败的数量
         int count = 0;
         if (one != null) {
             //生成卡
-            rechargeCardService.newCard(num, guideUserId, login.getId());
+            try {
+                rechargeCardService.newCard(num, guideUserId, login.getId());
+            }catch (Exception e){
+                count ++;
+            }
         } else
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), guideUserId), null));
