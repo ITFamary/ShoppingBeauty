@@ -23,7 +23,7 @@ import java.text.MessageFormat;
  * @author lxf
  */
 @Controller
-@PreAuthorize("hassAnyRole('ROOT')")
+@PreAuthorize("hasAnyRole('ROOT')")
 public class ManageMoneyController {
 
     @Autowired
