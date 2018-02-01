@@ -11,5 +11,6 @@ import java.util.List;
  * @author helloztt
  */
 public interface StoreItemRepository extends JpaRepository<StoreItem, Long>, JpaSpecificationExecutor<StoreItem> {
+
     List<StoreItem> findByItem(Item item);
 }

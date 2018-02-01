@@ -2,6 +2,7 @@ package com.ming.shopping.beauty.service.service.impl;
 
 import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.item.Item_;
+import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import com.ming.shopping.beauty.service.entity.login.Merchant;
 import com.ming.shopping.beauty.service.entity.login.Merchant_;
 import com.ming.shopping.beauty.service.entity.support.AuditStatus;
@@ -163,11 +164,23 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     public Item freezeOrEnable(long id, boolean enable) {
         Item item = findOne(id);
-        if (item.getAuditStatus() == AuditStatus.AUDIT_PASS)
+        if(enable){
+            if (item.getAuditStatus() == AuditStatus.AUDIT_PASS) {
+                item.setEnabled(enable);
+            }else
+                throw new ApiResultException(ApiResult.withError(ResultCodeEnum.ITEM_NOT_AUDIT));
+            return itemRepository.save(item);
+        }else{
             item.setEnabled(enable);
-        else
-            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.ITEM_NOT_AUDIT));
-        return itemRepository.save(item);
+            //项目下架的同时, 所有相关的门店项目全部下架
+            List<StoreItem> byItem = storeItemRepository.findByItem(item);
+            for (StoreItem storeItem : byItem) {
+                storeItem.setEnable(false);
+                storeItemRepository.save(storeItem);
+            }
+            return itemRepository.save(item);
+        }
+
     }
 
     @Override
