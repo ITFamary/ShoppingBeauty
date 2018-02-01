@@ -13,4 +13,4 @@ RUN mv /deploy/web-*.war /deploy/ROOT.war
 RUN rm -rf ${CATALINA_HOME}/webapps/*
 VOLUME ["/data/resources"]
 
-#HEALTHCHECK CMD curl -f http://localhost:8080/loginStatus || exit 1
+HEALTHCHECK CMD curl -f http://localhost:8080/MP_verify_works.txt || exit 1
