@@ -12,7 +12,10 @@ import com.ming.shopping.beauty.service.service.ItemService;
 import com.ming.shopping.beauty.service.service.StoreItemService;
 import me.jiangcai.crud.controller.AbstractCrudController;
 import me.jiangcai.crud.row.FieldDefinition;
+import me.jiangcai.crud.row.RowCustom;
+import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
+import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -21,7 +24,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
@@ -41,6 +48,13 @@ public class ManageStoreItemController extends AbstractCrudController<StoreItem,
     @Autowired
     private StoreItemService storeItemService;
 
+    @Override
+    @ResponseStatus(HttpStatus.OK)
+    @RowCustom(distinct = true,dramatizer = AntDesignPaginationDramatizer.class)
+    public RowDefinition<StoreItem> list(HttpServletRequest request) {
+        return super.list(request);
+    }
+
     /**
      * 添加/编辑门店项目
      *
@@ -52,14 +66,14 @@ public class ManageStoreItemController extends AbstractCrudController<StoreItem,
     @PostMapping
     @Override
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity addOne(StoreItem postData, Map<String, Object> otherData) throws URISyntaxException {
+    public ResponseEntity addOne(@RequestBody StoreItem postData,@RequestBody Map<String, Object> otherData) throws URISyntaxException {
         final String storeId = "storeId";
         final String itemId = "itemId";
         if (otherData.get(storeId) == null || otherData.get(itemId) == null) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), storeId + itemId), null));
         }
-        StoreItem storeItem = storeItemService.addStoreItem((long) otherData.get(storeId), (long) otherData.get(itemId), postData);
+        StoreItem storeItem = storeItemService.addStoreItem(Long.parseLong(otherData.get(storeId).toString()),Long.parseLong(otherData.get(itemId).toString()) , postData);
         return ResponseEntity
                 .created(new URI("/storeItem/" + storeItem.getId()))
                 .build();
@@ -202,5 +216,10 @@ public class ManageStoreItemController extends AbstractCrudController<StoreItem,
             conditionList.add(cb.isFalse(root.get(StoreItem_.deleted)));
             return cb.and(conditionList.toArray(new Predicate[conditionList.size()]));
         });
+    }
+
+    @Override
+    protected List<Order> listOrder(CriteriaBuilder criteriaBuilder, Root<StoreItem> root) {
+        return Arrays.asList(criteriaBuilder.desc(root.get(StoreItem_.id)));
     }
 }

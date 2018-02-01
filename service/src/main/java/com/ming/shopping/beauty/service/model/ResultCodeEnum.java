@@ -50,7 +50,7 @@ public enum ResultCodeEnum {
      * 项目、门店：[3000,3999]
      */
     ITEM_NOT_EXIST(3001,"项目不存在或已删除"),
-    STORE_ITEM_PRICE_ERROR(3002,"销售价必须大于项目销售价"),
+    STORE_ITEM_PRICE_ERROR(3002,"门店项目销售价必须大于或等于项目销售价"),
     ITEM_NOT_AUDIT(3001,"该项目没有通过审核"),
 
     /**
