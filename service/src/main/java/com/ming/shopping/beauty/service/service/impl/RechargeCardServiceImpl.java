@@ -25,8 +25,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
-import static java.util.UUID.randomUUID;
+import java.util.UUID;
 
 /**
  * Created by helloztt on 2018/1/4.
@@ -72,10 +71,9 @@ public class RechargeCardServiceImpl implements RechargeCardService {
         rechargeCardRepository.save(cardList);
         rechargeCardRepository.flush();
         cardList.forEach(card -> {
-            card.setCode(randomUUID().toString().replace("-","").substring(20).toUpperCase());
+            card.setCode(UUID.randomUUID().toString().replace("-","").substring(0,20).toUpperCase());
         });
-        rechargeCardRepository.save(cardList);
-        return cardList;
+        return rechargeCardRepository.save(cardList);
     }
 
     @Override

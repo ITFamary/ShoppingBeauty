@@ -9,8 +9,10 @@ import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.service.LoginService;
 import me.jiangcai.crud.controller.AbstractCrudController;
 import me.jiangcai.crud.row.FieldDefinition;
+import me.jiangcai.crud.row.RowCustom;
 import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
+import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -18,8 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,11 +33,12 @@ import java.util.Map;
  */
 @Controller
 @RequestMapping("/login")
+@PreAuthorize("hasAnyRole('ROOT')")
+@RowCustom(dramatizer = AntDesignPaginationDramatizer.class,distinct = true)
 public class ManageLoginController extends AbstractCrudController<Login, Long> {
 
     @Autowired
     private LoginService loginService;
-
 
     /**
      * 用户详情
@@ -61,13 +63,12 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
     @PutMapping("/{id}/enabled")
     @PreAuthorize("hasAnyRole('ROOT')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void setEnable(@PathVariable(value = "id",required = true) long loginId, Map<String, Boolean> putData) {
-        final String param = "enable";
-        if (putData.get(param) != null) {
-            loginService.freezeOrEnable(loginId, putData.get(param));
+    public void setEnable(@PathVariable(value = "id",required = true) long loginId,@RequestBody Boolean putData) {
+        if (putData != null) {
+            loginService.freezeOrEnable(loginId, putData);
         } else {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
-                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), param), null));
+                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), putData), null));
         }
     }
 
@@ -103,9 +104,6 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
             if (queryData.get("loginId") != null) {
                 conditions.add(cb.equal(root.get(Login_.id), queryData.get("loginId")));
             }
-            if (queryData.get("loginType") != null) {
-                //TODO 等
-            }
             if (queryData.get("enabled") != null){
                 if((boolean)queryData.get("enabled")){
                     conditions.add(cb.isTrue(root.get(Login_.enabled)));
@@ -118,6 +116,13 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
             }
             return cb.and(conditions.toArray(new Predicate[conditions.size()]));
         };
+    }
+
+    @Override
+    protected List<Order> listOrder(CriteriaBuilder criteriaBuilder, Root<Login> root) {
+        return Arrays.asList(
+                criteriaBuilder.desc(root.get(Login_.id))
+        );
     }
 
     @Override
