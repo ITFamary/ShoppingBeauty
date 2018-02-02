@@ -68,7 +68,7 @@ public class UserModel implements DefinitionModel<Login> {
                         .build()
                 , FieldBuilder.asName(Login.class, "enabled")
                         .addSelect(loginRoot -> loginRoot.join(Login_.store, JoinType.LEFT).get(Store_.enabled))
-                        .addEntityFunction(login -> login.getStore() == null ? "" : login.getStore().isEnabled())
+                        .addEntityFunction(login -> login.getStore() == null ? login.isEnabled() : login.getStore().isEnabled())
                         .build()
         );
     }

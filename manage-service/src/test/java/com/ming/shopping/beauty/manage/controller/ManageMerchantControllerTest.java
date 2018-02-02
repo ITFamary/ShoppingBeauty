@@ -8,6 +8,7 @@ import com.ming.shopping.beauty.service.repository.MerchantRepository;
 import com.ming.shopping.beauty.service.service.LoginService;
 import com.ming.shopping.beauty.service.service.MerchantService;
 import org.junit.Test;
+import org.mockito.internal.matchers.GreaterThan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -191,6 +193,13 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
         //没被启用
         assertThat(merchantManage.isEnabled())
                 .isFalse();
+
+        //查看商户列表,倒序排列
+        mockMvc.perform(get("/merchant/" + merchant.getId() + "/manage"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.pagination.total").value(new GreaterThan(0)))
+                .andExpect(jsonPath("$.list[0].id").value(willMerchantManage.getId()))
+                .andDo(print());
 
         //查看详情
         manageDetail(willMerchantManage.getId(), merchant.getMerchantId());

@@ -49,6 +49,7 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
     @GetMapping("/{id}")
     @ResponseBody
     public Object getOne(@PathVariable("id") Long aLong) {
+        // TODO: 2018/2/2 还需要确认返回字段
         return loginService.findOne(aLong);
     }
 
