@@ -4,6 +4,7 @@ import com.huotu.verification.VerificationCodeConfig;
 import com.ming.shopping.beauty.service.service.SystemService;
 import me.jiangcai.crud.CrudConfig;
 import me.jiangcai.lib.jdbc.JdbcSpringConfig;
+import me.jiangcai.lib.misc.WechatVerifyConfig;
 import me.jiangcai.lib.resource.web.WebResourceSpringConfig;
 import me.jiangcai.lib.spring.logging.LoggingConfig;
 import me.jiangcai.lib.sys.SystemStringConfig;
@@ -26,6 +27,7 @@ import org.springframework.context.support.ResourceBundleMessageSource;
  */
 @Configuration
 @Import({WebResourceSpringConfig.class, JdbcSpringConfig.class
+        , WechatVerifyConfig.class
         , VerificationCodeConfig.class
         , CrudConfig.class
         , WeixinSpringConfig.class, StandardWeixinConfig.class

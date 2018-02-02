@@ -8,11 +8,13 @@ import com.ming.shopping.beauty.service.entity.login.Store_;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
-import com.ming.shopping.beauty.service.service.ItemService;
 import com.ming.shopping.beauty.service.service.StoreItemService;
 import me.jiangcai.crud.controller.AbstractCrudController;
 import me.jiangcai.crud.row.FieldDefinition;
+import me.jiangcai.crud.row.RowCustom;
+import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
+import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -21,7 +23,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
@@ -41,8 +48,15 @@ public class ManageStoreItemController extends AbstractCrudController<StoreItem,
     @Autowired
     private StoreItemService storeItemService;
 
+    @Override
+    @ResponseStatus(HttpStatus.OK)
+    @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
+    public RowDefinition<StoreItem> list(HttpServletRequest request) {
+        return super.list(request);
+    }
+
     /**
-     * 添加/编辑门店项目
+     * 添加门店项目
      *
      * @param postData  门店项目
      * @param otherData 其他信息
@@ -52,17 +66,28 @@ public class ManageStoreItemController extends AbstractCrudController<StoreItem,
     @PostMapping
     @Override
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity addOne(StoreItem postData, Map<String, Object> otherData) throws URISyntaxException {
+    public ResponseEntity addOne(@RequestBody StoreItem postData, @RequestBody Map<String, Object> otherData) throws URISyntaxException {
         final String storeId = "storeId";
         final String itemId = "itemId";
         if (otherData.get(storeId) == null || otherData.get(itemId) == null) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), storeId + itemId), null));
         }
-        StoreItem storeItem = storeItemService.addStoreItem((long) otherData.get(storeId), (long) otherData.get(itemId), postData);
+        StoreItem storeItem = storeItemService.addStoreItem(Long.parseLong(otherData.get(storeId).toString()), Long.parseLong(otherData.get(itemId).toString()), postData);
         return ResponseEntity
                 .created(new URI("/storeItem/" + storeItem.getId()))
                 .build();
+    }
+
+    /**
+     * 修改门店项目的 销售价/会员价
+     *
+     * @param salesPrice 新价格
+     */
+    @PutMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateStoreItem(@PathVariable(value = "id", required = true) long id, @RequestBody BigDecimal salesPrice) {
+        storeItemService.updateStoreItem(id, salesPrice);
     }
 
     /**
@@ -76,30 +101,17 @@ public class ManageStoreItemController extends AbstractCrudController<StoreItem,
     public ApiResult batchRecommended(@RequestBody Map<String, Object> putData) {
         final String recommended = "recommended";
         final String storeItems = "storeItems";
-        final String itemId = "itemId";
         //失败的个数
         int count = 0;
-        List<Long> itemList = (List<Long>) putData.get(storeItems);
+        List<Integer> itemList = (List<Integer>) putData.get(storeItems);
         //总个数
         int size = itemList.size();
         if (putData.get(recommended) != null || putData.get(storeItems) != null) {
-            if (putData.get(itemId) != null) {
-                //根据item批量下面storeItem  在item级别页面操作
-                for (long storeItemId : itemList) {
-                    try {
-                        storeItemService.recommended((long) putData.get(itemId), (boolean) putData.get(recommended), storeItemId);
-                    } catch (Exception e) {
-                        count++;
-                    }
-                }
-            } else {
-                //仅仅是门店自己的批量操作
-                for (long storeItemId : itemList) {
-                    try {
-                        storeItemService.recommended(null, (boolean) putData.get(recommended), storeItemId);
-                    } catch (Exception e) {
-                        count++;
-                    }
+            for (Integer storeItemId : itemList) {
+                try {
+                    storeItemService.recommended((boolean) putData.get(recommended), Long.parseLong(storeItemId.toString()));
+                } catch (Exception e) {
+                    count++;
                 }
             }
         } else {
@@ -120,32 +132,20 @@ public class ManageStoreItemController extends AbstractCrudController<StoreItem,
     public ApiResult batchEnable(@RequestBody Map<String, Object> putData) {
         final String enabled = "enabled";
         final String storeItems = "storeItems";
-        final String itemId = "itemId";
         //失败的个数
         int count = 0;
-        List<Long> itemList = (List<Long>) putData.get(storeItems);
+        List<Integer> itemList = (List<Integer>) putData.get(storeItems);
         //总个数
         int size = itemList.size();
         if (putData.get(enabled) != null || putData.get(storeItems) != null) {
-            if (putData.get(itemId) != null) {
-                //根据item批量下面storeItem  在item级别页面操作
-                for (long storeItemId : itemList) {
-                    try {
-                        storeItemService.freezeOrEnable((long) putData.get(itemId), (boolean) putData.get(enabled), storeItemId);
-                    } catch (Exception e) {
-                        count++;
-                    }
-                }
-            } else {
-                //仅仅是门店自己的批量操作
-                for (long storeItemId : itemList) {
-                    try {
-                        storeItemService.freezeOrEnable(null, (boolean) putData.get(enabled), storeItemId);
-                    } catch (Exception e) {
-                        count++;
-                    }
+            for (Integer storeItemId : itemList) {
+                try {
+                    storeItemService.freezeOrEnable((boolean) putData.get(enabled), Long.parseLong(storeItemId.toString()));
+                } catch (Exception e) {
+                    count++;
                 }
             }
+
         } else {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "缺少必要数据"), null));
@@ -202,5 +202,10 @@ public class ManageStoreItemController extends AbstractCrudController<StoreItem,
             conditionList.add(cb.isFalse(root.get(StoreItem_.deleted)));
             return cb.and(conditionList.toArray(new Predicate[conditionList.size()]));
         });
+    }
+
+    @Override
+    protected List<Order> listOrder(CriteriaBuilder criteriaBuilder, Root<StoreItem> root) {
+        return Arrays.asList(criteriaBuilder.desc(root.get(StoreItem_.id)));
     }
 }

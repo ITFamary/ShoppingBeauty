@@ -57,21 +57,27 @@ public interface StoreItemService {
 
     /**
      * 门店项目上架/下架
-     * @param itemId 项目id 可以为null
      * @param enabled 上架/下架
      * @param storeItemId 操作的门店项目
      * @return 被操作的项目
      */
 
     @Transactional
-    void freezeOrEnable(Long itemId, boolean enabled, long storeItemId);
+    void freezeOrEnable(boolean enabled, Long storeItemId);
 
     /**
      *  门店项目推荐/取消推荐
-     * @param itemId 项目id 可以为null
      * @param enabled 上架/下架
      * @param storeItemId 操作的门店项目
      */
     @Transactional
-    void recommended(Long itemId, boolean enabled,long storeItemId);
+    void recommended(boolean enabled, Long storeItemId);
+
+    /**
+     * 门店项目 销售价/会员价的修改
+     * @param id 被修改的项目id
+     * @param salesPrice 修改后的价格
+     */
+    @Transactional
+    void updateStoreItem(long id, BigDecimal salesPrice);
 }

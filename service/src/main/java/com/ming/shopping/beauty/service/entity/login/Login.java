@@ -1,5 +1,6 @@
 package com.ming.shopping.beauty.service.entity.login;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -95,21 +96,25 @@ public class Login implements UserDetails, CrudFriendly<Long> {
      * 可能是个商户或商户管理员
      */
     @OneToOne
+    @JsonIgnore
     private Merchant merchant;
     /**
      * 可能是个门店或门店管理员
      */
     @OneToOne
+    @JsonIgnore
     private Store store;
     /**
      * 必定有 user ，但可能没激活
      */
     @OneToOne
+    @JsonIgnore
     private User user;
     /**
      * 门店代表
      */
     @OneToOne
+    @JsonIgnore
     private Represent represent;
 
     @ElementCollection

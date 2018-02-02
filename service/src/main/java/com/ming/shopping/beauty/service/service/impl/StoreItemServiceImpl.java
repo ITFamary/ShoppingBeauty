@@ -5,6 +5,7 @@ import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import com.ming.shopping.beauty.service.entity.item.StoreItem_;
 import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.login.Store_;
+import com.ming.shopping.beauty.service.entity.support.AuditStatus;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
@@ -79,63 +80,68 @@ public class StoreItemServiceImpl implements StoreItemService {
     }
 
     @Override
+    @Transactional(rollbackFor = RuntimeException.class)
     public StoreItem addStoreItem(long storeId, long itemId, StoreItem storeItem) {
         Store store = storeService.findStore(storeId);
         Item item = itemService.findOne(itemId);
-        storeItem.setStore(store);
-        storeItem.setItem(item);
-        if (storeItem.getSalesPrice() != null) {
-            //这个价格必须大于等于 项目的销售价
-            if (storeItem.getSalesPrice().compareTo(item.getSalesPrice()) == -1) {
-                throw new ApiResultException(ApiResult.withError(ResultCodeEnum.STORE_ITEM_PRICE_ERROR));
+        //是否通过审核
+        if(item.getAuditStatus().equals(AuditStatus.AUDIT_PASS)){
+            storeItem.setStore(store);
+            storeItem.setItem(item);
+            if (storeItem.getSalesPrice() != null) {
+                //这个价格必须大于等于 项目的销售价
+                if (storeItem.getSalesPrice().compareTo(item.getSalesPrice()) == -1) {
+                    throw new ApiResultException(ApiResult.withError(ResultCodeEnum.STORE_ITEM_PRICE_ERROR));
+                }
+            } else {
+                storeItem.setSalesPrice(item.getSalesPrice());
             }
-        } else {
-            storeItem.setSalesPrice(item.getSalesPrice());
+            return storeItemRepository.save(storeItem);
+        }else{
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.ITEM_NOT_AUDIT));
         }
-        return storeItemRepository.save(storeItem);
     }
 
 
     @Override
     public StoreItem findStoreItem(long storeItemId) {
-        StoreItem storeItem = storeItemRepository.findOne((root,query,cb)->
-                cb.equal(root.get(StoreItem_.id),storeItemId));
-        if(storeItem == null || storeItem.isDeleted()){
+        StoreItem storeItem = storeItemRepository.findOne((root, query, cb) ->
+                cb.equal(root.get(StoreItem_.id), storeItemId));
+        if (storeItem == null || storeItem.isDeleted()) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.ITEM_NOT_EXIST));
         }
         return storeItem;
     }
 
     @Override
-    @Transactional
-    public void freezeOrEnable(Long itemId, boolean enabled, long storeItemId) {
-        if(itemId == null){
-            //自主操作
-            StoreItem storeItem = storeItemRepository.getOne(storeItemId);
+    @Transactional(rollbackFor = RuntimeException.class)
+    public void freezeOrEnable(boolean enabled, Long storeItemId) {
+            StoreItem storeItem = storeItemRepository.findOne(storeItemId);
             storeItem.setEnable(enabled);
-        }else{
-            //项目管理批量操作
-            Item item = itemService.findOne(itemId);
-            List<StoreItem> storeItemList = storeItemRepository.findByItem(item);
-            for (StoreItem storeItem : storeItemList) {
-                storeItem.setEnable(enabled);
-            }
-        }
     }
 
     @Override
-    @Transactional
-    public void recommended(Long itemId, boolean recommended, long storeItemId) {
-        if(itemId == null){
-            //自主操作
-            StoreItem storeItem = storeItemRepository.getOne(storeItemId);
+    @Transactional(rollbackFor = RuntimeException.class)
+    public void recommended(boolean recommended, Long storeItemId) {
+            StoreItem storeItem = storeItemRepository.findOne(storeItemId);
             storeItem.setRecommended(recommended);
-        }else{
-            //项目管理批量操作
-            Item item = itemService.findOne(itemId);
-            List<StoreItem> storeItemList = storeItemRepository.findByItem(item);
-            for (StoreItem storeItem : storeItemList) {
-                storeItem.setRecommended(recommended);
+    }
+
+    @Override
+    @Transactional(rollbackFor = RuntimeException.class)
+    public void updateStoreItem(long id, BigDecimal salesPrice) {
+        StoreItem storeItem = storeItemRepository.findOne(id);
+        Item item = storeItem.getItem();
+        if (salesPrice == null) {
+            //将价格修改成和item中一样
+            storeItem.setSalesPrice(item.getSalesPrice());
+            storeItemRepository.save(storeItem);
+        } else {
+            if (salesPrice.compareTo(item.getSalesPrice()) == -1) {
+                throw new ApiResultException(ApiResult.withError(ResultCodeEnum.STORE_ITEM_PRICE_ERROR));
+            } else {
+                storeItem.setSalesPrice(salesPrice);
+                storeItemRepository.save(storeItem);
             }
         }
     }

@@ -25,6 +25,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by helloztt on 2018/1/4.
@@ -54,7 +55,7 @@ public class RechargeCardServiceImpl implements RechargeCardService {
     public List<RechargeCard> newCard(int num, Long guideId, Long manageId) {
         List<RechargeCard> cardList = new ArrayList<>(num);
         RechargeCard rechargeCard = new RechargeCard();
-        //这里就不去校验对应的用户是否存在了
+        //这里就不去校验对应的用户是否存在了,总是从推荐者列表中获取
         if(guideId != null){
             rechargeCard.setGuideUser(loginRepository.findOne(guideId));
         }
@@ -69,12 +70,10 @@ public class RechargeCardServiceImpl implements RechargeCardService {
         }
         rechargeCardRepository.save(cardList);
         rechargeCardRepository.flush();
-        // TODO: 2018/1/12 由于卡密的生成方式还不确定，目前暂时格式化id来作为卡密
         cardList.forEach(card -> {
-            card.setCode(String.format("%20d", card.getId()));
+            card.setCode(UUID.randomUUID().toString().replace("-","").substring(0,20).toUpperCase());
         });
-        rechargeCardRepository.save(cardList);
-        return cardList;
+        return rechargeCardRepository.save(cardList);
     }
 
     @Override

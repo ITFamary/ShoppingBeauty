@@ -37,7 +37,7 @@ public class Constant {
     /**
      * 短信签名；理论上来讲应该是依赖配置的
      */
-    private static final String SMS_SignName = "尚锋莱美";
+    private static final String SMS_SignName = "锋尚来美";
 
     /**
      * @param code     验证码

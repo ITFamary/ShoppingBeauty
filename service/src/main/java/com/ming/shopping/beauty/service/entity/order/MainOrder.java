@@ -3,6 +3,7 @@ package com.ming.shopping.beauty.service.entity.order;
 import com.ming.shopping.beauty.service.entity.login.Represent;
 import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.login.User;
+import com.ming.shopping.beauty.service.entity.settlement.SettlementSheet;
 import com.ming.shopping.beauty.service.entity.support.OrderStatus;
 import com.ming.shopping.beauty.service.utils.Constant;
 import lombok.Getter;
@@ -74,8 +75,10 @@ public class MainOrder {
      */
     private boolean settled;
     /**
-     * TODO 结算单
+     * 结算单
      */
+    @ManyToOne
+    private SettlementSheet settlementSheet;
     /**
      * 订单总金额
      */
