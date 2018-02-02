@@ -26,6 +26,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.UUID.randomUUID;
+
 /**
  * Created by helloztt on 2018/1/4.
  */
@@ -69,9 +71,8 @@ public class RechargeCardServiceImpl implements RechargeCardService {
         }
         rechargeCardRepository.save(cardList);
         rechargeCardRepository.flush();
-        // TODO: 2018/1/12 由于卡密的生成方式还不确定，目前暂时格式化id来作为卡密
         cardList.forEach(card -> {
-            card.setCode(String.format("%20d", card.getId()));
+            card.setCode(randomUUID().toString().replace("-","").substring(20).toUpperCase());
         });
         rechargeCardRepository.save(cardList);
         return cardList;

@@ -48,6 +48,8 @@ public class ManageRechargeCardControllerTest extends ManageConfigTest{
             assertThat(r.getAmount()).isEqualTo(BigDecimal.valueOf(defaultAmount));
             assertThat(r.getGuideUser().getId()).isEqualTo(guide.getId());
             assertThat(r.getManager().getId()).isEqualTo(manage.getId());
+            //看下生成的Code
+            System.out.println(r.getCode());
         }
 
 
