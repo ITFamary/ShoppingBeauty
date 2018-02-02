@@ -72,7 +72,7 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
         //设置正确的
         item.setAuditStatus(AuditStatus.AUDIT_PASS);
         itemRepository.save(item);
-        nsi.setSalesPrice(item.getSalesPrice().setScale(2).add(BigDecimal.valueOf(0.20)));
+        nsi.setSalesPrice(item.getPrice().setScale(2).multiply(BigDecimal.valueOf(0.95)));
         mockMvc.perform(post("/storeItem")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(nsi)))
@@ -85,10 +85,11 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
         Item item1 = mockItem(merchant);
         nsi1.setItemId(item1.getId());
         nsi1.setStoreId(store.getId());
-        nsi1.setSalesPrice(item.getSalesPrice().setScale(2).add(BigDecimal.valueOf(0.10)));
+        nsi1.setSalesPrice(item.getPrice().setScale(2).multiply(BigDecimal.valueOf(0.95)));
         mockMvc.perform(post("/storeItem")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(nsi1)))
+                .andDo(print())
                 .andExpect(status().isCreated());
 
         System.out.println(nsi.getSalesPrice() + "-------------------------------------------------------------" + nsi1.getSalesPrice());

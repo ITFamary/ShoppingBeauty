@@ -189,8 +189,9 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ROOT + "')")
     public void commitItem(@PathVariable("itemId") long itemId, @RequestBody Map<String, String> auditStatus) {
-        if (auditStatus.get("status") != null && auditStatus.get("comment") != null) {
-            itemService.auditItem(itemId, AuditStatus.valueOf(auditStatus.get("status")), auditStatus.get("comment"));
+        if (auditStatus.get("status") != null) {
+            itemService.auditItem(itemId, AuditStatus.valueOf(auditStatus.get("status")),
+                    auditStatus.get("comment"));
         } else {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), auditStatus), null));
