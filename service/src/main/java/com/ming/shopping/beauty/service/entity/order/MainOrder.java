@@ -55,6 +55,9 @@ public class MainOrder {
      */
     @Column(scale = Constant.FLOAT_COLUMN_SCALE, precision = Constant.FLOAT_COLUMN_PRECISION)
     private BigDecimal finalAmount;
+
+    @Column(scale = Constant.FLOAT_COLUMN_SCALE, precision = Constant.FLOAT_COLUMN_PRECISION)
+    private BigDecimal settlementAmount;
     /**
      * 订单状态
      */
@@ -106,4 +109,5 @@ public class MainOrder {
         }
         return current.setScale(Constant.FLOAT_COLUMN_SCALE,Constant.ROUNDING_MODE);
     }
+
 }

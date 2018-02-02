@@ -6,6 +6,7 @@ import com.ming.shopping.beauty.service.entity.support.SettlementStatus;
 import com.ming.shopping.beauty.service.utils.Constant;
 import lombok.Getter;
 import lombok.Setter;
+import me.jiangcai.crud.CrudFriendly;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -18,7 +19,7 @@ import java.util.Set;
 @Entity
 @Getter
 @Setter
-public class SettlementSheet {
+public class SettlementSheet implements CrudFriendly<Long> {
     /**
      * 结算单编号
      */
