@@ -6,11 +6,14 @@ import com.ming.shopping.beauty.service.entity.login.User_;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
+import com.ming.shopping.beauty.service.model.definition.UserModel;
+import com.ming.shopping.beauty.service.repository.MainOrderRepository;
 import com.ming.shopping.beauty.service.service.LoginService;
 import me.jiangcai.crud.controller.AbstractCrudController;
 import me.jiangcai.crud.row.FieldDefinition;
 import me.jiangcai.crud.row.RowCustom;
 import me.jiangcai.crud.row.RowDefinition;
+import me.jiangcai.crud.row.RowService;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +24,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.criteria.*;
+import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,11 +38,13 @@ import java.util.Map;
 @Controller
 @RequestMapping("/login")
 @PreAuthorize("hasAnyRole('ROOT')")
-@RowCustom(dramatizer = AntDesignPaginationDramatizer.class,distinct = true)
+@RowCustom(dramatizer = AntDesignPaginationDramatizer.class, distinct = true)
 public class ManageLoginController extends AbstractCrudController<Login, Long> {
 
     @Autowired
     private LoginService loginService;
+    @Autowired
+    private MainOrderRepository mainOrderRepository;
 
     /**
      * 用户详情
@@ -51,8 +57,14 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
     @GetMapping("/{id}")
     @ResponseBody
     public Object getOne(@PathVariable("id") Long aLong) {
-        // TODO: 2018/2/2 还需要确认返回字段
-        return loginService.findOne(aLong);
+        Login login = loginService.findOne(aLong);
+        BigDecimal consumption = mainOrderRepository.sumFinalAmountLByPayer(login.getId());
+        if(consumption != null){
+            login.setConsumption(consumption);
+        }else{
+            login.setConsumption(BigDecimal.ZERO);
+        }
+        return RowService.drawEntityToRow(login, new UserModel().getDefinitions(), null);
     }
 
     /**
@@ -64,7 +76,7 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
     @PutMapping("/{id}/enabled")
     @PreAuthorize("hasAnyRole('ROOT')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void setEnable(@PathVariable(value = "id",required = true) long loginId,@RequestBody Boolean putData) {
+    public void setEnable(@PathVariable(value = "id", required = true) long loginId, @RequestBody Boolean putData) {
         if (putData != null) {
             loginService.freezeOrEnable(loginId, putData);
         } else {
@@ -88,11 +100,11 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
                 , FieldBuilder.asName(Login.class, "enabled")
                         .build()
                 , FieldBuilder.asName(Login.class, "active")
-                        .addBiSelect((loginRoot,cb)->cb.isNotNull(loginRoot.join(Login_.user).get(User_.cardNo)))
+                        .addBiSelect((loginRoot, cb) -> cb.isNotNull(loginRoot.join(Login_.user).get(User_.cardNo)))
                         .build()
-                , FieldBuilder.asName(Login.class,"currentAmount")
+                , FieldBuilder.asName(Login.class, "currentAmount")
                         //TODO 余额这里还是有问题的.
-                        .addSelect(loginRoot -> loginRoot.join(Login_.user,JoinType.LEFT).get(User_.currentAmount))
+                        .addSelect(loginRoot -> loginRoot.join(Login_.user, JoinType.LEFT).get(User_.currentAmount))
                         .build()
         );
     }
@@ -105,15 +117,15 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
             if (queryData.get("loginId") != null) {
                 conditions.add(cb.equal(root.get(Login_.id), queryData.get("loginId")));
             }
-            if (queryData.get("enabled") != null){
-                if((boolean)queryData.get("enabled")){
+            if (queryData.get("enabled") != null) {
+                if ((boolean) queryData.get("enabled")) {
                     conditions.add(cb.isTrue(root.get(Login_.enabled)));
-                }else{
+                } else {
                     conditions.add(cb.isFalse(root.get(Login_.enabled)));
                 }
             }
-            if(queryData.get("mobile") != null){
-                conditions.add(cb.equal(root.get(Login_.loginName),queryData.get("mobile")));
+            if (queryData.get("mobile") != null) {
+                conditions.add(cb.equal(root.get(Login_.loginName), queryData.get("mobile")));
             }
             return cb.and(conditions.toArray(new Predicate[conditions.size()]));
         };

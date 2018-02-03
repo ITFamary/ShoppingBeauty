@@ -11,15 +11,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.CollectionUtils;
 
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
+import javax.persistence.criteria.From;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -183,6 +177,12 @@ public class Login implements UserDetails, CrudFriendly<Long> {
         }
         levelSet.addAll(Arrays.asList(manageLevels));
     }
+
+    /**
+     * 用户历史消费总额
+     */
+    @Transient
+    private BigDecimal consumption;
 
 
 }

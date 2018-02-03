@@ -2,7 +2,10 @@ package com.ming.shopping.beauty.manage.controller;
 
 import com.ming.shopping.beauty.manage.ManageConfigTest;
 import com.ming.shopping.beauty.service.entity.login.Login;
+import org.hamcrest.core.StringStartsWith;
 import org.junit.Test;
+
+import java.math.BigDecimal;
 
 import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -23,10 +26,12 @@ public class ManageLoginControllerTest extends ManageConfigTest {
         mockMvc.perform(get(BASE_URL + "/" + mockLogin.getId()))
                 .andExpect(status().isOk())
                 .andDo(print())
-                .andExpect(jsonPath("$.loginId").value(mockLogin.getId()))
-                .andExpect(jsonPath("$.username").value(mockLogin.getUsername()))
+                .andExpect(jsonPath("$.id").value(mockLogin.getId()))
+                .andExpect(jsonPath("$.name").value(StringStartsWith.startsWith(mockLogin.getUser().getFamilyName())))
                 .andExpect(jsonPath("$.mobile").value(mockLogin.getLoginName()))
-                .andExpect(jsonPath("$.enabled").value(mockLogin.isEnabled()));
+                .andExpect(jsonPath("$.enabled").value(mockLogin.isEnabled()))
+                .andExpect(jsonPath("$.balance").value(BigDecimal.ZERO))
+                .andExpect(jsonPath("$.consumption").value(BigDecimal.ZERO));
     }
 
     @Test
