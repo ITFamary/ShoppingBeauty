@@ -20,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author helloztt
  */
 public class ClientIndexControllerTest extends ClientConfigTest {
-    private static final String isExistUrl = "/isExist", isRegister = "/isRegister/";
+    private static final String isExistUrl = "/isExist", isRegister = "/isRegister/",sendAuthCode = "/sendAuthCode/";
 
     @Test
     public void registerOrLogin() throws Exception {
@@ -74,9 +74,12 @@ public class ClientIndexControllerTest extends ClientConfigTest {
         //没有姓名,期望提示 1002,"注册信息不完成"
         registerBody.setAuthCode("1234");
         registerBody.setSurname(null);
+        mockMvc.perform(makeWechat(get(sendAuthCode + registerBody.getMobile())))
+                .andExpect(status().isOk());
         mockMvc.perform(makeWechat(post(SystemService.LOGIN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerBody))))
+                .andDo(print())
                 .andExpect(status().is(HttpStatusCustom.SC_DATA_NOT_VALIDATE))
                 .andExpect(jsonPath(RESULT_CODE_PATH).value(ResultCodeEnum.MESSAGE_NOT_FULL.getCode()));
 
