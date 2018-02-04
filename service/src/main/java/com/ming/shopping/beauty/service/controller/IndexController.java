@@ -146,7 +146,7 @@ public class IndexController {
         if (principal instanceof String) {
             LoginRequest loginRequest = loginRequestService.newRequest(sessionId);
             response.setStatus(HttpStatusCustom.SC_ACCEPTED);
-            String text = systemService.toUrl("/managerLogin/" + loginRequest.getId());
+            String text = systemService.toMobileUrl("/managerLogin/" + loginRequest.getId());
             result = new HashMap<>();
             result.put("id", loginRequest.getId());
             result.put("url", text);

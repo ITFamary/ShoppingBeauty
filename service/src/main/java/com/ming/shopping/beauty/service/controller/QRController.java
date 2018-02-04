@@ -42,7 +42,8 @@ public class QRController {
      */
     @SneakyThrows({UnsupportedEncodingException.class, MalformedURLException.class})
     public URL urlForText(String text) {
-        return new URL(systemService.toUrl(QR_URL + "?text=" + URLEncoder.encode(text, "UTF-8")));
+        // 此处取决于用户请求！
+        return new URL(systemService.toMobileUrl(QR_URL + "?text=" + URLEncoder.encode(text, "UTF-8")));
     }
 
 }

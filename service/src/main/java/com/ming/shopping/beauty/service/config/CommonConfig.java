@@ -53,7 +53,8 @@ public class CommonConfig extends WeixinWebSpringConfig {
         //微信支付异步回调地址
         WeixinPayUrl weixinPayUrl = new WeixinPayUrl();
         weixinPayUrl.setRelUrl("/notify");
-        weixinPayUrl.setAbsUrl(systemService.toUrl(weixinPayUrl.getRelUrl()));
+        // 此处使用移动地址
+        weixinPayUrl.setAbsUrl(systemService.toMobileUrl(weixinPayUrl.getRelUrl()));
         return weixinPayUrl;
     }
 }
