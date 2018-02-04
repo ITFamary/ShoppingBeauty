@@ -2,6 +2,7 @@ package com.ming.shopping.beauty.service.controller;
 
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.LoginRequest;
+import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.HttpStatusCustom;
@@ -28,6 +29,7 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -69,8 +71,18 @@ public class IndexController {
      * @return
      */
     @GetMapping(value = SystemService.AUTH)
-    public String login(WeixinUserDetail weixinUserDetail, @RequestParam String redirectUrl) {
-        return "redirect:" + redirectUrl;
+    public String auth(WeixinUserDetail weixinUserDetail, @RequestParam String redirectUrl
+            , HttpServletRequest request, HttpServletResponse response) {
+        if (weixinUserDetail != null) {
+            Login login = loginService.asWechat(weixinUserDetail.getOpenId());
+            if (login == null) {
+                login = loginService.newEmpty(weixinUserDetail.getOpenId());
+            }
+            loginToSecurity(login, request, response);
+            return "redirect:" + redirectUrl;
+        } else {
+            return "/views/error";
+        }
     }
 
     /**
@@ -86,11 +98,12 @@ public class IndexController {
     @ResponseBody
     public void toLogin(@OpenId String openId, HttpServletRequest request, HttpServletResponse response) throws IOException {
         if (openId == null) {
+            //没授权or授权过期？那就去微信那走一圈
             response.sendError(HttpStatusCustom.SC_NO_OPENID);
             response.getWriter().write(systemService.toMobileUrl(SystemService.AUTH));
         } else {
             Login login = loginService.asWechat(openId);
-            if (login == null) {
+            if (login == null || StringUtils.isEmpty(login.getLoginName())) {
                 response.sendError(HttpStatusCustom.SC_NO_LOGIN);
             } else {
                 //注册或登录成功了，加到 security 中
@@ -202,7 +215,7 @@ public class IndexController {
             return;
         }
         Login login = loginService.asWechat(weixinUserDetail.getOpenId());
-        if (login == null) {
+        if (login == null || !login.getLevelSet().contains(ManageLevel.user)) {
             //说明没有这个用户，让他先去注册或登录
             response.setStatus(HttpStatusCustom.SC_LOGIN_NOT_EXIST);
         } else if (CollectionUtils.isEmpty(login.getLevelSet()) || !login.isEnabled()) {

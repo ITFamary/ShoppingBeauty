@@ -13,6 +13,7 @@ import com.ming.shopping.beauty.service.service.MainOrderService;
 import com.ming.shopping.beauty.service.service.SystemService;
 import me.jiangcai.crud.row.RowService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,6 +30,7 @@ import java.util.Map;
  */
 @Controller("clientUserController")
 @RequestMapping("/user")
+@PreAuthorize("hasAnyRole('USER')")
 public class UserController {
     @Autowired
     protected MainOrderService orderService;

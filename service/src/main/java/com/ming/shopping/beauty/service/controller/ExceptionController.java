@@ -1,14 +1,22 @@
 package com.ming.shopping.beauty.service.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
+import com.ming.shopping.beauty.service.model.ApiResult;
+import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
@@ -44,6 +52,16 @@ public class ExceptionController {
             modelAndView.addObject("status", exception.getHttpStatus());
             modelAndView.addObject("message", errorMsg);
             return modelAndView;
+        }
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ResponseBody
+    public void needLogin(@AuthenticationPrincipal Login login,AccessDeniedException exception
+            ,HttpServletResponse response) throws IOException {
+        if(!login.getLevelSet().contains(ManageLevel.user)){
+            response.sendError(HttpStatusCustom.SC_LOGIN_NOT_EXIST);
         }
     }
 
