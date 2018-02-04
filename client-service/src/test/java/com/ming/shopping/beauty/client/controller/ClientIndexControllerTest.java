@@ -6,10 +6,11 @@ import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.model.request.LoginOrRegisterBody;
 import com.ming.shopping.beauty.service.service.SystemService;
-import com.ming.shopping.beauty.service.utils.Constant;
 import me.jiangcai.wx.model.Gender;
 import org.junit.Test;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
+
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -20,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author helloztt
  */
 public class ClientIndexControllerTest extends ClientConfigTest {
-    private static final String isExistUrl = "/isExist", isRegister = "/isRegister/",sendAuthCode = "/sendAuthCode/";
+    private static final String isExistUrl = "/isExist", isRegister = "/isRegister/", sendAuthCode = "/sendAuthCode/";
 
     @Test
     public void registerOrLogin() throws Exception {
@@ -107,6 +108,20 @@ public class ClientIndexControllerTest extends ClientConfigTest {
                 .content(objectMapper.writeValueAsString(registerBody))))
                 .andExpect(status().isOk());
 
-    }
+        //换个方式登录
+        //在没登录的情况，随便请求一个接口，期望返回401
+        MockHttpSession mockSession = (MockHttpSession) mockMvc.perform(makeWechat(get("/user")))
+                .andExpect(status().is(HttpStatusCustom.SC_UNAUTHORIZED))
+                .andReturn().getRequest().getSession();
 
+        //调用 toLogin 接口，期望返回200
+        mockSession = (MockHttpSession) mockMvc.perform(makeWechat(get("/toLogin").session(mockSession)))
+                .andExpect(status().isOk())
+                .andReturn().getRequest().getSession();
+
+        //再次请求 /user，期望返回200
+        mockMvc.perform(makeWechat(get("/user").session(mockSession)))
+                .andExpect(status().isOk());
+
+    }
 }

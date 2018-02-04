@@ -11,6 +11,7 @@ import org.apache.http.HttpStatus;
  * <p>请求不合规：返回{@link HttpStatusCustom#SC_DATA_NOT_VALIDATE} 210</p>
  * <p>未登录：返回{@link HttpStatusCustom#SC_UNAUTHORIZED} 401</p>
  * <p>SESSION过期：返回{@link HttpStatusCustom#SC_SESSION_TIMEOUT} 4011</p>
+ * <p>未授权：返回{@link HttpStatusCustom#SC_NO_OPENID} 4012</p>
  * <p>不允许操作：返回{@link HttpStatusCustom#SC_FORBIDDEN} 403</p>
  * <p>用户不存在：返回{@link HttpStatusCustom#SC_LOGIN_NOT_EXIST}  4041</p>
  * <p>系统正在维护：返回{@link HttpStatusCustom#SC_SERVICE_UNAVAILABLE} 503</p>
@@ -29,6 +30,14 @@ public interface HttpStatusCustom extends HttpStatus {
      * {@code 4011 session过期}
      */
     int SC_SESSION_TIMEOUT = 4011;
+    /**
+     * {@code 4012 微信未授权}
+     */
+    int SC_NO_OPENID = 4012;
+    /**
+     * {@code 4013 未注册}
+     */
+    int SC_NO_LOGIN = 4013;
     /**
      * 用户不存在
      */
