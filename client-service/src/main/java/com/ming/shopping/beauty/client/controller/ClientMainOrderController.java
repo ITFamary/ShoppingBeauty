@@ -39,7 +39,7 @@ public class ClientMainOrderController {
     @PostMapping("/order")
     @ResponseBody
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("hasAnyRole('" + Login.ROLE_REPRESENT + "')")
+    @PreAuthorize("hasAnyRole('" + Login.ROLE_STORE_REPRESENT + "')")
     public void newOrder(@AuthenticationPrincipal Login login, @RequestBody NewOrderBody postData) {
         mainOrderService.supplementOrder(postData.getOrderId(), login.getRepresent(), postData.getItems());
     }

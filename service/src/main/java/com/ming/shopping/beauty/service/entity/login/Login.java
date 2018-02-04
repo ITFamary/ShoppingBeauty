@@ -71,8 +71,7 @@ public class Login implements UserDetails, CrudFriendly<Long> {
      * 门店超管及操作员
      */
     public static final String ROLE_STORE_ROOT = "STORE_ROOT";
-    //    public static final String ROLE_STORE_OPERATOR = "STORE_OPERATOR";
-    public static final String ROLE_REPRESENT = "REPRESENT";
+    public static final String ROLE_STORE_REPRESENT = "STORE_REPRESENT";
     /**
      * 审核项目
      */
