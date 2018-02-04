@@ -23,8 +23,8 @@
     <Parameter name="shopping.url" value="http://staging.sb.lmjia.cn"/>
 
     <!--微信相关-->
-    <Parameter name="huotao.weixin.appId" value="11"/>
-    <Parameter name="huotao.weixin.appSecret" value="11"/>
+    <Parameter name="huotao.weixin.appId" value="3301040160008809025"/>
+    <Parameter name="huotao.weixin.appSecret" value="e3b05e7dc329c53dc781469ec1784792"/>
     <Parameter name="huotao.weixin.mchId" value="11"/>
     <Parameter name="huotao.weixin.apiKey" value="11"/>
     <Parameter name="huotao.weixin.url" value="11"/>
