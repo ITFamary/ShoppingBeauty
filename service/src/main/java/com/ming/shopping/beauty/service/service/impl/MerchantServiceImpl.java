@@ -10,7 +10,6 @@ import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.repository.MerchantRepository;
 import com.ming.shopping.beauty.service.service.LoginService;
 import com.ming.shopping.beauty.service.service.MerchantService;
-import me.jiangcai.jpa.entity.support.Address;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,27 +29,6 @@ public class MerchantServiceImpl implements MerchantService {
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
-    public Merchant addMerchant(long loginId, String name, String telephone, String contact, Address address) throws ApiResultException {
-        Login login = loginService.findOne(loginId);
-        if (login.getMerchant() != null) {
-            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.LOGIN_MERCHANT_EXIST));
-        }
-        Merchant merchant = new Merchant();
-        login.setMerchant(merchant);
-        login.addLevel(ManageLevel.merchantRoot);
-        merchant.setId(login.getId());
-        merchant.setLogin(login);
-        merchant.setName(name);
-        merchant.setTelephone(telephone);
-        merchant.setContact(contact);
-        merchant.setAddress(address);
-        merchant.setManageable(true);
-        merchant.setCreateTime(LocalDateTime.now());
-        return merchantRepository.save(merchant);
-    }
-
-    @Override
-    @Transactional(rollbackFor = RuntimeException.class)
     public Merchant addMerchant(long loginId, Merchant merchant) throws ApiResultException {
         Login login = loginService.findOne(loginId);
         if (login.getMerchant() != null) {
@@ -63,24 +41,6 @@ public class MerchantServiceImpl implements MerchantService {
         merchant.setManageable(true);
         merchant.setCreateTime(LocalDateTime.now());
         return merchantRepository.save(merchant);
-    }
-
-    @Override
-    @Transactional(rollbackFor = RuntimeException.class)
-    public Merchant addMerchant(long loginId, long merchantId) throws ApiResultException {
-        Login login = loginService.findOne(loginId);
-        if (login.getMerchant() != null) {
-            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.LOGIN_MERCHANT_EXIST));
-        }
-        Merchant merchant = findMerchant(merchantId);
-        Merchant manage = new Merchant();
-        login.setMerchant(manage);
-        login.addLevel(ManageLevel.merchantItemManager);
-        manage.setId(login.getId());
-        manage.setLogin(login);
-        manage.setMerchant(merchant);
-        manage.setCreateTime(LocalDateTime.now());
-        return merchantRepository.save(manage);
     }
 
     @Override

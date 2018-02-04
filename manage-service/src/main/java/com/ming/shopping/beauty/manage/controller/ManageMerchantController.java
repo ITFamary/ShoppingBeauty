@@ -237,7 +237,8 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
     @ResponseStatus(HttpStatus.CREATED)
     public void addMerchantManage(@PathVariable long merchantId, @PathVariable long manageId) {
-        merchantService.addMerchant(manageId, merchantId);
+//        merchantService.addMerchant(manageId, merchantId);
+        throw new NoSuchMethodError("尚未实现，缺少必要的权限字段");
     }
 
     /**

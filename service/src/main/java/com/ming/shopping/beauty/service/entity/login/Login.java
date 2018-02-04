@@ -166,6 +166,7 @@ public class Login implements UserDetails, CrudFriendly<Long> {
     private boolean delete;
     /**
      * 是否是个超级管理员
+     * 是否是一个平台管理员 取决于它是否具备{@link #rootLevel}的权限，这个值毫无意义
      */
     private boolean manageable;
     /**

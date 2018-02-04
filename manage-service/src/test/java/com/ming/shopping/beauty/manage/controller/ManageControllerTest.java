@@ -2,8 +2,6 @@ package com.ming.shopping.beauty.manage.controller;
 
 import com.ming.shopping.beauty.manage.ManageConfigTest;
 import com.ming.shopping.beauty.service.entity.login.Login;
-import com.ming.shopping.beauty.service.entity.login.Merchant;
-import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import com.ming.shopping.beauty.service.model.definition.ManagerModel;
 import com.ming.shopping.beauty.service.model.request.LoginOrRegisterBody;
@@ -21,7 +19,6 @@ import org.springframework.web.util.NestedServletException;
 
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -36,6 +33,7 @@ public class ManageControllerTest extends ManageConfigTest {
 
     @Autowired
     private LoginRepository loginRepository;
+
     /**
      * 非微信环境无法工作
      */
@@ -145,6 +143,19 @@ public class ManageControllerTest extends ManageConfigTest {
                 .andExpect(status().isForbidden());
 
         mockMvc.perform(get(manageLoginResult + "/" + requestId).session(desktopSession)).andExpect(status().isNoContent());
+    }
+
+    /**
+     * 测试管理流程
+     */
+    @Test
+    public void manageIt() throws Exception {
+        Login root = mockRoot();
+        updateAllRunWith(root);
+        // 查下管理员的数量
+        mockMvc.perform(
+                get("/manage")
+        ).andDo(print());
     }
 /*
     @Test

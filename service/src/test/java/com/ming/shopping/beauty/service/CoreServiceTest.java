@@ -224,8 +224,11 @@ public abstract class CoreServiceTest extends SpringWebTest {
      */
     protected Merchant mockMerchant() throws Exception {
         Login login = mockLogin();
-        return merchantService.addMerchant(login.getId(), randomChinese(5)
-                , randomMobile(), randomChinese(3), null);
+        Merchant merchant = new Merchant();
+        merchant.setName(randomChinese(5));
+        merchant.setContact(randomChinese(3));
+        merchant.setTelephone(randomMobile());
+        return merchantService.addMerchant(login.getId(), merchant);
     }
 
     protected Login mockRoot() throws Exception {
@@ -240,8 +243,7 @@ public abstract class CoreServiceTest extends SpringWebTest {
      * @return
      */
     protected Merchant mockMerchantManager(long merchantId) throws Exception {
-        Login login = mockLogin();
-        return merchantService.addMerchant(login.getId(), merchantId);
+        throw new NoSuchMethodError("缺乏传入的权限字段，无法给一个商户创建管理员");
     }
 
     /**
