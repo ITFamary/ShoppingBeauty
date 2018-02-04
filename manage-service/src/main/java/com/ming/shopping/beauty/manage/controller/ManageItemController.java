@@ -26,9 +26,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Order;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -43,7 +54,8 @@ import java.util.Map;
  */
 @RequestMapping("/item")
 @Controller
-@PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
+@RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
+@PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_READ + "','" + Login.ROLE_PLATFORM_READ + "')")
 public class ManageItemController extends AbstractCrudController<Item, Long> {
 
     @Autowired
@@ -55,13 +67,13 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
 
     @Override
     @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
-    @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ROOT + "')")
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_READ + "','" + Login.ROLE_PLATFORM_READ + "')")
     public RowDefinition<Item> list(HttpServletRequest request) {
         return super.list(request);
     }
 
     /**
-     * 添加项目
+     * 添加项目，只有root或者具备商户项目权限的人
      *
      * @param item      项目
      * @param otherData 其他信息
@@ -70,7 +82,7 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
     @PostMapping
     @Override
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ROOT + "')")
+    @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ITEM + "')")
     public ResponseEntity addOne(@RequestBody Item item, @RequestBody Map<String, Object> otherData) throws URISyntaxException {
         final String param = "merchantId";
 
@@ -102,8 +114,9 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
      */
     @PutMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ROOT + "')")
+    @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ITEM + "')")
     public void updateItem(@RequestBody Item item, @RequestBody Map<String, Object> otherData) throws URISyntaxException {
+        // TODO 并非什么都可以改
         addOne(item, otherData);
     }
 
@@ -115,7 +128,7 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
      */
     @GetMapping("/{itemId}")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ROOT + "')")
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_READ + "','" + Login.ROLE_PLATFORM_READ + "')")
     @Override
     public RowDefinition<Item> getOne(@PathVariable(value = "itemId", required = true) Long id) {
         return new RowDefinition<Item>() {
@@ -168,7 +181,7 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
      * @param auditStatus 审核的状态以及备注
      */
     @PutMapping("/{itemId}/auditStatus")
-    @PreAuthorize("hasAnyRole('ROOT')")
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_PLATFORM_AUDIT_ITEM + "')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void setAuditStatus(@PathVariable("itemId") long itemId, @RequestBody Map<String, String> auditStatus) {
         if (auditStatus.get("status") != null && auditStatus.get("comment") != null) {
@@ -187,7 +200,7 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
      */
     @PutMapping("/{itemId}/commit")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ROOT + "')")
+    @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ITEM + "')")
     public void commitItem(@PathVariable("itemId") long itemId, @RequestBody Map<String, String> auditStatus) {
         if (auditStatus.get("status") != null) {
             itemService.auditItem(itemId, AuditStatus.valueOf(auditStatus.get("status")),
@@ -205,7 +218,7 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
      */
     @PutMapping("/enabled")
     @ResponseBody
-    @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ROOT + "')")
+    @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ITEM + "','" + Login.ROLE_PLATFORM_AUDIT_ITEM + "')")
     public ApiResult enabled(@RequestBody Map<String, Object> putData) {
         final String param = "enabled";
         final String items = "items";
@@ -236,12 +249,13 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
 
     /**
      * 项目批量推荐/取消推荐
+     * TODO: 讲道理商户应该改不了的吧……
      *
      * @param putData
      */
     @PutMapping("/recommended")
     @ResponseBody
-    @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ROOT + "')")
+    @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_PLATFORM_AUDIT_ITEM + "','" + Login.ROLE_MERCHANT_ITEM + "')")
     public ApiResult recommended(@RequestBody Map<String, Object> putData) {
         final String param = "recommended";
         final String items = "items";

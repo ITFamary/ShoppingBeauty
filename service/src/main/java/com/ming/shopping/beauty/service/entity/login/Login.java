@@ -11,11 +11,24 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.CollectionUtils;
 
-import javax.persistence.*;
-import javax.persistence.criteria.From;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToOne;
+import javax.persistence.Transient;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -34,7 +47,26 @@ public class Login implements UserDetails, CrudFriendly<Long> {
      * 商户超管及操作员
      */
     public static final String ROLE_MERCHANT_ROOT = "MERCHANT_ROOT";
-    public static final String ROLE_MERCHANT_OPERATOR = "MERCHANT_OPERATOR";
+    /**
+     * 商户可以管理操作员的权限
+     */
+    public static final String ROLE_MERCHANT_MANAGE = "MERCHANT_MANAGE";
+    /**
+     * 商户读取信息权限
+     */
+    public static final String ROLE_MERCHANT_READ = "MERCHANT_READ";
+    /**
+     * 商户可以管理项目的权限
+     */
+    public static final String ROLE_MERCHANT_ITEM = "MERCHANT_ITEM";
+    /**
+     * 商户可以管理门店的权限
+     */
+    public static final String ROLE_MERCHANT_STORE = "MERCHANT_STORE";
+    /**
+     * 商户可以结算的权限
+     */
+    public static final String ROLE_MERCHANT_SETTLEMENT = "MERCHANT_SETTLEMENT";
     /**
      * 门店超管及操作员
      */
@@ -44,20 +76,29 @@ public class Login implements UserDetails, CrudFriendly<Long> {
     /**
      * 审核项目
      */
-    public static final String ROLE_AUDIT_ITEM = "AUDIT_ITEM";
-    public static final String ROLE_MANAGE_ITEM = "MANAGE_ITEM";
+    public static final String ROLE_PLATFORM_AUDIT_ITEM = "AUDIT_ITEM";
+    /**
+     * 管理商户的权限
+     */
+    public static final String ROLE_PLATFORM_MERCHANT = "PLATFORM_MERCHANT";
     /**
      * 结算
      */
-    public static final String ROLE_ROOT_SETTLEMENT = "ROOT_SETTLEMENT";
-    public static final String ROLE_MERCHANT_SETTLEMENT = "MERCHANT_SETTLEMENT";
+    public static final String ROLE_PLATFORM_SETTLEMENT = "PLATFORM_SETTLEMENT";
+    /**
+     * 平台管理员都具备的权限
+     */
+    public static final String ROLE_PLATFORM_READ = "PLATFORM_READ";
+
     /**
      * 平台管理员有哪些角色
      */
     public static final List<ManageLevel> rootLevel = Arrays.asList(
             ManageLevel.root
+            , ManageLevel.rootGeneral
             , ManageLevel.rootSettlementManager
             , ManageLevel.rootItemManager
+            , ManageLevel.rootMerchantManager
     );
     /**
      * 商户操作员有哪些角色
@@ -128,6 +169,11 @@ public class Login implements UserDetails, CrudFriendly<Long> {
      * 是否是个超级管理员
      */
     private boolean manageable;
+    /**
+     * 用户历史消费总额
+     */
+    @Transient
+    private BigDecimal consumption;
 
     public static Collection<? extends GrantedAuthority> getGrantedAuthorities(Set<ManageLevel> levelSet) {
         if (CollectionUtils.isEmpty(levelSet)) {
@@ -177,12 +223,6 @@ public class Login implements UserDetails, CrudFriendly<Long> {
         }
         levelSet.addAll(Arrays.asList(manageLevels));
     }
-
-    /**
-     * 用户历史消费总额
-     */
-    @Transient
-    private BigDecimal consumption;
 
 
 }
