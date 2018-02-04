@@ -25,7 +25,6 @@
     <Parameter name="shopping.mobile.url" value="http://front.staging.sb.lmjia.cn/"/>
     <Parameter name="shopping.desktop.url" value="http://manager.staging.sb.lmjia.cn/"/>
 
-
     <!--微信相关-->
     <Parameter name="huotao.weixin.appId" value="wx198ba167229080c1"/>
     <Parameter name="huotao.weixin.appSecret" value="e3b05e7dc329c53dc781469ec1784792"/>

@@ -128,10 +128,10 @@ public class WechatInitService {
 //                    , createMenu("分享", systemService.toUrl(SystemService.wechatShareUri))
 //                    , createMenu("我的", systemService.toUrl(SystemService.wechatMyURi)));
 
-            final Menu menu3 = createMenu("锋尚推荐", systemService.toMobileUrl("/"));
+            final Menu menu3 = createMenu("锋尚推荐", systemService.toMobileUrl("/items"));
             final Menu menu2 = createMenu("会员专区",
-                    createMenu("个人中心", systemService.toMobileUrl("/"))
-                    , createMenu("会员卡", systemService.toMobileUrl("/"))
+                    createMenu("个人中心", systemService.toMobileUrl("/personal"))
+                    , createMenu("会员卡", systemService.toMobileUrl("/vip"))
             );
 
 
