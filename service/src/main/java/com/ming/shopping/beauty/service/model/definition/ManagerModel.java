@@ -1,24 +1,16 @@
 package com.ming.shopping.beauty.service.model.definition;
 
 import com.ming.shopping.beauty.service.entity.login.Login;
-import com.ming.shopping.beauty.service.entity.login.Login_;
-import com.ming.shopping.beauty.service.entity.login.Merchant;
-import com.ming.shopping.beauty.service.entity.login.Merchant_;
-import com.ming.shopping.beauty.service.entity.login.Store;
-import com.ming.shopping.beauty.service.entity.login.Store_;
 import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import lombok.Getter;
 import me.jiangcai.crud.row.FieldDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
-import me.jiangcai.crud.row.field.Fields;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.security.core.GrantedAuthority;
 
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.JoinType;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -33,59 +25,87 @@ public class ManagerModel implements DefinitionModel<Login> {
     public ManagerModel(ConversionService conversionService) {
         super();
         definitions = Arrays.asList(
-                Fields.asBasic("id")
+                FieldBuilder.asName(Login.class, "id")
+                        .addSelect(loginRoot -> loginRoot)
+                        .addFormat((data, type) -> {
+                            Login login = (Login) data;
+                            return login.getId();
+                        })
+                        .addEntityFunction(Function.identity())
+                        .build()
                 , FieldBuilder.asName(Login.class, "username")
-                        .addSelect(loginRoot -> loginRoot.get(Login_.loginName))
+                        .addSelect(loginRoot -> null)
+                        .addFormat((data, type) -> {
+                            Login login = (Login) data;
+                            return login.getUsername();
+                        })
+                        .addEntityFunction(Function.identity())
                         .build()
                 , FieldBuilder.asName(Login.class, "nickname")
-                        .addSelect(loginRoot -> loginRoot.get(Login_.nickName))
-                        .build()
-                , Fields.asBasic("enabled")
-                , FieldBuilder.asName(Login.class, "authorities")
-                        .addSelect(loginRoot -> loginRoot.get(Login_.levelSet))
+                        .addSelect(loginRoot -> null)
                         .addFormat((data, type) -> {
-                            if (data == null)
+                            Login login = (Login) data;
+                            return login.getNickName();
+                        })
+                        .addEntityFunction(Function.identity())
+                        .build()
+                , FieldBuilder.asName(Login.class, "enabled")
+                        .addSelect(loginRoot -> null)
+                        .addFormat((data, type) -> {
+                            Login login = (Login) data;
+                            return login.isEnabled();
+                        })
+                        .addEntityFunction(Function.identity())
+                        .build()
+                , FieldBuilder.asName(Login.class, "authorities")
+                        .addSelect(loginRoot -> null)
+                        .addFormat((data, type) -> {
+                            Login login = (Login) data;
+                            if (login.getLevelSet() == null)
                                 return null;
-                            Set<ManageLevel> levelSet = (Set<ManageLevel>) data;
-                            return Login.getGrantedAuthorities(levelSet).stream()
+                            return Login.getGrantedAuthorities(login.getLevelSet()).stream()
                                     .map(GrantedAuthority::getAuthority)
                                     .collect(Collectors.toSet());
                         })
+                        .addEntityFunction(Function.identity())
                         .build()
                 , FieldBuilder.asName(Login.class, "level")
-                        .addSelect(loginRoot -> loginRoot.get(Login_.levelSet))
+                        .addSelect(loginRoot -> null)
                         .addFormat((data, type) -> {
-                            if (data == null)
+                            Login login = (Login) data;
+                            if (login.getLevelSet() == null)
                                 return null;
-                            Set<ManageLevel> levelSet = (Set<ManageLevel>) data;
-                            return levelSet.stream().map(ManageLevel::title).collect(Collectors.joining(","));
+                            return login.getLevelSet().stream().map(ManageLevel::title).collect(Collectors.joining(","));
                         })
+                        .addEntityFunction(Function.identity())
                         .build()
                 , FieldBuilder.asName(Login.class, "merchantId")
-                        .addBiSelect((loginRoot, cb)
-                                        -> {
-                                    final Join<Login, Merchant> merchantJoin = loginRoot.join(Login_.merchant, JoinType.LEFT);
-                                    return cb.selectCase(merchantJoin.get(Merchant_.manageable))
-                                            .when(true, merchantJoin.get(Merchant_.id))
-                                            .otherwise(merchantJoin.get(Merchant_.merchant).get(Merchant_.id));
-                                }
-                        )
-                        .addEntityFunction(login -> login.getMerchant() == null ? null : login.getMerchant().getMerchantId())
+                        .addSelect(loginRoot -> null)
+                        .addFormat((data, type) -> {
+                            Login login = (Login) data;
+                            if (login.getMerchant() == null)
+                                return null;
+                            return login.getMerchant().getId();
+                        })
+                        .addEntityFunction(Function.identity())
                         .build()
                 , FieldBuilder.asName(Login.class, "storeId")
-                        .addBiSelect((loginRoot, cb)
-                                        -> {
-                                    final Join<Login, Store> storeJoin = loginRoot.join(Login_.store, JoinType.LEFT);
-                                    return cb.selectCase(storeJoin.get(Store_.manageable))
-                                            .when(true, storeJoin.get(Store_.id))
-                                            .otherwise(storeJoin.get(Store_.store).get(Store_.id));
-                                }
-                        )
-                        .addEntityFunction(login -> login.getStore() == null ? null : login.getStore().getStoreId())
+                        .addSelect(loginRoot -> null)
+                        .addFormat((data, type) -> {
+                            Login login = (Login) data;
+                            if (login.getStore() == null)
+                                return null;
+                            return login.getStore().getId();
+                        })
+                        .addEntityFunction(Function.identity())
                         .build()
                 , FieldBuilder.asName(Login.class, "createTime")
-                        .addSelect(loginRoot -> loginRoot.get(Login_.createTime))
-                        .addFormat((data, type) -> conversionService.convert(data, String.class))
+                        .addSelect(loginRoot -> null)
+                        .addFormat((data, type) -> {
+                            Login login = (Login) data;
+                            return conversionService.convert(login.getCreateTime(), String.class);
+                        })
+                        .addEntityFunction(Function.identity())
                         .build()
         );
     }
