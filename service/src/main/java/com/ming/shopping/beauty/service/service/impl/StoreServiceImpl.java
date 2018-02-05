@@ -14,12 +14,8 @@ import com.ming.shopping.beauty.service.service.MerchantService;
 import com.ming.shopping.beauty.service.service.StoreService;
 import me.jiangcai.jpa.entity.support.Address;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 
@@ -52,7 +48,6 @@ public class StoreServiceImpl implements StoreService {
         store.setTelephone(telephone);
         store.setAddress(address);
         store.setContact(contact);
-        store.setManageable(true);
         store.setCreateTime(LocalDateTime.now());
         storeRepository.save(store);
         login.setStore(store);
@@ -122,7 +117,7 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public Store findStore(long storeId) {
         Store store = storeRepository.findOne((root, cq, cb) ->
-                cb.and(cb.equal(root.get(Store_.id), storeId), cb.isTrue(root.get(Store_.manageable)))
+                cb.and(cb.equal(root.get(Store_.id), storeId), cb.isNull(root.get(Store_.store)))
         );
         if (store == null) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.STORE_NOT_EXIST));

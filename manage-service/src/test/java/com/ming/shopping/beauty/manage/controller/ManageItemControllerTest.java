@@ -213,7 +213,7 @@ public class ManageItemControllerTest extends ManageConfigTest {
         items.add(item.getId());
         putData.put("items", items);
         putData.put("enabled", true);
-        mockMvc.perform(put(BASE_URL + "/enabled")
+        mockMvc.perform(put("/itemUpdater/enabled")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(putData)))
                 .andDo(print())
@@ -222,7 +222,7 @@ public class ManageItemControllerTest extends ManageConfigTest {
         assertThat(one.isEnabled()).isTrue();
 
         putData.put("enabled", false);
-        mockMvc.perform(put(BASE_URL + "/enabled")
+        mockMvc.perform(put("/itemUpdater/enabled")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(putData)))
                 .andDo(print())
@@ -235,7 +235,7 @@ public class ManageItemControllerTest extends ManageConfigTest {
         items.add(item1.getId());
         items.add(item2.getId());
         putData.put("enabled", true);
-        mockMvc.perform(put(BASE_URL + "/enabled")
+        mockMvc.perform(put("/itemUpdater/enabled")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(putData)))
                 .andDo(print())
@@ -245,7 +245,7 @@ public class ManageItemControllerTest extends ManageConfigTest {
         assertThat(one1.isEnabled()).isTrue();
 
         putData.put("enabled", false);
-        mockMvc.perform(put(BASE_URL + "/enabled")
+        mockMvc.perform(put("/itemUpdater/enabled")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(putData)))
                 .andDo(print())
@@ -260,7 +260,7 @@ public class ManageItemControllerTest extends ManageConfigTest {
         items.add(item.getId());
         //推荐/取消推荐
         putData.put("recommended", true);
-        mockMvc.perform(put(BASE_URL + "/recommended")
+        mockMvc.perform(put("/itemUpdater/recommended")
                 .content(objectMapper.writeValueAsString(putData))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -271,7 +271,7 @@ public class ManageItemControllerTest extends ManageConfigTest {
 
         //取消推荐
         putData.put("recommended", false);
-        mockMvc.perform(put(BASE_URL + "/recommended")
+        mockMvc.perform(put("/itemUpdater/recommended")
                 .content(objectMapper.writeValueAsString(putData))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -284,7 +284,7 @@ public class ManageItemControllerTest extends ManageConfigTest {
         items.add(item1.getId());
         items.add(item2.getId());
         putData.put("recommended", true);
-        mockMvc.perform(put(BASE_URL + "/recommended")
+        mockMvc.perform(put("/itemUpdater/recommended")
                 .content(objectMapper.writeValueAsString(putData))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -293,7 +293,7 @@ public class ManageItemControllerTest extends ManageConfigTest {
         assertThat(one5.isRecommended()).isTrue();
 
         putData.put("recommended", false);
-        mockMvc.perform(put(BASE_URL + "/recommended")
+        mockMvc.perform(put("/itemUpdater/recommended")
                 .content(objectMapper.writeValueAsString(putData))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())

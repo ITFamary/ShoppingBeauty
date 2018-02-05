@@ -58,11 +58,6 @@ public class Merchant implements CrudFriendly<Long> {
      */
     private Address address;
     /**
-     * 是否是个超级管理员
-     */
-    // TODO: 2018/1/31 移除，直接通过merchant判断是否是超级管理员
-    private boolean manageable;
-    /**
      * 冻结或删除都应设置为 false
      */
     private boolean enabled = true;
@@ -83,8 +78,16 @@ public class Merchant implements CrudFriendly<Long> {
      * @return
      */
     public boolean isMerchantUsable() {
-        return (manageable && enabled)
-                || (!manageable && merchant.enabled);
+        return (isManageable() && enabled)
+                || (!isManageable() && merchant.enabled);
+    }
+
+    /**
+     * 是否是个商户
+     * @return
+     */
+    public boolean isManageable(){
+        return merchant == null;
     }
 
     /**
@@ -93,7 +96,7 @@ public class Merchant implements CrudFriendly<Long> {
      * @return
      */
     public long getMerchantId() {
-        return manageable ? id : merchant.getId();
+        return isManageable() ? id : merchant.getId();
     }
 
     @Override
@@ -102,6 +105,6 @@ public class Merchant implements CrudFriendly<Long> {
         if (!(o instanceof Merchant)) return false;
         Merchant merchant = (Merchant) o;
         return Objects.equals(id, merchant.id) &&
-                Objects.equals(manageable, merchant.isMerchantUsable());
+                Objects.equals(isManageable(), merchant.isMerchantUsable());
     }
 }

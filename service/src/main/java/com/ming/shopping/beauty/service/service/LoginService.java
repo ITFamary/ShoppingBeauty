@@ -42,6 +42,8 @@ public interface LoginService extends UserDetailsService {
      */
     Login asWechat(String openId);
 
+    Login newEmpty(String openId);
+
     /**
      * 查找角色，并校验角色是否可用，若不可用则抛出异常
      *

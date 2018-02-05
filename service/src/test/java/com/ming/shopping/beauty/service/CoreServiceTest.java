@@ -229,7 +229,7 @@ public abstract class CoreServiceTest extends SpringWebTest {
         merchant.setName(randomChinese(5));
         merchant.setContact(randomChinese(3));
         merchant.setTelephone(randomMobile());
-        return merchantService.addMerchant(login.getId(), merchant);
+        return merchantService.addMerchant(login.getId(), merchant, ManageLevel.merchantRoot);
     }
 
     protected Login mockRoot() throws Exception {
@@ -245,11 +245,38 @@ public abstract class CoreServiceTest extends SpringWebTest {
     /**
      * 生成一个商户管理员
      *
-     * @param merchantId 所属商户
+     * @param merchant     所属商户
+     * @param manageLevels 操作员级别
      * @return
      */
-    protected Merchant mockMerchantManager(long merchantId) throws Exception {
-        throw new NoSuchMethodError("缺乏传入的权限字段，无法给一个商户创建管理员");
+    protected Merchant mockMerchantManager(Merchant merchant, ManageLevel... manageLevels) throws Exception {
+        Login login = mockLogin();
+        return mockMerchantManager(login, merchant, manageLevels);
+    }
+
+    /**
+     * 设置某个角色为商户的操作员
+     *
+     * @param login 登录角色
+     * @param merchant 所属商户
+     * @param manageLevels 操作员级别
+     * @return
+     * @throws Exception
+     */
+    protected Merchant mockMerchantManager(Login login, Merchant merchant, ManageLevel... manageLevels) throws Exception {
+        if (allRunWith != null && (allRunWith.getLevelSet().contains(ManageLevel.root)
+                || allRunWith.getLevelSet().contains(ManageLevel.merchantRoot))) {
+            System.out.println(objectMapper.writeValueAsString(manageLevels));
+            mockMvc.perform(post("/merchant/" + merchant.getId() + "/manage/" + login.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"level\":" + objectMapper.writeValueAsString(manageLevels) + "}"))
+                    .andExpect(status().isCreated());
+            return merchantService.findOne(login.getId());
+        } else {
+            Merchant merchantManage = new Merchant();
+            merchantManage.setMerchant(merchant);
+            return merchantService.addMerchant(login.getId(), merchantManage, manageLevels);
+        }
     }
 
     /**

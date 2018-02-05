@@ -109,19 +109,42 @@ public class ClientIndexControllerTest extends ClientConfigTest {
                 .andExpect(status().isOk());
 
         //换个方式登录
-        //在没登录的情况，随便请求一个接口，期望返回401
+        //在没登录的情况，随便请求一个接口，期望返回4012
         MockHttpSession mockSession = (MockHttpSession) mockMvc.perform(makeWechat(get("/user")))
-                .andExpect(status().is(HttpStatusCustom.SC_UNAUTHORIZED))
+                .andExpect(status().is(HttpStatusCustom.SC_NO_OPENID))
                 .andReturn().getRequest().getSession();
 
         //调用 toLogin 接口，期望返回200
-        mockSession = (MockHttpSession) mockMvc.perform(makeWechat(get("/toLogin").session(mockSession)))
-                .andExpect(status().isOk())
+        mockSession = (MockHttpSession) mockMvc.perform(makeWechat(get(SystemService.AUTH)
+                .session(mockSession)
+                .param("redirectUrl",randomHttpURL())))
+                .andExpect(status().isFound())
                 .andReturn().getRequest().getSession();
 
         //再次请求 /user，期望返回200
         mockMvc.perform(makeWechat(get("/user").session(mockSession)))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testWithEmptyLogin() throws Exception {
+        nextCurrentWechatAccount();
+        //在没登录的情况，随便请求一个接口，期望返回4012
+        MockHttpSession mockSession = (MockHttpSession) mockMvc.perform(makeWechat(get("/user")))
+                .andExpect(status().is(HttpStatusCustom.SC_NO_OPENID))
+                .andReturn().getRequest().getSession();
+
+        //调用 toLogin 接口，期望返回200
+        mockSession = (MockHttpSession) mockMvc.perform(makeWechat(get(SystemService.AUTH)
+                .session(mockSession)
+                .param("redirectUrl",randomHttpURL())))
+                .andExpect(status().isFound())
+                .andReturn().getRequest().getSession();
+
+        //再次请求 /user，期望返回没有权限
+        mockMvc.perform(makeWechat(get("/user").session(mockSession)))
+                .andDo(print())
+                .andExpect(status().is(HttpStatusCustom.SC_LOGIN_NOT_EXIST));
 
     }
 }
