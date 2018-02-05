@@ -74,7 +74,7 @@ public class LoginServiceImpl implements LoginService {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.OPEN_ID_ERROR));
         }
         Login login = asWechat(openId);
-        if (login != null) {
+        if (login != null && !StringUtils.isEmpty(login.getUsername())) {
             if (login.getUsername().equals(mobile)) {
                 return login;
             } else {
@@ -92,7 +92,9 @@ public class LoginServiceImpl implements LoginService {
         if (StringUtils.isEmpty(familyName) || gender == null) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.MESSAGE_NOT_FULL));
         }
-        login = new Login();
+        if (login == null) {
+            login = new Login();
+        }
         login.setLoginName(mobile);
         login.setWechatUser(standardWeixinUserRepository.findByOpenId(openId));
         login.setCreateTime(LocalDateTime.now());
@@ -107,6 +109,7 @@ public class LoginServiceImpl implements LoginService {
             //这里就不判断推荐人存不存在，可不可用了
             user.setGuideUser(loginRepository.findOne(guideUserId));
         }
+        login.addLevel(ManageLevel.user);
         userRepository.saveAndFlush(user);
         if (!StringUtils.isEmpty(cardNo)) {
             //使用这张充值卡，如果不存在或者已经用过了，就抛出异常
@@ -118,10 +121,21 @@ public class LoginServiceImpl implements LoginService {
 
     @Override
     public Login asWechat(String openId) {
-        // TODO: 2018/1/5 openId -》 _.openId
         return loginRepository.findOne((root, query, cb)
                 -> cb.equal(root.get(Login_.wechatUser).get("openId"), openId)
         );
+    }
+
+    @Override
+    @Transactional(rollbackFor = RuntimeException.class)
+    public Login newEmpty(String openId) {
+        Login login = asWechat(openId);
+        if (login == null) {
+            login = new Login();
+            login.setWechatUser(standardWeixinUserRepository.findByOpenId(openId));
+            loginRepository.save(login);
+        }
+        return login;
     }
 
     @Override

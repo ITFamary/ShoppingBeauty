@@ -61,6 +61,10 @@ public enum ManageLevel {
      * 门店代表
      */
     represent("门店代表", Login.ROLE_STORE_REPRESENT),
+    /**
+     * 用户
+     */
+    user("用户", "USER"),
     //将来添加角色,原数据不能删除,只能在这之后向下加.
     ;
     private final String[] roles;

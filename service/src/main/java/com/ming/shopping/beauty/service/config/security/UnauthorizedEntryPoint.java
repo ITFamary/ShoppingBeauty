@@ -1,5 +1,6 @@
 package com.ming.shopping.beauty.service.config.security;
 
+import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -16,6 +17,7 @@ import java.io.IOException;
 public class UnauthorizedEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+        //没登录必定没授权
+        response.sendError(HttpStatusCustom.SC_NO_OPENID);
     }
 }
