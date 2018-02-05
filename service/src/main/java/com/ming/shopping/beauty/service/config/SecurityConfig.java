@@ -6,6 +6,7 @@ import com.ming.shopping.beauty.service.service.SystemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -30,6 +31,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private LoginService loginService;
+    @Autowired
+    private Environment environment;
 
     @Autowired
     public void registerSharedAuthentication(AuthenticationManagerBuilder auth) throws Exception {
@@ -40,12 +43,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity web) throws Exception {
         super.configure(web);
 
-        web.ignoring()
+        WebSecurity.IgnoredRequestConfigurer configurer = web.ignoring()
                 .antMatchers("/_version")
                 // 微信校验
                 .antMatchers("/MP_verify_*.txt", "/**/favicon.ico", "/weixin/sdk/config")
                 // 微信事件
                 .antMatchers("/_weixin_event/");
+        if (environment.acceptsProfiles("staging", "test", "dev")) {
+            // 特定环境下 允许任意人对日志访问
+            configurer.antMatchers("/loggingConfig", "/loggingConfig/**");
+        }
     }
 
     @Override
