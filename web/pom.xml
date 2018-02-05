@@ -48,9 +48,10 @@
                 <version>0.23.0</version>
                 <configuration>
                     <verbose>true</verbose>
+                    <registry>registry.cn-shanghai.aliyuncs.com</registry>
                     <images>
                         <image>
-                            <name>shopping-beauty-server</name>
+                            <name>mingshz/shopping-beauty-server</name>
                             <build>
                                 <from>registry.cn-shanghai.aliyuncs.com/mingshz/single-app-tomcat</from>
                                 <tags>
