@@ -29,16 +29,15 @@ public class MerchantServiceImpl implements MerchantService {
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
-    public Merchant addMerchant(long loginId, Merchant merchant) throws ApiResultException {
+    public Merchant addMerchant(long loginId, Merchant merchant, ManageLevel... manageLevels) throws ApiResultException {
         Login login = loginService.findOne(loginId);
         if (login.getMerchant() != null) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.LOGIN_MERCHANT_EXIST));
         }
         login.setMerchant(merchant);
-        login.addLevel(ManageLevel.merchantRoot);
+        login.addLevel(manageLevels);
         merchant.setId(login.getId());
         merchant.setLogin(login);
-        merchant.setManageable(true);
         merchant.setCreateTime(LocalDateTime.now());
         return merchantRepository.save(merchant);
     }
@@ -83,7 +82,7 @@ public class MerchantServiceImpl implements MerchantService {
     @Override
     public Merchant findMerchant(long merchantId) throws ApiResultException {
         Merchant merchant = merchantRepository.findOne((root, cq, cb) ->
-                cb.and(cb.equal(root.get(Merchant_.id), merchantId), cb.isTrue(root.get(Merchant_.manageable))));
+                cb.and(cb.equal(root.get(Merchant_.id), merchantId), cb.isNull(root.get(Merchant_.merchant))));
         if (merchant == null) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.MERCHANT_NOT_EXIST));
         }

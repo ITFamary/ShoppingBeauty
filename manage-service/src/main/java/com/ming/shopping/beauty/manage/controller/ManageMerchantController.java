@@ -14,12 +14,8 @@ import me.jiangcai.crud.controller.AbstractCrudController;
 import me.jiangcai.crud.row.*;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
-import me.jiangcai.crud.utils.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.NativeWebRequest;
 
 import javax.persistence.criteria.*;
 import javax.servlet.http.HttpServletRequest;
@@ -39,8 +34,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -94,7 +87,7 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "请求数据"), null));
         }
-        Merchant merchant = merchantService.addMerchant(Long.parseLong(otherData.get(param).toString()), postData);
+        Merchant merchant = merchantService.addMerchant(Long.parseLong(otherData.get(param).toString()), postData, ManageLevel.merchantRoot);
         return ResponseEntity
                 .created(new URI("/merchant/" + merchant.getId()))
                 .build();
@@ -107,7 +100,7 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
      */
     @PutMapping
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
-    @Transactional
+    @Transactional(rollbackFor = RuntimeException.class)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateMerchant(@AuthenticationPrincipal Login login, @RequestBody Merchant postData) {
         if (postData.getId() == null) {
@@ -236,9 +229,32 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
     @PostMapping("/{merchantId}/manage/{manageId}")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
     @ResponseStatus(HttpStatus.CREATED)
-    public void addMerchantManage(@PathVariable long merchantId, @PathVariable long manageId) {
-//        merchantService.addMerchant(manageId, merchantId);
-        throw new NoSuchMethodError("尚未实现，缺少必要的权限字段");
+    public void addMerchantManage(@PathVariable long merchantId, @PathVariable long manageId
+            , @RequestBody Map<String, Object> postData) {
+        String param = "level";
+        if (!postData.containsKey(param)) {
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.NEED_LEVEL));
+        }
+        Object level = postData.get(param);
+        Set<ManageLevel> manageLevelSet = new HashSet<>();
+        if (level instanceof Collection) {
+            ((Collection) level).forEach(p->manageLevelSet.add(getManageLevel(p.toString())));
+        } else {
+            manageLevelSet.add(getManageLevel(level.toString()));
+        }
+        //找这个商户
+        Merchant merchant = merchantService.findMerchant(merchantId);
+        Merchant merchantManage = new Merchant();
+        merchantManage.setMerchant(merchant);
+        merchantService.addMerchant(manageId, merchantManage, manageLevelSet.toArray(new ManageLevel[manageLevelSet.size()]));
+    }
+
+    private ManageLevel getManageLevel(String level) {
+        ManageLevel manageLevel = conversionService.convert(level, ManageLevel.class);
+        if (manageLevel == null) {
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.LEVEL_NOT_EXIST));
+        }
+        return manageLevel;
     }
 
     /**
@@ -296,7 +312,7 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
     protected Specification<Merchant> listSpecification(Map<String, Object> queryData) {
         return (root, cq, cb) -> {
             List<Predicate> conditionList = new ArrayList<>();
-            conditionList.add(cb.isTrue(root.get(Merchant_.manageable)));
+            conditionList.add(cb.isNull(root.get(Merchant_.merchant)));
             if (queryData.get("username") != null) {
                 conditionList.add(cb.equal(root.join(Merchant_.login).get(Login_.loginName), queryData.get("username")));
             }
@@ -382,7 +398,7 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
     protected Specification<Merchant> listSpecificationForManage(long merchantId) {
         return (root, cq, cb) ->
                 cb.and(
-                        cb.isFalse(root.get(Merchant_.manageable))
+                        cb.isNotNull(root.get(Merchant_.merchant))
                         , cb.equal(root.join(Merchant_.merchant, JoinType.LEFT).get(Merchant_.id), merchantId)
                 );
     }

@@ -44,7 +44,7 @@ import static com.ming.shopping.beauty.service.utils.Constant.DATE_COLUMN_DEFINI
 @Getter
 public class Login implements UserDetails, CrudFriendly<Long> {
     /**
-     * 商户超管及操作员
+     * 商户超管
      */
     public static final String ROLE_MERCHANT_ROOT = "MERCHANT_ROOT";
     /**

@@ -1,11 +1,8 @@
 package com.ming.shopping.beauty.service.service;
 
 import com.ming.shopping.beauty.service.entity.login.Merchant;
+import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import me.jiangcai.jpa.entity.support.Address;
-import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
 
@@ -15,14 +12,16 @@ import org.springframework.transaction.annotation.Transactional;
 public interface MerchantService {
 
     /**
-     * 添加商户，并且将loginId设置为商户主
-     * @param loginId 一个可登录的角色
-     * @param merchant 商户基本信息，包含名称、电话、联系人、地址
+     * 添加商户或者商户操作员，并且将loginId设置为商户主
+     *
+     * @param loginId      一个可登录的角色
+     * @param merchant     商户基本信息，包含名称、电话、联系人、地址
+     * @param manageLevels login等级
      * @return
      * @throws ApiResultException
      */
     @Transactional(rollbackFor = RuntimeException.class)
-    Merchant addMerchant(long loginId,Merchant merchant) throws ApiResultException;
+    Merchant addMerchant(long loginId, Merchant merchant, ManageLevel... manageLevels) throws ApiResultException;
 
     /**
      * 冻结或启用商户
