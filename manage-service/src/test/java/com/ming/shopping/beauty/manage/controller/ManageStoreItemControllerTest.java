@@ -230,7 +230,7 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
         map.put(param, false);
         map.put(items, longs);
 
-        mockMvc.perform(put("/item/enabled")
+        mockMvc.perform(put("/itemUpdater/enabled")
                 .content(objectMapper.writeValueAsString(map))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
