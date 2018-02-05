@@ -11,7 +11,7 @@ public interface SystemService {
     /**
      * 一些请求地址
      */
-    String LOGIN = "/register";
+    String LOGIN = "/auth";
     String LOGINOUT = "/logout";
     String TO_LOGIN = "/toLogin";
     String AUTH = "/auth";

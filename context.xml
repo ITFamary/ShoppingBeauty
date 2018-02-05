@@ -28,8 +28,8 @@
     <!--微信相关-->
     <Parameter name="huotao.weixin.appId" value="wx198ba167229080c1"/>
     <Parameter name="huotao.weixin.appSecret" value="e3b05e7dc329c53dc781469ec1784792"/>
-    <Parameter name="huotao.weixin.mchId" value="11"/>
-    <Parameter name="huotao.weixin.apiKey" value="11"/>
+    <Parameter name="huotao.weixin.mchId" value="1498570872"/>
+    <Parameter name="huotao.weixin.apiKey" value="1sapeoif78366vbcxbzjs8ew8182838d"/>
     <Parameter name="huotao.weixin.url" value="11"/>
     <Parameter name="huotao.weixin.token" value="11"/>
     <!--创蓝？ 可以通过com.huotu.notice.supplier 调整为阿里云-->
