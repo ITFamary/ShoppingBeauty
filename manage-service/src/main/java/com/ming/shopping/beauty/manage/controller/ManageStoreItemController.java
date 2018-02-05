@@ -104,7 +104,7 @@ public class ManageStoreItemController extends AbstractCrudController<StoreItem,
      * @param putData 操作的信息
      * @return 成功失败的数量
      */
-    @PutMapping("/recommended")
+    @PutMapping("/storeItemUpdater/recommended")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_STORE + "','" + Login.ROLE_MERCHANT_ITEM + "','" + Login.ROLE_STORE_ROOT + "')")
     @ResponseBody
     public ApiResult batchRecommended(@RequestBody Map<String, Object> putData) {
@@ -136,7 +136,7 @@ public class ManageStoreItemController extends AbstractCrudController<StoreItem,
      * @param putData 操作的信息
      * @return 成功失败的数量
      */
-    @PutMapping("/enabled")
+    @PutMapping("/storeItemUpdater/enabled")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_STORE + "','" + Login.ROLE_MERCHANT_ITEM + "','" + Login.ROLE_STORE_ROOT + "')")
     @ResponseBody
     public ApiResult batchEnable(@RequestBody Map<String, Object> putData) {

@@ -216,7 +216,7 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
      *
      * @param putData 上下架
      */
-    @PutMapping("/enabled")
+    @PutMapping("/itemUpdater/enabled")
     @ResponseBody
     @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ITEM + "','" + Login.ROLE_PLATFORM_AUDIT_ITEM + "')")
     public ApiResult enabled(@RequestBody Map<String, Object> putData) {
@@ -253,7 +253,7 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
      *
      * @param putData
      */
-    @PutMapping("/recommended")
+    @PutMapping("/itemUpdater/recommended")
     @ResponseBody
     @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_PLATFORM_AUDIT_ITEM + "','" + Login.ROLE_MERCHANT_ITEM + "')")
     public ApiResult recommended(@RequestBody Map<String, Object> putData) {
