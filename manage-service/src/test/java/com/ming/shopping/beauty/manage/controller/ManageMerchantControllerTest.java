@@ -3,6 +3,7 @@ package com.ming.shopping.beauty.manage.controller;
 import com.ming.shopping.beauty.manage.ManageConfigTest;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Merchant;
+import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.model.request.NewMerchantBody;
 import com.ming.shopping.beauty.service.repository.MerchantRepository;
 import com.ming.shopping.beauty.service.service.LoginService;
@@ -147,11 +148,12 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
         //以商户身份运行
         updateAllRunWith(merchant.getLogin());
         //添加一个商户管理员
-        Merchant merchantManage = mockMerchantManager(merchant.getId());
+        Merchant merchantManage = mockMerchantManager(merchant, ManageLevel.merchantItemManager);
         //再来一个
-        Merchant merchantManage1 = mockMerchantManager(merchant.getId());
+        Merchant merchantManage1 = mockMerchantManager(merchant, ManageLevel.merchantItemManager, ManageLevel.merchantSettlementManager);
         MvcResult mvcResult = mockMvc.perform(get("/merchant/" + merchant.getId() + "/manage"))
                 .andExpect(status().isOk())
+                .andDo(print())
                 .andReturn();
         String contentAsString = mvcResult.getResponse().getContentAsString();
         List<Long> oldList = new ArrayList<>();
@@ -181,15 +183,15 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
         //要成为操作员的人
         Login willMerchantManage = mockLogin();
         //添加商户管理员
-        mockMvc.perform(post("/merchant/" + merchant.getId() + "/manage/" + willMerchantManage.getId()))
-                .andExpect(status().isCreated());
-        Merchant manage = merchantService.findOne(willMerchantManage.getId());
+
+        Merchant manage = mockMerchantManager(willMerchantManage, merchant, ManageLevel.merchantItemManager);
         assertThat(manage != null).isTrue();
         //禁用操作员
         boolean enable = false;
-        mockMvc.perform(put("/merchant/" + merchant.getId() + "/manage/" + willMerchantManage.getId()+"/enabled")
+        mockMvc.perform(put("/merchant/" + merchant.getId() + "/manage/" + willMerchantManage.getId() + "/enabled")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(enable)))
+                .andDo(print())
                 .andExpect(status().isNoContent());
         Login login = loginService.findOne(willMerchantManage.getId());
         Merchant merchantManage = login.getMerchant();
@@ -219,7 +221,7 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
     private void enableMerchant(long id) throws Exception {
         //现在启用商户.
         boolean enable = true;
-        mockMvc.perform(put("/merchant/" + id+"/enabled")
+        mockMvc.perform(put("/merchant/" + id + "/enabled")
                 .content(objectMapper.writeValueAsString(enable))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
@@ -228,7 +230,7 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
     private void freeMerchant(long id) throws Exception {
         //禁用商户
         boolean enable = false;
-        mockMvc.perform(put("/merchant/" + id+"/enabled")
+        mockMvc.perform(put("/merchant/" + id + "/enabled")
                 .content(objectMapper.writeValueAsString(enable))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());

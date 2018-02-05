@@ -1,6 +1,5 @@
 package com.ming.shopping.beauty.service.entity.login;
 
-import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import lombok.Getter;
 import lombok.Setter;
 import me.jiangcai.crud.CrudFriendly;
@@ -61,12 +60,6 @@ public class Store implements CrudFriendly<Long> {
      */
     private Address address;
 
-
-    /**
-     * 是否是个超级管理员
-     */
-    private boolean manageable;
-
     /**
      * 门店代表
      */
@@ -81,11 +74,20 @@ public class Store implements CrudFriendly<Long> {
     private boolean enabled = true;
 
     /**
+     * 是否是个门店
+     *
+     * @return
+     */
+    public boolean isManageable() {
+        return store == null;
+    }
+
+    /**
      * 门店是否可用
      */
     public boolean isStoreUsable() {
-        return (manageable && enabled)
-                || (!manageable && store.enabled);
+        return (isManageable() && enabled)
+                || (!isManageable() && store.enabled);
     }
 
     /**
@@ -94,7 +96,7 @@ public class Store implements CrudFriendly<Long> {
      * @return
      */
     public long getStoreId() {
-        return manageable ? id : store.getId();
+        return isManageable() ? id : store.getId();
     }
 
     @Override
