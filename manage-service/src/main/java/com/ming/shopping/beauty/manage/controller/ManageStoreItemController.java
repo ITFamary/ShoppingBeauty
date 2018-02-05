@@ -21,7 +21,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Order;
@@ -42,7 +48,7 @@ import java.util.Map;
  */
 @Controller
 @RequestMapping("/storeItem")
-@PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
+@PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_READ + "','" + Login.ROLE_PLATFORM_READ + "','" + Login.ROLE_STORE_ROOT + "')")
 public class ManageStoreItemController extends AbstractCrudController<StoreItem, Long> {
 
     @Autowired
@@ -65,6 +71,7 @@ public class ManageStoreItemController extends AbstractCrudController<StoreItem,
      */
     @PostMapping
     @Override
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_STORE + "','" + Login.ROLE_MERCHANT_ITEM + "','" + Login.ROLE_STORE_ROOT + "')")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity addOne(@RequestBody StoreItem postData, @RequestBody Map<String, Object> otherData) throws URISyntaxException {
         final String storeId = "storeId";
@@ -85,6 +92,7 @@ public class ManageStoreItemController extends AbstractCrudController<StoreItem,
      * @param salesPrice 新价格
      */
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_STORE + "','" + Login.ROLE_MERCHANT_ITEM + "','" + Login.ROLE_STORE_ROOT + "')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateStoreItem(@PathVariable(value = "id", required = true) long id, @RequestBody BigDecimal salesPrice) {
         storeItemService.updateStoreItem(id, salesPrice);
@@ -96,7 +104,8 @@ public class ManageStoreItemController extends AbstractCrudController<StoreItem,
      * @param putData 操作的信息
      * @return 成功失败的数量
      */
-    @PutMapping("/recommended")
+    @PutMapping("/storeItemUpdater/recommended")
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_STORE + "','" + Login.ROLE_MERCHANT_ITEM + "','" + Login.ROLE_STORE_ROOT + "')")
     @ResponseBody
     public ApiResult batchRecommended(@RequestBody Map<String, Object> putData) {
         final String recommended = "recommended";
@@ -127,7 +136,8 @@ public class ManageStoreItemController extends AbstractCrudController<StoreItem,
      * @param putData 操作的信息
      * @return 成功失败的数量
      */
-    @PutMapping("/enabled")
+    @PutMapping("/storeItemUpdater/enabled")
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_STORE + "','" + Login.ROLE_MERCHANT_ITEM + "','" + Login.ROLE_STORE_ROOT + "')")
     @ResponseBody
     public ApiResult batchEnable(@RequestBody Map<String, Object> putData) {
         final String enabled = "enabled";

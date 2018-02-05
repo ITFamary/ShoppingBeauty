@@ -2,13 +2,13 @@ package com.ming.shopping.beauty.service.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
-import com.ming.shopping.beauty.service.model.ApiResult;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,6 +21,7 @@ import java.io.IOException;
  */
 @ControllerAdvice
 public class ExceptionController {
+    private static final Log log = LogFactory.getLog(ExceptionController.class);
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -53,7 +54,6 @@ public class ExceptionController {
      */
     private boolean isAjaxRequestOrBackJson(HttpServletRequest request) {
         String accept = request.getHeader("accept");
-        String x_request_with = request.getHeader("X-Requested-With");
         if (!StringUtils.isEmpty(accept) && accept.toLowerCase().contains(MediaType.APPLICATION_FORM_URLENCODED_VALUE)) return false;
         return true;
     }

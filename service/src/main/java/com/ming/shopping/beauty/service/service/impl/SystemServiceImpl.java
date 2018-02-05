@@ -18,4 +18,14 @@ public class SystemServiceImpl implements SystemService {
     public String toUrl(String uri) {
         return environment.getProperty("shopping.url", "http://localhost") + uri;
     }
+
+    @Override
+    public String toMobileUrl(String uri) {
+        return environment.getProperty("shopping.mobile.url", "http://localhost") + uri;
+    }
+
+    @Override
+    public String toDesktopUrl(String uri) {
+        return environment.getProperty("shopping.desktop.url", "http://localhost") + uri;
+    }
 }

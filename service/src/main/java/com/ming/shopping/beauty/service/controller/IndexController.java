@@ -29,16 +29,12 @@ import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -65,9 +61,42 @@ public class IndexController {
     @Autowired
     private ConversionService conversionService;
 
+    /**
+     * 微信授权
+     *
+     * @param weixinUserDetail
+     * @param redirectUrl
+     * @return
+     */
+    @GetMapping(value = SystemService.AUTH)
+    public String login(WeixinUserDetail weixinUserDetail, @RequestParam String redirectUrl) {
+        return "redirect:" + redirectUrl;
+    }
+
+    /**
+     * 判断是否授权或注册，如果已注册就登录
+     *
+     * @param openId
+     * @param request
+     * @param response
+     * @throws IOException
+     */
     @GetMapping(value = SystemService.TO_LOGIN)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public void toLogin() {
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public void toLogin(@OpenId String openId, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        if (openId == null) {
+            response.sendError(HttpStatusCustom.SC_NO_OPENID);
+            response.getWriter().write(systemService.toMobileUrl(SystemService.AUTH));
+        } else {
+            Login login = loginService.asWechat(openId);
+            if (login == null) {
+                response.sendError(HttpStatusCustom.SC_NO_LOGIN);
+            } else {
+                //注册或登录成功了，加到 security 中
+                loginToSecurity(login, request, response);
+            }
+        }
     }
 
     /**
@@ -146,7 +175,7 @@ public class IndexController {
         if (principal instanceof String) {
             LoginRequest loginRequest = loginRequestService.newRequest(sessionId);
             response.setStatus(HttpStatusCustom.SC_ACCEPTED);
-            String text = systemService.toUrl("/managerLogin/" + loginRequest.getId());
+            String text = systemService.toMobileUrl("/managerLogin/" + loginRequest.getId());
             result = new HashMap<>();
             result.put("id", loginRequest.getId());
             result.put("url", text);

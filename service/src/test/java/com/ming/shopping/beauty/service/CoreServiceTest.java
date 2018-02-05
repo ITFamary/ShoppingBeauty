@@ -13,6 +13,7 @@ import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.support.AuditStatus;
+import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.model.definition.DefinitionModel;
 import com.ming.shopping.beauty.service.model.request.ItemSearcherBody;
 import com.ming.shopping.beauty.service.model.request.LoginOrRegisterBody;
@@ -213,7 +214,6 @@ public abstract class CoreServiceTest extends SpringWebTest {
         mockMvc.perform(makeWechat(post(SystemService.LOGIN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerBody))))
-                .andDo(print())
                 .andExpect(status().isOk());
         return loginService.findOne(mobile);
     }
@@ -225,13 +225,21 @@ public abstract class CoreServiceTest extends SpringWebTest {
      */
     protected Merchant mockMerchant() throws Exception {
         Login login = mockLogin();
-        return merchantService.addMerchant(login.getId(), randomChinese(5)
-                , randomMobile(), randomChinese(3), null);
+        Merchant merchant = new Merchant();
+        merchant.setName(randomChinese(5));
+        merchant.setContact(randomChinese(3));
+        merchant.setTelephone(randomMobile());
+        return merchantService.addMerchant(login.getId(), merchant);
     }
 
     protected Login mockRoot() throws Exception {
+        return mockManager(ManageLevel.root);
+    }
+
+    protected Login mockManager(ManageLevel level) throws Exception {
         Login login = mockLogin();
-        return loginService.upOrDowngradeToRoot(login.getId(), true);
+        loginService.setManageLevel(login.getId(), level);
+        return login;
     }
 
     /**
@@ -241,8 +249,7 @@ public abstract class CoreServiceTest extends SpringWebTest {
      * @return
      */
     protected Merchant mockMerchantManager(long merchantId) throws Exception {
-        Login login = mockLogin();
-        return merchantService.addMerchant(login.getId(), merchantId);
+        throw new NoSuchMethodError("缺乏传入的权限字段，无法给一个商户创建管理员");
     }
 
     /**

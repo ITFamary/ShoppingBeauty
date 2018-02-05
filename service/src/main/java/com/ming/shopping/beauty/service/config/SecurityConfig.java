@@ -1,5 +1,6 @@
 package com.ming.shopping.beauty.service.config;
 
+import com.ming.shopping.beauty.service.config.security.UnauthorizedEntryPoint;
 import com.ming.shopping.beauty.service.service.LoginService;
 import com.ming.shopping.beauty.service.service.SystemService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,10 +63,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         // TODO: 2018/1/8 一下地址都需要与接口核对
         registry
-                //test
-                .antMatchers("/hello","test").permitAll()
                 //登录前的校验
-                .antMatchers("/isExist", "/isRegister/**", "/sendAuthCode/**", SystemService.LOGIN).permitAll()
+                .antMatchers("/isExist", "/isRegister/**", "/sendAuthCode/**", SystemService.LOGIN, SystemService.TO_LOGIN, SystemService.AUTH).permitAll()
                 //管理后台登录
                 .antMatchers("/currentManager", "/managerLoginRequest", "/managerLogin/**", "/manageLoginResult/**").permitAll()
                 // 登录跳转页面
@@ -78,12 +77,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // 其他必须接受保护
                 .antMatchers("/**").authenticated()
                 .and().csrf().disable()
-                .formLogin()
-                .loginProcessingUrl("/passwordAuth")
-                .loginPage("/toLogin")
-                .failureUrl("/toLogin?type=error")
-                .permitAll()
+                .logout().logoutUrl("/logout").permitAll()
                 .and()
-                .logout().logoutUrl("/logout").permitAll();
+                .exceptionHandling()
+                .authenticationEntryPoint(new UnauthorizedEntryPoint());
     }
 }

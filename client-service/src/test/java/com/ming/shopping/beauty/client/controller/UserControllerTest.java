@@ -20,7 +20,7 @@ public class UserControllerTest extends ClientConfigTest {
     public void userBaseInfo() throws Exception {
         //未登录的情况下请求，跳转到未登录接口
         mockMvc.perform(makeWechat(get(BASE_URL)))
-                .andExpect(status().isFound());
+                .andExpect(status().isUnauthorized());
 
         //未激活用户的数据
         mockMvc.perform(get(BASE_URL)

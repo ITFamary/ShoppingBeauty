@@ -15,21 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 public interface MerchantService {
 
     /**
-     * 把某个角色设置为商户的超级管理员
-     *
-     * @param loginId   一个可登录的角色
-     * @param name      商户名称
-     * @param telephone 商户电话
-     * @param contact   商户联系人
-     * @param address   商户地址
-     * @return
-     * @throws ApiResultException
-     */
-    @Transactional(rollbackFor = RuntimeException.class)
-    Merchant addMerchant(long loginId, String name, String telephone, String contact, Address address) throws ApiResultException;
-
-    /**
-     * 把某个角色设置为商户
+     * 添加商户，并且将loginId设置为商户主
      * @param loginId 一个可登录的角色
      * @param merchant 商户基本信息，包含名称、电话、联系人、地址
      * @return
@@ -37,17 +23,6 @@ public interface MerchantService {
      */
     @Transactional(rollbackFor = RuntimeException.class)
     Merchant addMerchant(long loginId,Merchant merchant) throws ApiResultException;
-
-    /**
-     * 添加商户的管理员
-     *
-     * @param loginId
-     * @param merchantId
-     * @return
-     * @throws ApiResultException
-     */
-    @Transactional(rollbackFor = RuntimeException.class)
-    Merchant addMerchant(long loginId, long merchantId) throws ApiResultException;
 
     /**
      * 冻结或启用商户

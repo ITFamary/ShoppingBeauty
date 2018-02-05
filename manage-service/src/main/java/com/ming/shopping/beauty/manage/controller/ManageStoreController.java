@@ -1,6 +1,12 @@
 package com.ming.shopping.beauty.manage.controller;
 
-import com.ming.shopping.beauty.service.entity.login.*;
+import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.entity.login.Login_;
+import com.ming.shopping.beauty.service.entity.login.Merchant_;
+import com.ming.shopping.beauty.service.entity.login.Represent;
+import com.ming.shopping.beauty.service.entity.login.Represent_;
+import com.ming.shopping.beauty.service.entity.login.Store;
+import com.ming.shopping.beauty.service.entity.login.Store_;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
@@ -19,16 +25,30 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Order;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author lxf
@@ -50,7 +70,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
      */
     @Override
     @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
-    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_PLATFORM_READ + "','" + Login.ROLE_MERCHANT_READ + "')")
     public RowDefinition<Store> list(HttpServletRequest request) {
         return super.list(request);
     }
@@ -65,7 +85,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
      */
     @Override
     @PostMapping
-    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_STORE + "')")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity addOne(@RequestBody Store postData, @RequestBody Map<String, Object> otherData) throws URISyntaxException {
         final String loginId = "loginId";
@@ -86,7 +106,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
 
     @Override
     @GetMapping("/{storeId}")
-    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_PLATFORM_READ + "','" + Login.ROLE_MERCHANT_READ + "')")
     @RowCustom(distinct = true, dramatizer = SingleRowDramatizer.class)
     public RowDefinition<Store> getOne(@PathVariable("storeId") Long storeId) {
         return new RowDefinition<Store>() {
@@ -126,7 +146,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
      * @param enable
      */
     @PutMapping("/{storeId}/enabled")
-    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_STORE + "')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void setEnable(@PathVariable("storeId") long loginId, @RequestBody Boolean enable) {
         if (enable != null) {
@@ -144,7 +164,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
      * @return
      */
     @GetMapping("/{storeId}/represent")
-    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_STORE + "')")
     @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
     public RowDefinition<Represent> listForRepresent(@PathVariable long storeId) {
         return new RowDefinition<Represent>() {
@@ -180,7 +200,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
      * @param representId 用户id
      */
     @PostMapping("/{storeId}/represent/{representId}")
-    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_STORE + "')")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity addRepresent(@PathVariable(required = true) long storeId, @PathVariable(required = true) long representId) throws URISyntaxException {
         representService.addRepresent(representId, storeId);
@@ -196,7 +216,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
      * @param enable
      */
     @PutMapping("/{storeId}/represent/{representId}/enabled")
-    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_STORE + "')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void enableRepresent(@PathVariable(required = true) long representId, @RequestBody Boolean enable) {
         if (enable != null) {
@@ -214,7 +234,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
      * @param representId
      */
     @DeleteMapping("/{storeId}/represent/{representId}")
-    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_STORE + "')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeRepresent(@PathVariable("storeId") long storeId, @PathVariable("representId") long representId) {
         representService.removerRepresent(storeId, representId);

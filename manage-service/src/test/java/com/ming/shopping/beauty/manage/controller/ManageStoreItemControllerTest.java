@@ -85,7 +85,7 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
         Item item1 = mockItem(merchant);
         nsi1.setItemId(item1.getId());
         nsi1.setStoreId(store.getId());
-        nsi1.setSalesPrice(item.getPrice().setScale(2).multiply(BigDecimal.valueOf(0.95)));
+        nsi1.setSalesPrice(item1.getPrice().setScale(2).multiply(BigDecimal.valueOf(0.95)));
         mockMvc.perform(post("/storeItem")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(nsi1)))

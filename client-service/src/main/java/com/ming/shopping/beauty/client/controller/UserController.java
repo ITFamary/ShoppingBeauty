@@ -68,7 +68,7 @@ public class UserController {
         response.setHeader("X-Order-Id", String.valueOf(mainOrder.getOrderId()));
         Map<String, Object> result = new HashMap<>(2);
         // TODO: 2018/1/12 这里要确定购物车地址
-        String text = systemService.toUrl("/" + mainOrder.getOrderId());
+        String text = systemService.toMobileUrl("/" + mainOrder.getOrderId());
         result.put("vipCard", login.getUser().getCardNo());
         result.put("qrCode", qrController.urlForText(text).toString());
         return result;

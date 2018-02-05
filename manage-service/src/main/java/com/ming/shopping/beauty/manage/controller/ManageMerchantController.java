@@ -11,35 +11,39 @@ import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.repository.MerchantRepository;
 import com.ming.shopping.beauty.service.service.MerchantService;
 import me.jiangcai.crud.controller.AbstractCrudController;
-import me.jiangcai.crud.row.FieldDefinition;
-import me.jiangcai.crud.row.RowCustom;
-import me.jiangcai.crud.row.RowDefinition;
-import me.jiangcai.crud.row.RowService;
+import me.jiangcai.crud.row.*;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
+import me.jiangcai.crud.utils.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.NativeWebRequest;
 
 import javax.persistence.criteria.*;
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author helloztt
@@ -113,9 +117,9 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
         if (login.getLevelSet().contains(ManageLevel.root)) {
             //说明是超管 可以修改所有的对象
             updating(postData);
-        }else {
+        } else {
             //仅仅是商户自身
-            if (login.getId().equals(postData.getId())){
+            if (login.getId().equals(postData.getId())) {
                 updating(postData);
             } else
                 throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
@@ -123,15 +127,15 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
         }
     }
 
-    private void updating(Merchant postData){
+    private void updating(Merchant postData) {
         Merchant merchant = merchantRepository.findOne(postData.getId());
-        if(postData.getName() != null){
+        if (postData.getName() != null) {
             merchant.setName(postData.getName());
         }
-        if(postData.getTelephone() != null){
+        if (postData.getTelephone() != null) {
             merchant.setTelephone(postData.getTelephone());
         }
-        if(postData.getContact() != null){
+        if (postData.getContact() != null) {
             merchant.setContact(postData.getContact());
         }
         merchantRepository.save(merchant);
@@ -139,7 +143,7 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
 
     @Override
     protected Object describeEntity(Merchant origin) {
-        return  RowService.drawEntityToRow(origin,Arrays.asList(
+        return RowService.drawEntityToRow(origin, Arrays.asList(
                 FieldBuilder.asName(Merchant.class, "id")
                         .build()
                 , FieldBuilder.asName(Merchant.class, "name")
@@ -192,7 +196,7 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
     @GetMapping("/{merchantId}/manage")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
     @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
-    public RowDefinition<Merchant> listForManage(@PathVariable long merchantId) {
+    public RowDefinition listForManage(@PathVariable long merchantId) throws IOException {
         return new RowDefinition<Merchant>() {
             @Override
             public Class<Merchant> entityClass() {
@@ -202,11 +206,6 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
             @Override
             public List<FieldDefinition<Merchant>> fields() {
                 return listFieldsForManage();
-            }
-
-            @Override
-            public List<Order> defaultOrder(CriteriaBuilder criteriaBuilder, Root<Merchant> root) {
-                return Arrays.asList(criteriaBuilder.desc(root.get(Merchant_.createTime)));
             }
 
             @Override
@@ -238,7 +237,8 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
     @ResponseStatus(HttpStatus.CREATED)
     public void addMerchantManage(@PathVariable long merchantId, @PathVariable long manageId) {
-        merchantService.addMerchant(manageId, merchantId);
+//        merchantService.addMerchant(manageId, merchantId);
+        throw new NoSuchMethodError("尚未实现，缺少必要的权限字段");
     }
 
     /**
@@ -306,30 +306,76 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
 
     protected List<FieldDefinition<Merchant>> listFieldsForManage() {
         return Arrays.asList(
-                FieldBuilder.asName(Merchant.class, "id")
-                        .addSelect(merchantRoot -> merchantRoot.get(Merchant_.id))
-                        .build()
-                , FieldBuilder.asName(Merchant.class, "username")
-                        .addSelect(merchantRoot -> merchantRoot.join(Merchant_.login, JoinType.LEFT).get(Login_.loginName))
-                        .build()
-                , FieldBuilder.asName(Merchant.class, "enabled")
-                        .addSelect(merchantRoot -> merchantRoot.get(Merchant_.enabled))
-                        .build()
-                //TODO ManageLevel的问题
-                /*, FieldBuilder.asName(Merchant.class, "level")
-                        .addSelect(merchantRoot -> merchantRoot.join(Merchant_.login, JoinType.LEFT).get(Login_.levelSet))
-                        .addFormat((data, type) -> {
-                            Set<ManageLevel> levelSet = (Set<ManageLevel>) data;
-                            return levelSet.stream().map(ManageLevel::title).collect(Collectors.joining(","));
-                        })
-                        .build()*/
-                , FieldBuilder.asName(Merchant.class, "createTime")
-                        .addSelect(merchantRoot -> merchantRoot.get(Merchant_.createTime))
-                        .addFormat((data, type) -> {
-                            String format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(((LocalDateTime) data));
-                            return format;
-                        })
-                        .build()
+                new ManageField() {
+
+                    @Override
+                    public Selection<?> select(CriteriaBuilder criteriaBuilder, CriteriaQuery<?> query, Root<Merchant> root) {
+                        return root;
+                    }
+
+                    @Override
+                    protected Object export(Merchant manage, Function<List, ?> exportMe) {
+                        return manage.getId();
+                    }
+
+                    @Override
+                    public Expression<?> order(Root<Merchant> root, CriteriaBuilder criteriaBuilder) {
+                        return root.get(Merchant_.id);
+                    }
+
+                    @Override
+                    public String name() {
+                        return "id";
+                    }
+                },
+                new ManageField() {
+                    @Override
+                    protected Object export(Merchant manage, Function<List, ?> exportMe) {
+                        return manage.getLogin().getLoginName();
+                    }
+
+                    @Override
+                    public String name() {
+                        return "username";
+                    }
+                },
+                new ManageField() {
+                    @Override
+                    protected Object export(Merchant manage, Function<List, ?> exportMe) {
+                        return manage.isEnabled();
+                    }
+
+                    @Override
+                    public String name() {
+                        return "enabled";
+                    }
+                },
+                new ManageField() {
+                    @Override
+                    protected Object export(Merchant manage, Function<List, ?> exportMe) {
+                        Set<ManageLevel> levelSet = manage.getLogin().getLevelSet();
+                        if (CollectionUtils.isEmpty(levelSet)) {
+                            return null;
+                        }
+                        return levelSet.stream().map(ManageLevel::title).collect(Collectors.joining(","));
+                    }
+
+                    @Override
+                    public String name() {
+                        return "level";
+                    }
+                },
+                new ManageField() {
+                    @Override
+                    protected Object export(Merchant manage, Function<List, ?> exportMe) {
+                        return conversionService.convert(manage.getCreateTime(), String.class);
+                    }
+
+                    @Override
+                    public String name() {
+                        return "createTime";
+                    }
+                }
         );
     }
 
@@ -358,5 +404,24 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
     @PreAuthorize("denyAll()")
     public RowDefinition<Merchant> getDetail(Long aLong) {
         return null;
+    }
+
+    private abstract class ManageField implements FieldDefinition<Merchant> {
+        @Override
+        public Selection<?> select(CriteriaBuilder criteriaBuilder, CriteriaQuery<?> query, Root<Merchant> root) {
+            return null;
+        }
+
+        @Override
+        public Object export(Object origin, MediaType mediaType, Function<List, ?> exportMe) {
+            return export((Merchant) origin, exportMe);
+        }
+
+        protected abstract Object export(Merchant manage, Function<List, ?> exportMe);
+
+        @Override
+        public Expression<?> order(Root<Merchant> root, CriteriaBuilder criteriaBuilder) {
+            return null;
+        }
     }
 }
