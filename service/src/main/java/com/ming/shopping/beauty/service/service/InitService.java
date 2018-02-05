@@ -53,7 +53,6 @@ public class InitService {
         if (loginRepository.findByLoginName(cjMobile) == null) {
             Login login = new Login();
             login.setLoginName(cjMobile);
-            login.setManageable(true);
             login.setGuidable(true);
             login.addLevel(ManageLevel.root);
             login.setCreateTime(LocalDateTime.now());

@@ -39,16 +39,4 @@ public interface LoginRepository extends JpaRepository<Login, Long>, JpaSpecific
     @Modifying(clearAutomatically = true)
     @Query("update Login set enabled = ?2 where id = ?1")
     int updateLoginEnabled(long id, boolean enabled);
-
-    /**
-     * 更新角色管理员状态
-     *
-     * @param id
-     * @param manageAble
-     * @return
-     */
-    @Transactional(rollbackFor = RuntimeException.class)
-    @Modifying(clearAutomatically = true)
-    @Query("update Login set manageable = ?2 where id = ?1")
-    int updateLoginManageAble(long id, boolean manageAble);
 }

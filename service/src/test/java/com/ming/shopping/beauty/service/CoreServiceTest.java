@@ -13,6 +13,7 @@ import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.support.AuditStatus;
+import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.model.definition.DefinitionModel;
 import com.ming.shopping.beauty.service.model.request.ItemSearcherBody;
 import com.ming.shopping.beauty.service.model.request.LoginOrRegisterBody;
@@ -232,8 +233,13 @@ public abstract class CoreServiceTest extends SpringWebTest {
     }
 
     protected Login mockRoot() throws Exception {
+        return mockManager(ManageLevel.root);
+    }
+
+    protected Login mockManager(ManageLevel level) throws Exception {
         Login login = mockLogin();
-        return loginService.upOrDowngradeToRoot(login.getId(), true);
+        loginService.setManageLevel(login.getId(), level);
+        return login;
     }
 
     /**

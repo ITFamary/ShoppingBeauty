@@ -163,18 +163,6 @@ public class LoginServiceImpl implements LoginService {
         }
     }
 
-    @Override
-    @Transactional(rollbackFor = RuntimeException.class)
-    public Login upOrDowngradeToRoot(long id, boolean manageAble) {
-        Login login = findOne(id);
-        login.setManageable(manageAble);
-        if (manageAble) {
-            login.addLevel(ManageLevel.root);
-        } else {
-            login.getLevelSet().remove(ManageLevel.root);
-        }
-        return loginRepository.save(login);
-    }
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class)

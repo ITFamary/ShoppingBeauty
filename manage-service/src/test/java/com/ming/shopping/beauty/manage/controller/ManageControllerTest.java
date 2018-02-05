@@ -1,7 +1,9 @@
 package com.ming.shopping.beauty.manage.controller;
 
+import com.jayway.jsonpath.JsonPath;
 import com.ming.shopping.beauty.manage.ManageConfigTest;
 import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import com.ming.shopping.beauty.service.model.definition.ManagerModel;
 import com.ming.shopping.beauty.service.model.request.LoginOrRegisterBody;
@@ -153,9 +155,30 @@ public class ManageControllerTest extends ManageConfigTest {
         Login root = mockRoot();
         updateAllRunWith(root);
         // 查下管理员的数量
+        int total = JsonPath.read(mockMvc.perform(
+                get("/manage")
+        ).andReturn().getResponse().getContentAsString(), "$.pagination.total");
+        // 添加一个普通用户之后管理员数量保持不变
+        mockLogin();
         mockMvc.perform(
                 get("/manage")
-        ).andDo(print());
+        ).andExpect(jsonPath("$.pagination.total").value(total));
+        // 添加一个商户之后管理员数量保持不变
+        mockMerchant();
+        mockMvc.perform(
+                get("/manage")
+        ).andExpect(jsonPath("$.pagination.total").value(total));
+        // 但如果添加的是一个管理员 那就不行了
+        int count = 0;
+        for (ManageLevel level : Login.rootLevel) {
+            count++;
+            final int current = total + count;
+            mockManager(level);
+            mockMvc.perform(
+                    get("/manage")
+            ).andExpect(jsonPath("$.pagination.total").value(current));
+        }
+
     }
 /*
     @Test
