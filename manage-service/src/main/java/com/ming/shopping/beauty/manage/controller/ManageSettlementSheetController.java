@@ -19,6 +19,8 @@ import me.jiangcai.crud.row.RowCustom;
 import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
+import me.jiangcai.lib.sys.SystemStringConfig;
+import me.jiangcai.lib.sys.service.SystemStringService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +42,7 @@ import java.util.*;
 @RequestMapping("/settlementSheet")
 @Controller
 @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
-@PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_ROOT_SETTLEMENT + "')")
+@PreAuthorize("hasAnyRole('ROOT','"+ SystemStringConfig.MANAGER_ROLE+"','" + Login.ROLE_PLATFORM_SETTLEMENT + "')")
 public class ManageSettlementSheetController extends AbstractCrudController<SettlementSheet, Long> {
 
     @Autowired
@@ -72,7 +74,7 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
      * @param comment
      */
     @PutMapping("/{id}/approval")
-    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_ROOT_SETTLEMENT + "')")
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_PLATFORM_SETTLEMENT + "')")
     public void approvalSheet(@PathVariable("id") Long id, @RequestBody String comment) {
         if (id == null) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
@@ -89,7 +91,7 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
      * @param comment
      */
     @PutMapping("/{id}/reject")
-    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_ROOT_SETTLEMENT + "')")
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_PLATFORM_SETTLEMENT + "')")
     public void rejectSheet(@PathVariable("id") Long id, @RequestBody String comment) {
         if (id == null) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
@@ -121,7 +123,7 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
      * @param id
      */
     @PutMapping("/{id}/already")
-    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_ROOT_SETTLEMENT + "')")
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_PLATFORM_SETTLEMENT + "')")
     public void alreadySheet(@PathVariable("id") Long id, @RequestBody BigDecimal actualAmount) {
         if (id == null) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
