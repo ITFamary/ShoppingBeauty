@@ -215,10 +215,10 @@ public class IndexController {
             return;
         }
         Login login = loginService.asWechat(weixinUserDetail.getOpenId());
-        if (login == null || !login.getLevelSet().contains(ManageLevel.user)) {
-            //说明没有这个用户，让他先去注册或登录
+        if (login == null || StringUtils.isEmpty(login.getLoginName())) {
+            //说明没有这个角色或者是个空的角色
             response.setStatus(HttpStatusCustom.SC_LOGIN_NOT_EXIST);
-        } else if (CollectionUtils.isEmpty(login.getLevelSet()) || !login.isEnabled()) {
+        } else if (login.getLevelSet().stream().filter(p -> !ManageLevel.user.equals(p)).count() == 0 || !login.isEnabled()) {
             //说明用户没有权限登录管理后台
             response.setStatus(HttpStatusCustom.SC_FORBIDDEN);
 //            loginRequestService.remove(requestId);
