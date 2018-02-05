@@ -41,6 +41,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         super.configure(web);
 
         web.ignoring()
+                .antMatchers("/_version")
                 // 微信校验
                 .antMatchers("/MP_verify_*.txt", "/**/favicon.ico", "/weixin/sdk/config")
                 // 微信事件
