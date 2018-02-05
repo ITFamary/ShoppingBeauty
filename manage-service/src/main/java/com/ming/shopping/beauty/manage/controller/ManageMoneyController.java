@@ -43,7 +43,7 @@ public class ManageMoneyController {
     @Transactional
     public ApiResult manualRecharge(@AuthenticationPrincipal Login login, String mobile, BigDecimal amount) {
         //TODO 手动充值是否有最小充值限制?
-        if (amount.compareTo(new BigDecimal("0")) != 1) {
+        if (amount.compareTo(BigDecimal.ZERO) != 1) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.RECHARGE_MONEY_NOT_ENOUGH.getCode(),
                     MessageFormat.format(ResultCodeEnum.RECHARGE_MONEY_NOT_ENOUGH.getMessage(), amount), null));
         }
@@ -74,7 +74,7 @@ public class ManageMoneyController {
     @Transactional
     @ResponseBody
     public ApiResult deduction(@AuthenticationPrincipal Login login, String mobile, BigDecimal amount) {
-        if (amount != null && amount.compareTo(new BigDecimal("0")) != 1) {
+        if (amount != null && amount.compareTo(BigDecimal.ZERO) != 1) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode(),
                     MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), amount), null));
         }
