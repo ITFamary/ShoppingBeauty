@@ -70,7 +70,8 @@ public enum ResultCodeEnum {
     /**
      * 结算单相关: [6000,6999]
      */
-    REJECT_NOT_COMMENT(6000,"打回结算单必须有备注")
+    REJECT_NOT_COMMENT(6000,"打回结算单必须有备注"),
+    SHEET_STATUS_ERROR(60001,"错误的结算单状态,审核操作结算单事先要处于待审核状态")
 
 
     ;

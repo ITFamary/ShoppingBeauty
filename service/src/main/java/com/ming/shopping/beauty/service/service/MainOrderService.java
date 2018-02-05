@@ -13,6 +13,7 @@ import me.jiangcai.crud.row.RowDefinition;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -74,10 +75,11 @@ public interface MainOrderService {
      * 支付订单
      *
      * @param id 被支付的订单.
+     * @param amount 实际应付款金额
      * @return 是否成功
      */
     @Transactional
-    boolean payOrder(long id);
+    boolean payOrder(long id, BigDecimal amount);
 
     /**
      * 根据条件查询订单

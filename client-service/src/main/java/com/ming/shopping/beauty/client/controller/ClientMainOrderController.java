@@ -28,7 +28,6 @@ import java.io.IOException;
 public class ClientMainOrderController {
     @Autowired
     private MainOrderService mainOrderService;
-    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * 门店代表下单

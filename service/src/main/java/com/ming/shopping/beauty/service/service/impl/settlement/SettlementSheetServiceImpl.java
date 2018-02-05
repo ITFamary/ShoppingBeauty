@@ -6,6 +6,7 @@ import com.ming.shopping.beauty.service.entity.login.Store_;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.order.MainOrder_;
 import com.ming.shopping.beauty.service.entity.settlement.SettlementSheet;
+import com.ming.shopping.beauty.service.entity.support.OrderStatus;
 import com.ming.shopping.beauty.service.entity.support.SettlementStatus;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
@@ -18,7 +19,6 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sun.applet.Main;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -39,21 +39,32 @@ public class SettlementSheetServiceImpl implements SettlementSheetService {
     private SettlementSheetRepository settlementSheetRepository;
 
     @Override
+    public SettlementSheet findSheet(long id) {
+        return settlementSheetRepository.findOne(id);
+    }
+
+    @Override
     @Transactional
-    public SettlementSheet productSheet(Merchant merchant) {
-        //默认获取7天前的的定案
+    public SettlementSheet addSheet(Merchant merchant) {
+        //默认获取7天前的订单
         LocalDateTime weekAgo = systemStringService.getCustomSystemString(
                 "shopping.service.order.how.long", null, true, LocalDateTime.class, LocalDateTime.now().minusDays(7));
+        
         List<MainOrder> okList = mainOrderRepository.findAll((root, query, cb) ->
                 cb.and(
                         cb.equal(root.join(MainOrder_.store).join(Store_.merchant).get(Merchant_.id), merchant.getId()),
-                        cb.lessThan(root.get(MainOrder_.payTime), weekAgo)
+                        cb.lessThan(root.get(MainOrder_.payTime), weekAgo),
+                        cb.equal(root.get(MainOrder_.orderStatus), OrderStatus.success)
                 )
         );
         //创建新的结算单
         SettlementSheet settlementSheet = new SettlementSheet();
         Set<MainOrder> mainOrderSet = new HashSet<>();
         mainOrderSet.addAll(okList);
+        for (MainOrder mainOrder : mainOrderSet) {
+            mainOrder.setSettlementSheet(settlementSheet);
+            mainOrderRepository.save(mainOrder);
+        }
         settlementSheet.setMainOrderSet(mainOrderSet);
         settlementSheet.setMerchant(merchant);
         settlementSheet.setCreateTime(LocalDateTime.now());
@@ -65,58 +76,85 @@ public class SettlementSheetServiceImpl implements SettlementSheetService {
     @Transactional
     public void submitSheet(SettlementSheet settlementSheet,String comment) {
         SettlementSheet one = settlementSheetRepository.findOne(settlementSheet.getId());
-        one.setSettlementStatus(SettlementStatus.TO_AUDIT);
-        if(comment != null){
-            one.setComment(comment);
+        if(one.getSettlementStatus().equals(SettlementStatus.UNSUBMIT)){
+            one.setSettlementStatus(SettlementStatus.TO_AUDIT);
+            if(comment != null){
+                one.setComment(comment);
+            }
+            settlementSheetRepository.save(one);
+        }else{
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.SHEET_STATUS_ERROR));
         }
-        settlementSheetRepository.save(one);
     }
 
     @Override
     @Transactional
     public void rejectSheet(SettlementSheet settlementSheet,String comment) {
         SettlementSheet one = settlementSheetRepository.findOne(settlementSheet.getId());
-        one.setSettlementStatus(SettlementStatus.TO_AUDIT);
-        //必须要有备注
-        if(!StringUtils.isBlank(comment)){
-            one.setComment(comment);
+        if(one.getSettlementStatus().equals(SettlementStatus.TO_AUDIT)){
+            one.setSettlementStatus(SettlementStatus.REJECT);
+            //必须要有备注
+            if(!StringUtils.isBlank(comment)){
+                one.setComment(comment);
+            }else{
+                throw new ApiResultException(ApiResult.withError(ResultCodeEnum.REJECT_NOT_COMMENT));
+            }
+            settlementSheetRepository.save(one);
         }else{
-            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.REJECT_NOT_COMMENT));
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.SHEET_STATUS_ERROR));
         }
-        settlementSheetRepository.save(one);
     }
 
     @Override
     @Transactional
     public void revokeSheet(SettlementSheet settlementSheet) {
         SettlementSheet one = settlementSheetRepository.findOne(settlementSheet.getId());
-        one.setSettlementStatus(SettlementStatus.REVOKE);
-        settlementSheetRepository.save(one);
+        if(one.getSettlementStatus().equals(SettlementStatus.UNSUBMIT)){
+            one.setSettlementStatus(SettlementStatus.REVOKE);
+            settlementSheetRepository.save(one);
+        }else{
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.SHEET_STATUS_ERROR));
+        }
     }
 
     @Override
     @Transactional
-    public void approvalSheet(SettlementSheet settlementSheet) {
+    public void approvalSheet(SettlementSheet settlementSheet, String comment) {
         SettlementSheet one = settlementSheetRepository.findOne(settlementSheet.getId());
-        one.setSettlementStatus(SettlementStatus.APPROVAL);
-        settlementSheetRepository.save(one);
+        if(one.getSettlementStatus().equals(SettlementStatus.TO_AUDIT)){
+            one.setSettlementStatus(SettlementStatus.APPROVAL);
+            if(comment != null){
+                one.setComment(comment);
+            }
+            settlementSheetRepository.save(one);
+        }else{
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.SHEET_STATUS_ERROR));
+        }
     }
 
     @Override
     @Transactional
     public void alreadyPaid(SettlementSheet settlementSheet, BigDecimal amount) {
         SettlementSheet one = settlementSheetRepository.findOne(settlementSheet.getId());
-        one.setSettlementStatus(SettlementStatus.ALREADY_PAID);
-        one.setTransferTime(LocalDateTime.now());
-        one.setActualAmount(amount);
-        settlementSheetRepository.save(one);
+        if(one.getSettlementStatus().equals(SettlementStatus.APPROVAL)){
+            one.setSettlementStatus(SettlementStatus.ALREADY_PAID);
+            one.setTransferTime(LocalDateTime.now());
+            one.setActualAmount(amount);
+            settlementSheetRepository.save(one);
+        }else{
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.SHEET_STATUS_ERROR));
+        }
     }
 
     @Override
     @Transactional
     public void completeSheet(SettlementSheet settlementSheet) {
         SettlementSheet one = settlementSheetRepository.findOne(settlementSheet.getId());
-        one.setSettlementStatus(SettlementStatus.COMPLETE);
-        settlementSheetRepository.save(one);
+        if(one.getSettlementStatus().equals(SettlementStatus.APPROVAL)){
+            one.setSettlementStatus(SettlementStatus.COMPLETE);
+            settlementSheetRepository.save(one);
+        }else{
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.SHEET_STATUS_ERROR));
+        }
     }
 }

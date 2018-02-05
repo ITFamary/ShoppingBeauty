@@ -12,17 +12,23 @@ import java.math.BigDecimal;
 public interface SettlementSheetService {
 
     /**
+     * 查找一个结算单
+     */
+    SettlementSheet findSheet(long id);
+
+    /**
      * 商户获取内结算单(创建一个未提交的结算单)
      * 随时可以发起的, 但是不统计规定时间内的订单
      * @param merchant 统计结算单的商户
      * @return 统计好的结算单
      */
     @Transactional
-    SettlementSheet productSheet(Merchant merchant);
+    SettlementSheet addSheet(Merchant merchant);
 
     /**
      * 商户递交结算单交给平台财务审核
      * @param settlementSheet 提交的结算单
+     * @param comment 备注
      */
     @Transactional
     void submitSheet(SettlementSheet settlementSheet,String comment);
@@ -46,9 +52,10 @@ public interface SettlementSheetService {
     /**
      * 平台管理员通过审核的结算单
      * @param settlementSheet 结算单
+     * @param comment 备注
      */
     @Transactional
-    void approvalSheet(SettlementSheet settlementSheet);
+    void approvalSheet(SettlementSheet settlementSheet, String comment);
 
     /**
      * 平台管理员已经支付过结算单

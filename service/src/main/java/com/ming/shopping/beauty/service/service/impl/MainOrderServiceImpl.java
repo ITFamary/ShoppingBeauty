@@ -36,6 +36,7 @@ import org.springframework.util.CollectionUtils;
 
 import javax.persistence.criteria.*;
 import java.lang.reflect.Array;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.BiFunction;
@@ -113,6 +114,8 @@ public class MainOrderServiceImpl implements MainOrderService {
         mainOrder.setRepresent(represent);
         mainOrder.setStore(represent.getStore());
 
+        BigDecimal costPrice = new BigDecimal(0);
+        BigDecimal finalPrice = new BigDecimal(0);
         List<OrderItem> orderItemList = new ArrayList<>();
         amounts.keySet().forEach(storeItem -> {
             OrderItem orderItem = new OrderItem();
@@ -124,9 +127,16 @@ public class MainOrderServiceImpl implements MainOrderService {
             //销售价从门店项目中获取
             orderItem.setSalesPrice(orderItem.getSalesPrice());
             orderItem.setCostPrice(orderItem.getItem().getCostPrice());
+            //将orderItem总的成本价统计起来.
+            costPrice.add(orderItem.getCostPrice());
+            //统计销售价格
+            finalPrice.add(orderItem.getSalesPrice());
             orderItem.setNum(amounts.get(storeItem));
             orderItemList.add(orderItem);
         });
+        //统计成本价格
+        mainOrder.setSettlementAmount(costPrice);
+        mainOrder.setFinalAmount(finalPrice);
         mainOrder.setOrderItemList(orderItemList);
         //待付款
         mainOrder.setOrderStatus(OrderStatus.forPay);
@@ -146,7 +156,7 @@ public class MainOrderServiceImpl implements MainOrderService {
     }
 
     @Override
-    public boolean payOrder(long id) {
+    public boolean payOrder(long id, BigDecimal amount) {
         //TODO 还不知道怎么写
         MainOrder mainOrder = findById(id);
         mainOrder.setPayTime(LocalDateTime.now());
