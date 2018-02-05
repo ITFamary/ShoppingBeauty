@@ -21,6 +21,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
+import javax.persistence.criteria.From;
+import javax.persistence.criteria.Predicate;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -165,15 +167,20 @@ public class Login implements UserDetails, CrudFriendly<Long> {
     @Column(name = "`DELETE`")
     private boolean delete;
     /**
-     * 是否是个超级管理员
-     * 是否是一个平台管理员 取决于它是否具备{@link #rootLevel}的权限，这个值毫无意义
-     */
-    private boolean manageable;
-    /**
      * 用户历史消费总额
      */
     @Transient
     private BigDecimal consumption;
+
+    /**
+     * @param from login from
+     * @return 获取是否为管理员的表达式
+     */
+    public static Predicate getManageableExpr(From<?, Login> from) {
+        return from.get(Login_.levelSet).in(
+                rootLevel
+        );
+    }
 
     public static Collection<? extends GrantedAuthority> getGrantedAuthorities(Set<ManageLevel> levelSet) {
         if (CollectionUtils.isEmpty(levelSet)) {

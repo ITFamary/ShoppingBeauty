@@ -80,16 +80,6 @@ public interface LoginService extends UserDetailsService {
     void freezeOrEnable(long id, boolean enable);
 
     /**
-     * 将某个角色设置或取消超级管理员
-     *
-     * @param id
-     * @param manageAble 是否为超管
-     * @return
-     */
-    @Transactional(rollbackFor = RuntimeException.class)
-    Login upOrDowngradeToRoot(long id, boolean manageAble);
-
-    /**
      * 用于登录的验证码
      *
      * @return

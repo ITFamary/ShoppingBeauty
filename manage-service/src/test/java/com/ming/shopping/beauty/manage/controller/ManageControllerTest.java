@@ -1,7 +1,9 @@
 package com.ming.shopping.beauty.manage.controller;
 
+import com.jayway.jsonpath.JsonPath;
 import com.ming.shopping.beauty.manage.ManageConfigTest;
 import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import com.ming.shopping.beauty.service.model.definition.ManagerModel;
 import com.ming.shopping.beauty.service.model.request.LoginOrRegisterBody;
@@ -17,8 +19,13 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.util.NestedServletException;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -153,9 +160,63 @@ public class ManageControllerTest extends ManageConfigTest {
         Login root = mockRoot();
         updateAllRunWith(root);
         // 查下管理员的数量
+        int total = JsonPath.read(mockMvc.perform(
+                get("/manage")
+        ).andReturn().getResponse().getContentAsString(), "$.pagination.total");
+        // 添加一个普通用户之后管理员数量保持不变
+        mockLogin();
         mockMvc.perform(
                 get("/manage")
-        ).andDo(print());
+        ).andExpect(jsonPath("$.pagination.total").value(total));
+        // 添加一个商户之后管理员数量保持不变
+        mockMerchant();
+        mockMvc.perform(
+                get("/manage")
+        ).andExpect(jsonPath("$.pagination.total").value(total));
+        // 但如果添加的是一个管理员 那就不行了
+        int count = 0;
+        for (ManageLevel level : Login.rootLevel) {
+            count++;
+            final int current = total + count;
+            mockManager(level);
+            mockMvc.perform(
+                    get("/manage")
+            ).andExpect(jsonPath("$.pagination.total").value(current));
+        }
+
+        // 测试更新权限
+        Login one = mockLogin();
+        assertThat(one.getLevelSet())
+                .as("一开始是没权限的")
+                .isNullOrEmpty();
+
+        // 确保没有root
+        ManageLevel[] targetLevel = null;
+        while (targetLevel == null || Arrays.binarySearch(targetLevel, ManageLevel.root) >= 0) {
+            targetLevel = randomArray(Login.rootLevel.toArray(new ManageLevel[Login.rootLevel.size()]), 1);
+        }
+
+        //
+        mockMvc.perform(
+                put("/manage/{id}/levelSet", one.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(Stream.of(targetLevel).map(Enum::name).collect(Collectors.toList())))
+        )
+                .andExpect(status().is2xxSuccessful());
+        assertThat(loginService.findOne(one.getId()).getLevelSet())
+                .as("新的权限符合需求")
+                .hasSameElementsAs(Arrays.asList(targetLevel));
+        // 再清楚掉
+        mockMvc.perform(
+                put("/manage/{id}/levelSet", one.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(new ArrayList<>()))
+        )
+                .andExpect(status().is2xxSuccessful());
+        assertThat(loginService.findOne(one.getId()).getLevelSet())
+                .as("应该没有权限了")
+                .isNullOrEmpty();
+
     }
 /*
     @Test

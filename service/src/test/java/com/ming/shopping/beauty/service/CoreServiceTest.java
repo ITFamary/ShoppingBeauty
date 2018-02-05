@@ -233,8 +233,13 @@ public abstract class CoreServiceTest extends SpringWebTest {
     }
 
     protected Login mockRoot() throws Exception {
+        return mockManager(ManageLevel.root);
+    }
+
+    protected Login mockManager(ManageLevel level) throws Exception {
         Login login = mockLogin();
-        return loginService.upOrDowngradeToRoot(login.getId(), true);
+        loginService.setManageLevel(login.getId(), level);
+        return login;
     }
 
     /**
