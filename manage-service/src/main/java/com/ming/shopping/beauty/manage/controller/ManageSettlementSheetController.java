@@ -59,7 +59,7 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
      * @return
      * @throws URISyntaxException
      */
-    @PostMapping("/{merchantId}")
+    @PostMapping("/{id}")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
     public ResponseEntity productSheet(@PathVariable("id") Long merchantId) throws URISyntaxException {
         Merchant merchant = merchantService.findMerchant(merchantId);
@@ -71,7 +71,7 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
 
 
     @GetMapping("/{id}/store")
-    public RowDefinition<MainOrder> getDetailForStore(Long id) {
+    public RowDefinition<MainOrder> getDetailForStore(@PathVariable("id") Long id) {
         return new RowDefinition<MainOrder>() {
             @Override
             public Class<MainOrder> entityClass() {
