@@ -19,8 +19,13 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.util.NestedServletException;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -178,6 +183,39 @@ public class ManageControllerTest extends ManageConfigTest {
                     get("/manage")
             ).andExpect(jsonPath("$.pagination.total").value(current));
         }
+
+        // 测试更新权限
+        Login one = mockLogin();
+        assertThat(one.getLevelSet())
+                .as("一开始是没权限的")
+                .isNullOrEmpty();
+
+        // 确保没有root
+        ManageLevel[] targetLevel = null;
+        while (targetLevel == null || Arrays.binarySearch(targetLevel, ManageLevel.root) >= 0) {
+            targetLevel = randomArray(Login.rootLevel.toArray(new ManageLevel[Login.rootLevel.size()]), 1);
+        }
+
+        //
+        mockMvc.perform(
+                put("/manage/{id}/levelSet", one.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(Stream.of(targetLevel).map(Enum::name).collect(Collectors.toList())))
+        )
+                .andExpect(status().is2xxSuccessful());
+        assertThat(loginService.findOne(one.getId()).getLevelSet())
+                .as("新的权限符合需求")
+                .hasSameElementsAs(Arrays.asList(targetLevel));
+        // 再清楚掉
+        mockMvc.perform(
+                put("/manage/{id}/levelSet", one.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(new ArrayList<>()))
+        )
+                .andExpect(status().is2xxSuccessful());
+        assertThat(loginService.findOne(one.getId()).getLevelSet())
+                .as("应该没有权限了")
+                .isNullOrEmpty();
 
     }
 /*
