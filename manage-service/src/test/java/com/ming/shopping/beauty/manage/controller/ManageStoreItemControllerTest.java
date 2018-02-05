@@ -153,7 +153,7 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
         map.put(enabled, true);
         map.put(storeItems, longs);
         //将他们批量上架
-        mockMvc.perform(put("/storeItem/enabled")
+        mockMvc.perform(put("/storeItemUpdater/enabled")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(map)))
                 .andDo(print())
@@ -164,7 +164,7 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
         }
         //将它们批量下架
         map.put(enabled, false);
-        mockMvc.perform(put("/storeItem/enabled")
+        mockMvc.perform(put("/storeItemUpdater/enabled")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(map)))
                 .andDo(print())
@@ -177,7 +177,7 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
         map.remove("enabled");
         map.put(recommended,true);
         //批量推荐
-        mockMvc.perform(put("/storeItem/recommended")
+        mockMvc.perform(put("/storeItemUpdater/recommended")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(map)))
                 .andDo(print())
@@ -190,7 +190,7 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
         map.remove("enabled");
         map.put(recommended,false);
         //批量取消推荐
-        mockMvc.perform(put("/storeItem/recommended")
+        mockMvc.perform(put("/storeItemUpdater/recommended")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(map)))
                 .andDo(print())
