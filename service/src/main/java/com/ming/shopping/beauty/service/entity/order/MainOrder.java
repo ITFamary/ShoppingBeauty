@@ -46,15 +46,16 @@ public class MainOrder {
     @OneToMany(fetch = FetchType.EAGER)
     private List<OrderItem> orderItemList;
     /**
-     * 总金额
-     */
-    @Column(scale = Constant.FLOAT_COLUMN_SCALE, precision = Constant.FLOAT_COLUMN_PRECISION)
-    private BigDecimal totalAmount;
-    /**
-     * 付款金额
+     * 实际应付金额
      */
     @Column(scale = Constant.FLOAT_COLUMN_SCALE, precision = Constant.FLOAT_COLUMN_PRECISION)
     private BigDecimal finalAmount;
+
+    /**
+     * 成本金额
+     */
+    @Column(scale = Constant.FLOAT_COLUMN_SCALE, precision = Constant.FLOAT_COLUMN_PRECISION)
+    private BigDecimal settlementAmount;
     /**
      * 订单状态
      */
@@ -86,13 +87,6 @@ public class MainOrder {
         return withAmount(OrderItem::getSalesPrice);
     }
     /**
-     * 结算总金额
-     * @return
-     */
-    public BigDecimal getSettleAmount(){
-        return withAmount(OrderItem::getCostPrice);
-    }
-    /**
      * 结合数量结算金额
      *
      * @param function 每个商品所牵涉金额
@@ -106,4 +100,5 @@ public class MainOrder {
         }
         return current.setScale(Constant.FLOAT_COLUMN_SCALE,Constant.ROUNDING_MODE);
     }
+
 }
