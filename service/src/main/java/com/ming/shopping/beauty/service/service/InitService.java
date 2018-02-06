@@ -1,10 +1,13 @@
 package com.ming.shopping.beauty.service.service;
 
 import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.repository.LoginRepository;
+import com.ming.shopping.beauty.service.repository.UserRepository;
 import me.jiangcai.lib.jdbc.ConnectionProvider;
 import me.jiangcai.lib.jdbc.JdbcService;
+import me.jiangcai.wx.model.Gender;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +40,8 @@ public class InitService {
     private ApplicationContext applicationContext;
     @Autowired
     private LoginRepository loginRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     @PostConstruct
     @Transactional(rollbackFor = RuntimeException.class)
@@ -54,9 +59,15 @@ public class InitService {
             Login login = new Login();
             login.setLoginName(cjMobile);
             login.setGuidable(true);
-            login.addLevel(ManageLevel.root);
+            login.addLevel(ManageLevel.root,ManageLevel.user);
             login.setCreateTime(LocalDateTime.now());
-            loginRepository.save(login);
+            loginRepository.saveAndFlush(login);
+            User user = new User();
+            user.setId(login.getId());
+            user.setLogin(login);
+            user.setFamilyName("蒋");
+            user.setGender(Gender.male);
+            userRepository.save(user);
         }
     }
 
