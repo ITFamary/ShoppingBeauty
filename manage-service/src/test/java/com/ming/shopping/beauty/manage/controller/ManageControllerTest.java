@@ -188,7 +188,7 @@ public class ManageControllerTest extends ManageConfigTest {
         Login one = mockLogin();
         assertThat(one.getLevelSet())
                 .as("一开始是没权限的")
-                .isNullOrEmpty();
+                .hasSameElementsAs(Arrays.asList(ManageLevel.user));
 
         // 确保没有root
         ManageLevel[] targetLevel = null;
@@ -218,66 +218,4 @@ public class ManageControllerTest extends ManageConfigTest {
                 .isNullOrEmpty();
 
     }
-/*
-    @Test
-    public void setManageLevel() throws Exception {
-        //以root运行
-        Login root = mockRoot();
-        updateAllRunWith(root);
-
-        //要设置权限的人
-        Login login = mockLogin();
-
-        //随便设置了4个权限
-        String manageLevelMessage = "root,rootManager,merchantRoot,merchantManager";
-        mockMvc.perform(put("/manage/" + login.getId() + "/manageLevel")
-                .content(objectMapper.writeValueAsString(manageLevelMessage))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isNoContent());
-
-        //看看是否设置成功了
-        Login one = loginRepository.findOne(login.getId());
-        one.getLevelSet().contains(ManageLevel.merchantRoot);
-
-        //设置一个权限
-        String level = "root";
-        mockMvc.perform(put("/manage/" + login.getId() + "/manageLevel")
-                .content(objectMapper.writeValueAsString(level))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isNoContent());
-
-        one = loginRepository.findOne(login.getId());
-        one.getLevelSet().forEach(System.out::println);
-
-        //设置包含重复权限的时候,看看是否正常
-        mockMvc.perform(put("/manage/" + login.getId() + "/manageLevel")
-                .content(objectMapper.writeValueAsString(manageLevelMessage))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isNoContent());
-
-        one = loginRepository.findOne(login.getId());
-        //因为设置了4个权限, 如果大于4,或者小于4就有问题
-        assertThat(one.getLevelSet().size() == 4);
-
-        //清空权限
-        mockMvc.perform(put("/manage/" + login.getId() + "/manageLevel")
-                .content(objectMapper.writeValueAsString(null))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isNoContent());
-
-        one = loginRepository.findOne(login.getId());
-        assertThat(one.getLevelSet().size() == 0);
-
-        //既然设置了商户权限,那就用它运行一下试试
-        updateAllRunWith(one);
-
-        Merchant merchant = mockMerchant();
-        mockMvc.perform(get("/merchant"))
-                .andDo(print()).andExpect(status().isOk())
-                .andExpect(jsonPath("$.list[0].name").value((merchant.getName())));
-    }*/
 }

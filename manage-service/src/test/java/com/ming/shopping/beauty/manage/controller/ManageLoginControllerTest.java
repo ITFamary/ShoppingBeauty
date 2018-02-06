@@ -62,7 +62,7 @@ public class ManageLoginControllerTest extends ManageConfigTest {
                 .andReturn();
         Login two = loginRepository.findOne(login.getId());
         //一定是启用的
-        assertThat(two.isEnabled()).isFalse();
+        assertThat(two.isGuidable()).isFalse();
     }
 
     @Test
