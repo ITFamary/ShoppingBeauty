@@ -64,7 +64,7 @@ public class UserModel implements DefinitionModel<Login> {
                         })
                         .build()
                 , FieldBuilder.asName(Login.class, "wxNickName")
-                        .addSelect(loginRoot -> loginRoot.join(Login_.wechatUser, JoinType.LEFT).get("nickName"))
+                        .addSelect(loginRoot -> loginRoot.join(Login_.wechatUser, JoinType.LEFT).get("nickname"))
                         .addEntityFunction(login -> login.getWechatUser() != null ? login.getWechatUser().getNickname() : null)
                         .build()
                 , FieldBuilder.asName(Login.class, "avatar")
