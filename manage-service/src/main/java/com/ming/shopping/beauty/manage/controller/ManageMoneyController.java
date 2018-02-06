@@ -118,7 +118,7 @@ public class ManageMoneyController {
             }
             return ApiResult.withOk("扣款金额:" + deduction + ",手机号码:" + telephone + ",扣款成功");
         }else{
-            //按数量扣款
+            //按金额扣款
             Login one = loginService.findOne(telephone);
             User user = one.getUser();
             BigDecimal subAmount = new BigDecimal(postData.get(amount).toString());
