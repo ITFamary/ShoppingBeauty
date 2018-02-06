@@ -39,8 +39,8 @@ public class ManageLoginControllerTest extends ManageConfigTest {
                 .andExpect(jsonPath("$.name").value(StringStartsWith.startsWith(mockLogin.getUser().getFamilyName())))
                 .andExpect(jsonPath("$.mobile").value(mockLogin.getLoginName()))
                 .andExpect(jsonPath("$.enabled").value(mockLogin.isEnabled()))
-                .andExpect(jsonPath("$.balance").value(BigDecimal.ZERO))
-                .andExpect(jsonPath("$.consumption").value(BigDecimal.ZERO));
+                .andExpect(jsonPath("$.balance").value(BigDecimal.ZERO));
+//                .andExpect(jsonPath("$.consumption").value(BigDecimal.ZERO));
     }
 
     @Test
