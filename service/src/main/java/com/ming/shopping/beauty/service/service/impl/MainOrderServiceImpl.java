@@ -3,20 +3,17 @@ package com.ming.shopping.beauty.service.service.impl;
 import com.ming.shopping.beauty.service.aop.BusinessSafe;
 import com.ming.shopping.beauty.service.entity.item.Item_;
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
-import com.ming.shopping.beauty.service.entity.log.CapitalFlow;
 import com.ming.shopping.beauty.service.entity.login.*;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.order.MainOrder_;
 import com.ming.shopping.beauty.service.entity.order.OrderItem;
 import com.ming.shopping.beauty.service.entity.order.OrderItem_;
-import com.ming.shopping.beauty.service.entity.support.FlowType;
 import com.ming.shopping.beauty.service.entity.support.OrderStatus;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.model.request.OrderSearcherBody;
 import com.ming.shopping.beauty.service.model.request.StoreItemNum;
-import com.ming.shopping.beauty.service.repository.CapitalFlowRepository;
 import com.ming.shopping.beauty.service.repository.MainOrderRepository;
 import com.ming.shopping.beauty.service.repository.OrderItemRepository;
 import com.ming.shopping.beauty.service.service.ItemService;
@@ -60,8 +57,6 @@ public class MainOrderServiceImpl implements MainOrderService {
     private OrderItemRepository orderItemRepository;
     @Autowired
     private StoreItemService storeItemService;
-    @Autowired
-    private CapitalFlowRepository capitalFlowRepository;
 
 
     @Override
@@ -163,14 +158,6 @@ public class MainOrderServiceImpl implements MainOrderService {
         MainOrder mainOrder = findById(id);
         mainOrder.setPayTime(LocalDateTime.now());
         mainOrder.setOrderStatus(OrderStatus.success);
-        //这是应该保存流水记录
-        CapitalFlow capitalFlow = new CapitalFlow();
-        capitalFlow.setUserId(mainOrder.getPayer().getId());
-        capitalFlow.setOrderId(mainOrder.getOrderId());
-        capitalFlow.setHappenTime(LocalDateTime.now());
-        capitalFlow.setFlowType(FlowType.OUT);
-        capitalFlow.setChanged(mainOrder.getFinalAmount().negate());
-        capitalFlowRepository.save(capitalFlow);
     }
 
     @Override

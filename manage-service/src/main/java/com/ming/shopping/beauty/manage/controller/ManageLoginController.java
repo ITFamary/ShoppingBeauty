@@ -103,6 +103,19 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
         }
     }
 
+    /**
+     * 根据用户id查询余额
+     * @param loginId 用户id
+     * @return 余额
+     */
+    @GetMapping("/{id}/balance")
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "'" +
+            ",'"+Login.ROLE_PLATFORM_SETTLEMENT+"')")
+    @ResponseBody
+    public BigDecimal findBalance(@PathVariable("id") Long loginId){
+        return loginService.findBalance(loginId);
+    }
+
     @Override
     protected List<FieldDefinition<Login>> listFields() {
         return Arrays.asList(

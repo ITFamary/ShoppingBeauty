@@ -2,16 +2,21 @@ package com.ming.shopping.beauty.manage.controller;
 
 import com.ming.shopping.beauty.manage.ManageConfigTest;
 import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.model.HttpStatusCustom;
+import com.ming.shopping.beauty.service.model.request.DepositBody;
 import com.ming.shopping.beauty.service.repository.LoginRepository;
 import org.hamcrest.core.StringStartsWith;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -22,6 +27,7 @@ public class ManageLoginControllerTest extends ManageConfigTest {
 
     @Autowired
     private LoginRepository loginRepository;
+
     @Test
     public void getOne() throws Exception {
         //来个管理员
@@ -46,7 +52,7 @@ public class ManageLoginControllerTest extends ManageConfigTest {
         Login root = mockRoot();
         updateAllRunWith(root);
         //可以推荐他人
-        mockMvc.perform(put("/login/"+login.getId()+"/guidable")
+        mockMvc.perform(put("/login/" + login.getId() + "/guidable")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(true)))
                 .andDo(print())
@@ -55,7 +61,7 @@ public class ManageLoginControllerTest extends ManageConfigTest {
         //一定是禁用的
         assertThat(one.isGuidable()).isTrue();
         //启用
-        mockMvc.perform(put("/login/"+login.getId()+"/guidable")
+        mockMvc.perform(put("/login/" + login.getId() + "/guidable")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(false)))
                 .andDo(print())
@@ -71,7 +77,7 @@ public class ManageLoginControllerTest extends ManageConfigTest {
         Login root = mockRoot();
         updateAllRunWith(root);
         //禁用
-        mockMvc.perform(put("/login/"+login.getId()+"/enabled")
+        mockMvc.perform(put("/login/" + login.getId() + "/enabled")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(false)))
                 .andDo(print())
@@ -80,7 +86,7 @@ public class ManageLoginControllerTest extends ManageConfigTest {
         //一定是禁用的
         assertThat(one.isEnabled()).isFalse();
         //启用
-        mockMvc.perform(put("/login/"+login.getId()+"/enabled")
+        mockMvc.perform(put("/login/" + login.getId() + "/enabled")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(true)))
                 .andDo(print())
@@ -88,6 +94,24 @@ public class ManageLoginControllerTest extends ManageConfigTest {
         Login two = loginRepository.findOne(login.getId());
         //一定是启用的
         assertThat(two.isEnabled()).isTrue();
+    }
+
+
+    @Test
+    public void balanceTest() throws Exception {
+        Login login = mockLogin();
+        Login root = mockRoot();
+        updateAllRunWith(root);
+
+        //现在查询他的余额应该是0
+        String contentAsString = mockMvc.perform(get("/login/{id}/balance", login.getId()))
+                .andDo(print())
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        assertThat(new BigDecimal(contentAsString).equals(BigDecimal.ZERO)).isTrue();
+
+
+
     }
 
 }

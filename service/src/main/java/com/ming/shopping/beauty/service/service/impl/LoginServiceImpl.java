@@ -5,6 +5,8 @@ import com.huotu.verification.service.VerificationCodeService;
 import com.ming.shopping.beauty.service.aop.BusinessSafe;
 import com.ming.shopping.beauty.service.config.ServiceConfig;
 import com.ming.shopping.beauty.service.entity.item.RechargeCard;
+import com.ming.shopping.beauty.service.entity.log.CapitalFlow;
+import com.ming.shopping.beauty.service.entity.log.CapitalFlow_;
 import com.ming.shopping.beauty.service.entity.log.RechargeLog;
 import com.ming.shopping.beauty.service.entity.login.*;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
@@ -56,6 +58,8 @@ public class LoginServiceImpl implements LoginService {
     private RechargeLogRepository rechargeLogRepository;
     @Autowired
     private MainOrderRepository mainOrderRepository;
+    @Autowired
+    private CapitalFlowRepository capitalFlowRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -214,30 +218,10 @@ public class LoginServiceImpl implements LoginService {
 
     @Override
     public BigDecimal findBalance(long userId) {
-        User one = userRepository.findOne(userId);
-        List<RechargeCard> cardList = rechargeCardRepository.findByUser(one);
-        BigDecimal cardAmount = BigDecimal.ZERO;
-        for (RechargeCard rechargeCard : cardList) {
-            cardAmount.add(rechargeCard.getAmount());
+        BigDecimal balance = capitalFlowRepository.findBalanceByUserId(userId);
+        if(balance == null){
+            return BigDecimal.ZERO;
         }
-        List<RechargeLog> rechargeList = rechargeLogRepository.findByUser(one);
-        BigDecimal rechargeAmount = BigDecimal.ZERO;
-        for (RechargeLog rechargeLog : rechargeList) {
-            rechargeAmount.add(rechargeLog.getAmount());
-        }
-
-        //消费
-        List<MainOrder> orderList = mainOrderRepository.findAll((root, query, cb) -> {
-            return cb.and(
-                    cb.equal(root.join(MainOrder_.payer).get(User_.id), userId),
-                    cb.equal(root.get(MainOrder_.orderStatus), OrderStatus.success)
-            );
-        });
-        BigDecimal orderAmount = BigDecimal.ZERO;
-        for (MainOrder mainOrder : orderList) {
-            orderAmount.add(mainOrder.getFinalAmount());
-        }
-        //提现
-        return cardAmount.add(rechargeAmount).subtract(orderAmount);
+        return balance;
     }
 }
