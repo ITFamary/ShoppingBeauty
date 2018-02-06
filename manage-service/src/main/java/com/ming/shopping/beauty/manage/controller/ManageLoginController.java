@@ -2,7 +2,6 @@ package com.ming.shopping.beauty.manage.controller;
 
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Login_;
-import com.ming.shopping.beauty.service.entity.login.User_;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
@@ -14,9 +13,9 @@ import me.jiangcai.crud.row.FieldDefinition;
 import me.jiangcai.crud.row.RowCustom;
 import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.RowService;
-import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -45,6 +44,8 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
     private LoginService loginService;
     @Autowired
     private MainOrderRepository mainOrderRepository;
+    @Autowired
+    private ConversionService conversionService;
 
     /**
      * 用户详情
@@ -64,7 +65,7 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
         }else{
             login.setConsumption(BigDecimal.ZERO);
         }
-        return RowService.drawEntityToRow(login, new UserModel(loginService).getDefinitions(), null);
+        return RowService.drawEntityToRow(login, new UserModel(loginService, conversionService).getDefinitions(), null);
     }
 
     /**
@@ -122,7 +123,7 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
 
     @Override
     protected List<FieldDefinition<Login>> listFields() {
-        return new UserModel(loginService).getDefinitions();
+        return new UserModel(loginService, conversionService).getDefinitions();
     }
 
     @Override

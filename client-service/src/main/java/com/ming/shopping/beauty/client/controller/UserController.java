@@ -13,6 +13,7 @@ import com.ming.shopping.beauty.service.service.MainOrderService;
 import com.ming.shopping.beauty.service.service.SystemService;
 import me.jiangcai.crud.row.RowService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -40,6 +41,8 @@ public class UserController {
     private QRController qrController;
     @Autowired
     private LoginService loginService;
+    @Autowired
+    private ConversionService conversionService;
 
     /**
      * 获取当前登录用户信息
@@ -50,7 +53,8 @@ public class UserController {
     @GetMapping
     @ResponseBody
     public Object userBaseInfo(@AuthenticationPrincipal Login login) {
-        return RowService.drawEntityToRow(loginService.findOne(login.getId()), new UserModel(loginService).getDefinitions(), null);
+        return RowService.drawEntityToRow(loginService.findOne(login.getId())
+                , new UserModel(loginService, conversionService).getDefinitions(), null);
     }
 
     /**

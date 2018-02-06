@@ -12,6 +12,7 @@ import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.field.Fields;
 import me.jiangcai.wx.model.Gender;
 import me.jiangcai.wx.standard.entity.StandardWeixinUser;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.criteria.Join;
@@ -27,7 +28,7 @@ public class UserModel implements DefinitionModel<Login> {
 
     private final List<FieldDefinition<Login>> definitions;
 
-    public UserModel(LoginService loginService) {
+    public UserModel(LoginService loginService, ConversionService conversionService) {
         super();
         definitions = Arrays.asList(
                 Fields.asBasic("id")
@@ -70,6 +71,9 @@ public class UserModel implements DefinitionModel<Login> {
                 , FieldBuilder.asName(Login.class, "avatar")
                         .addSelect(loginRoot -> loginRoot.join(Login_.wechatUser, JoinType.LEFT).get("headImageUrl"))
                         .addEntityFunction(login -> login.getWechatUser() != null ? login.getWechatUser().getHeadImageUrl() : null)
+                        .build()
+                , FieldBuilder.asName(Login.class, "createTime")
+                        .addFormat((data, type) -> conversionService.convert(data, String.class))
                         .build()
                 , FieldBuilder.asName(Login.class, "balance")
                         .addBiSelect(Login::getCurrentBalanceExpr)
