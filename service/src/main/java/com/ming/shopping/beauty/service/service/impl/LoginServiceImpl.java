@@ -4,15 +4,8 @@ import com.huotu.verification.IllegalVerificationCodeException;
 import com.huotu.verification.service.VerificationCodeService;
 import com.ming.shopping.beauty.service.aop.BusinessSafe;
 import com.ming.shopping.beauty.service.config.ServiceConfig;
-import com.ming.shopping.beauty.service.entity.item.RechargeCard;
-import com.ming.shopping.beauty.service.entity.log.CapitalFlow;
-import com.ming.shopping.beauty.service.entity.log.CapitalFlow_;
-import com.ming.shopping.beauty.service.entity.log.RechargeLog;
 import com.ming.shopping.beauty.service.entity.login.*;
-import com.ming.shopping.beauty.service.entity.order.MainOrder;
-import com.ming.shopping.beauty.service.entity.order.MainOrder_;
 import com.ming.shopping.beauty.service.entity.support.ManageLevel;
-import com.ming.shopping.beauty.service.entity.support.OrderStatus;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
@@ -36,9 +29,6 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author helloztt
@@ -104,8 +94,10 @@ public class LoginServiceImpl implements LoginService {
         }
         //也许是初始化时未设置wechatUser的登录
         login = loginRepository.findByLoginName(mobile);
-        if (login != null && login.getWechatUser() == null) {
+        if (login != null) {
+            // TODO: 2018/2/7 单元测试还需要完善
             login.setWechatUser(standardWeixinUserRepository.findByOpenId(openId));
+            loginRepository.removeEmptyLogin(openId);
             return loginRepository.save(login);
         }
         //注册前校验手机号是否存在

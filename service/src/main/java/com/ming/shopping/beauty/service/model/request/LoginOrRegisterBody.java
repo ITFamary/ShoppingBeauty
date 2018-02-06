@@ -36,7 +36,7 @@ public class LoginOrRegisterBody {
     /**
      * 会员卡卡密
      */
-    @Size(min = 20, max = 20, message = "卡密")
+//    @Size(min = 20, max = 20, message = "卡密")
     private String cdKey;
     /**
      * 推荐人

@@ -39,6 +39,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -284,6 +285,15 @@ public class IndexController {
         if (principal instanceof Login) {
             loginRequestService.remove(sessionId, (Login) principal);
         }
+    }
+
+    @GetMapping("/error")
+    public ModelAndView error(@RequestParam int status, @RequestParam(required = false) String message) {
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("/views/error");
+        modelAndView.addObject("status", status);
+        modelAndView.addObject("message", message);
+        return modelAndView;
     }
 
     private void loginToSecurity(Login login, HttpServletRequest request, HttpServletResponse response) {

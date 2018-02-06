@@ -244,7 +244,10 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
         }
         //找这个商户
         Merchant merchant = merchantService.findMerchant(merchantId);
-        Merchant merchantManage = new Merchant();
+        Merchant merchantManage = merchantRepository.findOne(manageId);
+        if(merchantManage == null){
+            merchantManage = new Merchant();
+        }
         merchantManage.setMerchant(merchant);
         merchantService.addMerchant(manageId, merchantManage, manageLevelSet.toArray(new ManageLevel[manageLevelSet.size()]));
     }

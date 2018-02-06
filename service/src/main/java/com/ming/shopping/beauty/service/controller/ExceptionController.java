@@ -6,11 +6,14 @@ import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.exception.ClientAuthRequiredException;
 import com.ming.shopping.beauty.service.model.HttpStatusCustom;
+import com.ming.shopping.beauty.service.service.SystemService;
 import me.jiangcai.wx.web.flow.RedirectException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.StringUtils;
@@ -18,12 +21,13 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,30 +38,40 @@ import java.util.regex.Pattern;
 @ControllerAdvice
 public class ExceptionController {
     private static final Log log = LogFactory.getLog(ExceptionController.class);
-
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    @Autowired
+    private SystemService systemService;
+
+
     @ExceptionHandler(ApiResultException.class)
-    public ModelAndView noHandlerFound(ApiResultException exception, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public ResponseEntity noHandlerFound(ApiResultException exception, HttpServletRequest request, HttpServletResponse response) throws IOException, URISyntaxException {
         //如果没有返回提示，获取原始message
-        String errorMsg;
+        String errorMsg = null;
         if (exception.getApiResult() == null) {
-            errorMsg = HttpStatus.valueOf(exception.getHttpStatus()).getReasonPhrase();
+            try {
+                errorMsg = HttpStatus.valueOf(exception.getHttpStatus()).getReasonPhrase();
+            } catch (IllegalArgumentException ex) {
+                //说明是自定义的
+            }
         } else {
             errorMsg = exception.getApiResult().getMessage();
         }
-        response.sendError(exception.getHttpStatus(), errorMsg);
         if (isAjaxRequestOrBackJson(request)) {
-            response.getWriter().write(objectMapper.writeValueAsString(exception.getApiResult()));
             log.debug(objectMapper.writeValueAsString(exception.getApiResult()));
-            return null;
+            return ResponseEntity
+                    .status(exception.getHttpStatus()).contentType(MediaType.APPLICATION_JSON_UTF8)
+                    .body(objectMapper.writeValueAsString(exception.getApiResult()))
+                    ;
         } else {
-            ModelAndView modelAndView = new ModelAndView();
-            modelAndView.setViewName("/views/error");
-            modelAndView.addObject("status", exception.getHttpStatus());
-            modelAndView.addObject("message", errorMsg);
-            log.debug("status:" + exception.getHttpStatus() + ";message:" + errorMsg);
-            return modelAndView;
+            String errorUrl = systemService.toMobileUrl("/error?status=" + exception.getHttpStatus() + "&message=" + errorMsg);
+            //替换域名为请求时的域名
+            if (request.getHeader("X-Forwarded-Host") != null) {
+                errorUrl = errorUrl.replaceFirst("[a-zA-Z.0-9]+", request.getHeader("X-Forwarded-Host"));
+            }
+            return ResponseEntity
+                    .status(HttpStatus.FOUND)
+                    .location(new URI(errorUrl)).build();
         }
     }
 
@@ -112,7 +126,9 @@ public class ExceptionController {
      */
     private boolean isAjaxRequestOrBackJson(HttpServletRequest request) {
         String accept = request.getHeader("accept");
-        if (!StringUtils.isEmpty(accept) && accept.toLowerCase().contains(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
+        if (!StringUtils.isEmpty(accept) && (
+                accept.toLowerCase().contains(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                        || accept.toLowerCase().contains(MediaType.TEXT_HTML_VALUE)))
             return false;
         return true;
     }

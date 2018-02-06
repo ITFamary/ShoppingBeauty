@@ -39,4 +39,14 @@ public interface LoginRepository extends JpaRepository<Login, Long>, JpaSpecific
     @Modifying(clearAutomatically = true)
     @Query("update Login set enabled = ?2 where id = ?1")
     int updateLoginEnabled(long id, boolean enabled);
+
+    /**
+     * 删除多余的 Login 账号
+     *
+     * @param openId
+     */
+    @Transactional(rollbackFor = RuntimeException.class)
+    @Modifying(clearAutomatically = true)
+    @Query("delete from Login where loginName is null and wechatUser.openId = ?1 ")
+    void removeEmptyLogin(String openId);
 }

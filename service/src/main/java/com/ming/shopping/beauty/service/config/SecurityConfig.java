@@ -84,6 +84,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/wechat/bindTo**").permitAll()
                 // 手机号码可用性检测
                 .antMatchers("/loginData/mobileValidation").permitAll()
+                //错误页面
+                .antMatchers("/error").permitAll()
                 // 其他必须接受保护
                 .antMatchers("/**").authenticated()
                 .and().csrf().disable()
