@@ -200,9 +200,16 @@ public class LoginServiceImpl implements LoginService {
     @Transactional(rollbackFor = RuntimeException.class)
     public void setManageLevel(long loginId, ManageLevel... manageLevel) {
         Login login = loginRepository.findOne(loginId);
-        login.getLevelSet().clear();
-        login.addLevel(manageLevel);
-        loginRepository.save(login);
+        if (login.getLevelSet().contains(ManageLevel.user)) {
+            login.getLevelSet().clear();
+            login.addLevel(manageLevel);
+            login.getLevelSet().add(ManageLevel.user);
+            loginRepository.save(login);
+        } else {
+            login.getLevelSet().clear();
+            login.addLevel(manageLevel);
+            loginRepository.save(login);
+        }
     }
 
     @Override

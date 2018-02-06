@@ -196,6 +196,8 @@ public class ManageControllerTest extends ManageConfigTest {
             targetLevel = randomArray(Login.rootLevel.toArray(new ManageLevel[Login.rootLevel.size()]), 1);
         }
 
+        System.out.println(objectMapper.writeValueAsBytes(Stream.of(targetLevel).map(Enum::name).collect(Collectors.toList())));
+
         //
         mockMvc.perform(
                 put("/manage/{id}/levelSet", one.getId())
@@ -203,9 +205,15 @@ public class ManageControllerTest extends ManageConfigTest {
                         .content(objectMapper.writeValueAsBytes(Stream.of(targetLevel).map(Enum::name).collect(Collectors.toList())))
         )
                 .andExpect(status().is2xxSuccessful());
+        //因为我们知道mockLogin具有user权限,所以给他加上
+        ManageLevel[] containUserLevel = new ManageLevel[targetLevel.length+1];
+        System.arraycopy(targetLevel,0,containUserLevel,0,targetLevel.length);
+        containUserLevel[targetLevel.length] = ManageLevel.user;
+
         assertThat(loginService.findOne(one.getId()).getLevelSet())
                 .as("新的权限符合需求")
-                .hasSameElementsAs(Arrays.asList(targetLevel));
+                .hasSameElementsAs(Arrays.asList(containUserLevel));
+
         // 再清楚掉
         mockMvc.perform(
                 put("/manage/{id}/levelSet", one.getId())
@@ -213,9 +221,10 @@ public class ManageControllerTest extends ManageConfigTest {
                         .content(objectMapper.writeValueAsBytes(new ArrayList<>()))
         )
                 .andExpect(status().is2xxSuccessful());
+        // 他应该具有user权限
         assertThat(loginService.findOne(one.getId()).getLevelSet())
                 .as("应该没有权限了")
-                .isNullOrEmpty();
+                .hasSameElementsAs(Arrays.asList(ManageLevel.user));
 
     }
 }
