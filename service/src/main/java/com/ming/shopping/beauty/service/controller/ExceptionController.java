@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
-import com.ming.shopping.beauty.service.model.ApiResult;
+import com.ming.shopping.beauty.service.exception.ClientAuthRequiredException;
 import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -18,10 +18,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.RedirectView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 定义一些异常的处理
@@ -42,27 +45,54 @@ public class ExceptionController {
         } else {
             errorMsg = exception.getApiResult().getMessage();
         }
-        response.sendError(exception.getHttpStatus(),errorMsg);
-        if(isAjaxRequestOrBackJson(request)){
+        response.sendError(exception.getHttpStatus(), errorMsg);
+        if (isAjaxRequestOrBackJson(request)) {
             response.getWriter().write(objectMapper.writeValueAsString(exception.getApiResult()));
+            log.debug(objectMapper.writeValueAsString(exception.getApiResult()));
             return null;
-        }else{
+        } else {
             ModelAndView modelAndView = new ModelAndView();
             modelAndView.setViewName("/views/error");
             modelAndView.addObject("status", exception.getHttpStatus());
             modelAndView.addObject("message", errorMsg);
+            log.debug("status:" + exception.getHttpStatus() + ";message:" + errorMsg);
             return modelAndView;
         }
+    }
+
+    // 其实下面2种行为 都是要求授权的行为
+    // 区别仅在于客户端的协议不同
+    // 对于支持text/html的客户端，因为支持跳转和本地再渲染html所以直接通过/auth跳转就完成了授权登录的需求
+    // 而仅支持application/json 说白了只是一个数据行为；即便给它302到/auth 它依然会抓瞎；所以我们明确了
+    // 协议要求客户端在识别到该响应式 以客户端的方式完成/auth的调度。
+
+    @ExceptionHandler(ClientAuthRequiredException.class)
+    public RedirectView needLogin(ClientAuthRequiredException ex, HttpServletRequest request) {
+        StringBuilder uri = new StringBuilder("/auth?redirectUrl=");
+        String origin = request.getRequestURL().toString();
+
+        Matcher matcher = Pattern.compile("http[s]?://[a-zA-Z.0-9]+(:\\d+).*").matcher(origin);
+        if (matcher.matches()) {
+            origin = origin.replace(matcher.group(1), "");
+        }
+        uri.append(origin);
+        return new RedirectView(uri.toString());
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     @ResponseBody
-    public void needLogin(@AuthenticationPrincipal Login login,AccessDeniedException exception
-            ,HttpServletResponse response) throws IOException {
-        if(!login.getLevelSet().contains(ManageLevel.user)){
+    public void needLogin(@AuthenticationPrincipal Login login, AccessDeniedException exception
+            , HttpServletResponse response) throws IOException {
+        if (!login.getLevelSet().contains(ManageLevel.user)) {
             response.sendError(HttpStatusCustom.SC_LOGIN_NOT_EXIST);
         }
+    }
+
+    @ExceptionHandler(Exception.class)
+    public void forPrintException(Exception e) throws Exception {
+        log.error(e);
+        throw e;
     }
 
     /***
@@ -72,7 +102,8 @@ public class ExceptionController {
      */
     private boolean isAjaxRequestOrBackJson(HttpServletRequest request) {
         String accept = request.getHeader("accept");
-        if (!StringUtils.isEmpty(accept) && accept.toLowerCase().contains(MediaType.APPLICATION_FORM_URLENCODED_VALUE)) return false;
+        if (!StringUtils.isEmpty(accept) && accept.toLowerCase().contains(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
+            return false;
         return true;
     }
 }

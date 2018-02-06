@@ -41,7 +41,7 @@ public interface RechargeCardService {
      * 实现中应该有这样几个步骤：
      * 1.校验，如果错误就抛出异常
      * 2.设置充值卡已被谁使用
-     * 3.给这个用户激活，增加金额和充值流水
+     * 3.给这个用户激活，增加金额
      *
      * @param cardNo 卡密
      * @param userId 充值的用户

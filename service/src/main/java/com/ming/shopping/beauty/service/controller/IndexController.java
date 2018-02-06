@@ -4,6 +4,7 @@ import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.LoginRequest;
 import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
+import com.ming.shopping.beauty.service.exception.ClientAuthRequiredException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
@@ -21,6 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,15 +30,22 @@ import org.springframework.security.web.context.HttpRequestResponseHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -74,6 +83,7 @@ public class IndexController {
     public String auth(WeixinUserDetail weixinUserDetail, @RequestParam String redirectUrl
             , HttpServletRequest request, HttpServletResponse response) {
         if (weixinUserDetail != null) {
+            log.debug("wxNickName:" + weixinUserDetail.getNickname() + ",openId:" + weixinUserDetail.getOpenId());
             Login login = loginService.asWechat(weixinUserDetail.getOpenId());
             if (login == null) {
                 login = loginService.newEmpty(weixinUserDetail.getOpenId());
@@ -201,33 +211,32 @@ public class IndexController {
         return result;
     }
 
-    /**
-     * 扫码登录
-     *
-     * @param weixinUserDetail
-     */
+    // 扫码登录
     @GetMapping("/managerLogin/{requestId}")
-    @ResponseBody
-    public void manageLogin(WeixinUserDetail weixinUserDetail, @PathVariable long requestId, HttpServletRequest request, HttpServletResponse response) {
-        if (loginRequestService.findOne(requestId) == null) {
-            //session已失效，请重新获取二维码
-            response.setStatus(HttpStatusCustom.SC_SESSION_TIMEOUT);
-            return;
+    public ResponseEntity manageLogin(@AuthenticationPrincipal Object current, @PathVariable long requestId)
+            throws URISyntaxException, ClientAuthRequiredException {
+        if (!(current instanceof Login)) {
+            throw new ClientAuthRequiredException();
         }
-        Login login = loginService.asWechat(weixinUserDetail.getOpenId());
-        if (login == null || StringUtils.isEmpty(login.getLoginName())) {
+        Login login = (Login) current;
+
+        if (StringUtils.isEmpty(login.getLoginName())) {
             //说明没有这个角色或者是个空的角色
-            response.setStatus(HttpStatusCustom.SC_LOGIN_NOT_EXIST);
-        } else if (login.getLevelSet().stream().filter(p -> !ManageLevel.user.equals(p)).count() == 0 || !login.isEnabled()) {
+            return ResponseEntity.status(HttpStatusCustom.SC_LOGIN_NOT_EXIST)
+                    .build();
+        } else if (login.getLevelSet().stream().allMatch(ManageLevel.user::equals) || !login.isEnabled()) {
             //说明用户没有权限登录管理后台
-            response.setStatus(HttpStatusCustom.SC_FORBIDDEN);
-//            loginRequestService.remove(requestId);
+            return ResponseEntity.status(HttpStatusCustom.SC_FORBIDDEN)
+                    .build();
         } else {
             //执行登录
-            loginToSecurity(login, request, response); // TODO 微信端扫码用户还需要再次登录么？
             loginRequestService.login(requestId, login);
-            response.setStatus(HttpStatusCustom.SC_OK);
+            return ResponseEntity
+                    .status(HttpStatus.FOUND)
+                    .location(new URI(systemService.toMobileHomeUrl()))
+                    .build();
         }
+
     }
 
     @GetMapping("/currentManager")

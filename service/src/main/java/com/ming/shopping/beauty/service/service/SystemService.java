@@ -24,4 +24,8 @@ public interface SystemService {
     String toMobileUrl(String uri);
 
     String toDesktopUrl(String uri);
+
+    default String toMobileHomeUrl() {
+        return toMobileUrl("/#/personal");
+    }
 }
