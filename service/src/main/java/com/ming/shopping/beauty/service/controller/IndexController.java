@@ -74,6 +74,7 @@ public class IndexController {
     public String auth(WeixinUserDetail weixinUserDetail, @RequestParam String redirectUrl
             , HttpServletRequest request, HttpServletResponse response) {
         if (weixinUserDetail != null) {
+            log.debug("wxNickName:" + weixinUserDetail.getNickname() + ",openId:" + weixinUserDetail.getOpenId());
             Login login = loginService.asWechat(weixinUserDetail.getOpenId());
             if (login == null) {
                 login = loginService.newEmpty(weixinUserDetail.getOpenId());

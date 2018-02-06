@@ -42,15 +42,17 @@ public class ExceptionController {
         } else {
             errorMsg = exception.getApiResult().getMessage();
         }
-        response.sendError(exception.getHttpStatus(),errorMsg);
-        if(isAjaxRequestOrBackJson(request)){
+        response.sendError(exception.getHttpStatus(), errorMsg);
+        if (isAjaxRequestOrBackJson(request)) {
             response.getWriter().write(objectMapper.writeValueAsString(exception.getApiResult()));
+            log.debug(objectMapper.writeValueAsString(exception.getApiResult()));
             return null;
-        }else{
+        } else {
             ModelAndView modelAndView = new ModelAndView();
             modelAndView.setViewName("/views/error");
             modelAndView.addObject("status", exception.getHttpStatus());
             modelAndView.addObject("message", errorMsg);
+            log.debug("status:" + exception.getHttpStatus() + ";message:" + errorMsg);
             return modelAndView;
         }
     }
@@ -58,11 +60,17 @@ public class ExceptionController {
     @ExceptionHandler(AccessDeniedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     @ResponseBody
-    public void needLogin(@AuthenticationPrincipal Login login,AccessDeniedException exception
-            ,HttpServletResponse response) throws IOException {
-        if(!login.getLevelSet().contains(ManageLevel.user)){
+    public void needLogin(@AuthenticationPrincipal Login login, AccessDeniedException exception
+            , HttpServletResponse response) throws IOException {
+        if (!login.getLevelSet().contains(ManageLevel.user)) {
             response.sendError(HttpStatusCustom.SC_LOGIN_NOT_EXIST);
         }
+    }
+
+    @ExceptionHandler(Exception.class)
+    public void forPrintException(Exception e) throws Exception {
+        log.error(e);
+        throw e;
     }
 
     /***
@@ -72,7 +80,8 @@ public class ExceptionController {
      */
     private boolean isAjaxRequestOrBackJson(HttpServletRequest request) {
         String accept = request.getHeader("accept");
-        if (!StringUtils.isEmpty(accept) && accept.toLowerCase().contains(MediaType.APPLICATION_FORM_URLENCODED_VALUE)) return false;
+        if (!StringUtils.isEmpty(accept) && accept.toLowerCase().contains(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
+            return false;
         return true;
     }
 }
