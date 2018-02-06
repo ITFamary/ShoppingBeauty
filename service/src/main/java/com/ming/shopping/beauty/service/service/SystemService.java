@@ -33,10 +33,23 @@ public interface SystemService {
     }
 
     /**
-     *
      * @return 前端注册页面
      */
     default String toMobileJoinUrl() {
         return toMobileUrl("/#/join");
+    }
+
+    /**
+     * @return 前端会员卡
+     */
+    default String toMobileVipUrl() {
+        return toMobileUrl("/#/vip");
+    }
+
+    /**
+     * @return 项目列表
+     */
+    default String toMobileItemUrl() {
+        return toMobileUrl("/#/items");
     }
 }
