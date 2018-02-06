@@ -6,6 +6,7 @@ import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.exception.ClientAuthRequiredException;
 import com.ming.shopping.beauty.service.model.HttpStatusCustom;
+import me.jiangcai.wx.web.flow.RedirectException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
@@ -58,6 +59,11 @@ public class ExceptionController {
             log.debug("status:" + exception.getHttpStatus() + ";message:" + errorMsg);
             return modelAndView;
         }
+    }
+
+    @ExceptionHandler(RedirectException.class)
+    public RedirectView redirect(RedirectException ex) {
+        return new RedirectView(ex.getUrl());
     }
 
     // 其实下面2种行为 都是要求授权的行为
