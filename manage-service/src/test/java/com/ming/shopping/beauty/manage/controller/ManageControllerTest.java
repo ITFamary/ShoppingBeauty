@@ -12,6 +12,7 @@ import com.ming.shopping.beauty.service.service.InitService;
 import com.ming.shopping.beauty.service.service.SystemService;
 import me.jiangcai.wx.web.exception.NoWeixinClientException;
 import org.junit.Test;
+import org.mockito.internal.matchers.StartsWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.http.MediaType;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -40,19 +42,19 @@ public class ManageControllerTest extends ManageConfigTest {
 
     @Autowired
     private LoginRepository loginRepository;
-
-    /**
-     * 非微信环境无法工作
-     */
-    @Test(expected = NoWeixinClientException.class)
-    public void weixinOnly() throws Throwable {
-        try {
-            mockMvc.perform(get(manageLogin + "/" + UUID.randomUUID().toString()))
-                    .andExpect(status().isOk());
-        } catch (NestedServletException nestedServletException) {
-            throw nestedServletException.getCause();
-        }
-    }
+//
+//    /**
+//     * 非微信环境无法工作
+//     */
+//    @Test(expected = NoWeixinClientException.class)
+//    public void weixinOnly() throws Throwable {
+//        try {
+//            mockMvc.perform(get(manageLogin + "/12345"))
+//                    .andExpect(status().isOk());
+//        } catch (NestedServletException nestedServletException) {
+//            throw nestedServletException.getCause();
+//        }
+//    }
 
     /**
      * 管理员后台扫码的登录过程中有2个参与session
@@ -67,7 +69,8 @@ public class ManageControllerTest extends ManageConfigTest {
 
         //随便找个ID登录，期望提示session失效
         MockHttpSession wechatSession = (MockHttpSession) mockMvc.perform(wechatGet(manageLogin + "/" + random.nextInt(1000)))
-                .andExpect(status().is(HttpStatusCustom.SC_SESSION_TIMEOUT))
+                .andExpect(status().isFound())
+                .andExpect(header().string("Location", new StartsWith("/auth")))
                 .andReturn().getRequest().getSession();
 
         // 桌面开始搞事情了
@@ -88,7 +91,8 @@ public class ManageControllerTest extends ManageConfigTest {
         String requestId = objectMapper.readTree(result).get("id").asText();
         //再次登录，由于CJ的账号没有openId，期望 HttpStatusCustom.SC_LOGIN_NOT_EXIST
         mockMvc.perform(wechatGet(manageLogin + "/" + requestId).session(wechatSession))
-                .andExpect(status().is(HttpStatusCustom.SC_LOGIN_NOT_EXIST));
+                .andExpect(status().isFound())
+                .andExpect(header().string("Location", new StartsWith("/auth")));
 
         //用蒋才的账号登录一下，更新openId
         LoginOrRegisterBody registerBody = new LoginOrRegisterBody();
@@ -110,7 +114,8 @@ public class ManageControllerTest extends ManageConfigTest {
         mockMvc.perform(wechatGet(manageLogin + "/" + requestId)
                 .session(wechatSession)
         )
-                .andExpect(status().isOk());
+                .andExpect(status().isFound())
+                .andExpect(header().string("Location", new StartsWith("http")));
 
         //看看登录结果
         mockMvc.perform(get(manageLoginResult + "/" + requestId)
@@ -147,7 +152,8 @@ public class ManageControllerTest extends ManageConfigTest {
         mockMvc.perform(get(manageLoginResult + "/" + requestId).session(desktopSession)).andExpect(status().isNoContent());
 
         mockMvc.perform(wechatGet(manageLogin + "/" + requestId))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isFound())
+                .andExpect(header().string("Location", new StartsWith("/auth")));
 
         mockMvc.perform(get(manageLoginResult + "/" + requestId).session(desktopSession)).andExpect(status().isNoContent());
     }
