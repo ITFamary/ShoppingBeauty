@@ -12,7 +12,6 @@ import lombok.Getter;
 public enum RechargeType {
 
     MANUAL("手动充值"),
-    RECHARGE_CARD("充值卡充值"),
     DEDUCTION("手动扣款");
 
     private String message;

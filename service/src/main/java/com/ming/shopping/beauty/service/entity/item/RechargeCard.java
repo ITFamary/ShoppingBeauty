@@ -56,7 +56,7 @@ public class RechargeCard implements Cloneable {
     /**
      * 兑换时间
      */
-    @Column(columnDefinition = Constant.DATE_NULLABLE_COLUMN_DEFINITION,nullable = true)
+    @Column(columnDefinition = Constant.DATE_NULLABLE_COLUMN_DEFINITION)
     private LocalDateTime usedTime;
 
     @Override
