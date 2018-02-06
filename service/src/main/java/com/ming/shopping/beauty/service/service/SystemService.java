@@ -25,7 +25,18 @@ public interface SystemService {
 
     String toDesktopUrl(String uri);
 
+    /**
+     * @return 前端首页
+     */
     default String toMobileHomeUrl() {
         return toMobileUrl("/#/personal");
+    }
+
+    /**
+     *
+     * @return 前端注册页面
+     */
+    default String toMobileJoinUrl() {
+        return toMobileUrl("/#/join");
     }
 }

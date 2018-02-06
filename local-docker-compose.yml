@@ -20,13 +20,13 @@ services:
       - server_rs:/usr/share/nginx/html
 
   server:
-    image: shopping-beauty-server
+    image: mingshz/shopping-beauty-server
     volumes:
       - server_rs:/data/resources
       - ./logs:/usr/local/tomcat/logs
 #      - ./context.xml:/usr/local/tomcat/conf/Catalina/localhost/context.xml.default
     ports:
-      - 80:8080
+      - 8080:8080
     depends_on:
       - mysql
 #

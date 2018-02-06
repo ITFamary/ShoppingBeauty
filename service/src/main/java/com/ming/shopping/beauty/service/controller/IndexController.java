@@ -222,11 +222,15 @@ public class IndexController {
 
         if (StringUtils.isEmpty(login.getLoginName())) {
             //说明没有这个角色或者是个空的角色
-            return ResponseEntity.status(HttpStatusCustom.SC_LOGIN_NOT_EXIST)
+            return ResponseEntity
+                    .status(HttpStatus.FOUND)
+                    .location(new URI(systemService.toMobileJoinUrl()))
                     .build();
         } else if (login.getLevelSet().stream().allMatch(ManageLevel.user::equals) || !login.isEnabled()) {
             //说明用户没有权限登录管理后台
-            return ResponseEntity.status(HttpStatusCustom.SC_FORBIDDEN)
+            return ResponseEntity
+                    .status(HttpStatus.FOUND)
+                    .location(new URI(systemService.toMobileHomeUrl()))
                     .build();
         } else {
             //执行登录
