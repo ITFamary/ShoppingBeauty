@@ -2,14 +2,11 @@ package com.ming.shopping.beauty.service.service;
 
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import com.ming.shopping.beauty.service.entity.login.Represent;
-import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
-import com.ming.shopping.beauty.service.entity.order.OrderItem;
 import com.ming.shopping.beauty.service.model.request.OrderSearcherBody;
 import com.ming.shopping.beauty.service.model.request.StoreItemNum;
 import me.jiangcai.crud.row.FieldDefinition;
-import me.jiangcai.crud.row.RowDefinition;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -77,7 +74,7 @@ public interface MainOrderService {
      * @return 是否成功
      */
     @Transactional
-    boolean payOrder(long id);
+    void payOrder(long id);
 
     /**
      * 根据条件查询订单

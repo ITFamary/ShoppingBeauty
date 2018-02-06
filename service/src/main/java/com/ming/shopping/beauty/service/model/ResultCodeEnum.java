@@ -68,7 +68,14 @@ public enum ResultCodeEnum {
     NO_MONEY_CARD(5002, "请输入充值金额或者充值卡卡密"),
     RECHARGE_MONEY_NOT_ENOUGH(5003, "充值金额必须大于{0}"),
     CARD_FAILURE(5004, "手动充值失败"),
-    DEDUCTION_FAILURE(5005, "手动扣款失败");
+    DEDUCTION_FAILURE(5005, "手动扣款失败"),
+    /**
+     * 结算单相关: [6000,6999]
+     */
+    REJECT_NOT_COMMENT(6000,"打回结算单必须有备注"),
+    SHEET_STATUS_ERROR(6001,"错误的结算单状态,审核操作结算单事先要处于待审核状态")
+
+    ;
     private int code;
     private String message;
 }

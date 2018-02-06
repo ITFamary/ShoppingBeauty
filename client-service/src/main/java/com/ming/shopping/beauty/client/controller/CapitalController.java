@@ -3,21 +3,22 @@ package com.ming.shopping.beauty.client.controller;
 import com.ming.shopping.beauty.service.entity.log.CapitalFlow;
 import com.ming.shopping.beauty.service.entity.log.CapitalFlow_;
 import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.order.RechargeOrder;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.model.request.DepositBody;
+import com.ming.shopping.beauty.service.service.LoginService;
+import com.ming.shopping.beauty.service.service.MainOrderService;
 import com.ming.shopping.beauty.service.service.RechargeCardService;
 import com.ming.shopping.beauty.service.service.RechargeOrderService;
-import me.jiangcai.crud.row.DefaultRowDramatizer;
 import me.jiangcai.crud.row.FieldDefinition;
 import me.jiangcai.crud.row.RowCustom;
 import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
 import me.jiangcai.lib.sys.service.SystemStringService;
-import me.jiangcai.payment.entity.PayOrder;
 import me.jiangcai.payment.exception.SystemMaintainException;
 import me.jiangcai.payment.service.PaymentService;
 import me.jiangcai.wx.standard.service.WeixinPaymentForm;
@@ -25,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
@@ -64,6 +64,10 @@ public class CapitalController {
     private PaymentService paymentService;
     @Autowired
     private WeixinPaymentForm weixinPaymentForm;
+    @Autowired
+    private LoginService loginService;
+    @Autowired
+    private MainOrderService mainOrderService;
 
     @GetMapping("/flow")
     @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
@@ -125,6 +129,39 @@ public class CapitalController {
         ModelAndView model = new ModelAndView();
         model.setViewName("redirect:" + postData.getRedirectUrl());
         return model;
+    }
+
+    /**
+     * 支付订单
+     * @param orderId  支付的订单id
+     * @param amount  订单金额
+     */
+    @PutMapping("/payment/{orderId}")
+    @ResponseBody
+    public BigDecimal payOrder(@PathVariable(value = "orderId" ,required = true) Long orderId,
+                               @RequestBody BigDecimal amount, HttpServletResponse response){
+        //获取待支付的这个订单
+        MainOrder mainOrder = mainOrderService.findById(orderId);
+        //查看用户的余额
+        BigDecimal balance = loginService.findBalance(mainOrder.getPayer().getId());
+        ///判断余额是否足够支付订单不够返回差额
+        if(balance.compareTo(amount) < 0){
+            //差值
+            response.setStatus(HttpStatus.PAYMENT_REQUIRED.value());
+            BigDecimal subtract = amount.subtract(balance);
+            Integer provision = systemStringService.getCustomSystemString("shopping.service.recharge.min.amount", null, true, Integer.class, 5000);
+            BigDecimal bProvision = new BigDecimal(provision);
+            if(subtract.compareTo(bProvision)<0){
+                //需要充值的金额小于系统默认的设定值,则返回设定值
+                return bProvision;
+            }
+            return subtract;
+        }else {
+            //支付成功
+            mainOrderService.payOrder(orderId);
+        }
+        response.setStatus(HttpStatus.ACCEPTED.value());
+        return null;
     }
 
     private List<FieldDefinition<CapitalFlow>> listFields() {

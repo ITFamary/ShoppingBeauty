@@ -1,21 +1,22 @@
 package com.ming.shopping.beauty.service.service.impl;
 
 import com.ming.shopping.beauty.service.aop.BusinessSafe;
-import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.item.Item_;
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
+import com.ming.shopping.beauty.service.entity.log.CapitalFlow;
 import com.ming.shopping.beauty.service.entity.login.*;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.order.MainOrder_;
 import com.ming.shopping.beauty.service.entity.order.OrderItem;
 import com.ming.shopping.beauty.service.entity.order.OrderItem_;
+import com.ming.shopping.beauty.service.entity.support.FlowType;
 import com.ming.shopping.beauty.service.entity.support.OrderStatus;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.model.request.OrderSearcherBody;
 import com.ming.shopping.beauty.service.model.request.StoreItemNum;
-import com.ming.shopping.beauty.service.model.response.OrderResponse;
+import com.ming.shopping.beauty.service.repository.CapitalFlowRepository;
 import com.ming.shopping.beauty.service.repository.MainOrderRepository;
 import com.ming.shopping.beauty.service.repository.OrderItemRepository;
 import com.ming.shopping.beauty.service.service.ItemService;
@@ -36,9 +37,9 @@ import org.springframework.util.CollectionUtils;
 
 import javax.persistence.criteria.*;
 import java.lang.reflect.Array;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 /**
@@ -59,6 +60,8 @@ public class MainOrderServiceImpl implements MainOrderService {
     private OrderItemRepository orderItemRepository;
     @Autowired
     private StoreItemService storeItemService;
+    @Autowired
+    private CapitalFlowRepository capitalFlowRepository;
 
 
     @Override
@@ -113,6 +116,8 @@ public class MainOrderServiceImpl implements MainOrderService {
         mainOrder.setRepresent(represent);
         mainOrder.setStore(represent.getStore());
 
+        BigDecimal costPrice = BigDecimal.ZERO;
+        BigDecimal finalPrice = BigDecimal.ZERO;
         List<OrderItem> orderItemList = new ArrayList<>();
         amounts.keySet().forEach(storeItem -> {
             OrderItem orderItem = new OrderItem();
@@ -122,11 +127,18 @@ public class MainOrderServiceImpl implements MainOrderService {
             orderItem.setName(orderItem.getItem().getName());
             orderItem.setPrice(orderItem.getItem().getPrice());
             //销售价从门店项目中获取
-            orderItem.setSalesPrice(orderItem.getSalesPrice());
+            orderItem.setSalesPrice(storeItem.getSalesPrice());
             orderItem.setCostPrice(orderItem.getItem().getCostPrice());
+            //将orderItem总的成本价统计起来.
+            costPrice.add(orderItem.getCostPrice());
+            //统计销售价格
+            finalPrice.add(orderItem.getSalesPrice());
             orderItem.setNum(amounts.get(storeItem));
             orderItemList.add(orderItem);
         });
+        //统计成本价格
+        mainOrder.setSettlementAmount(costPrice);
+        mainOrder.setFinalAmount(finalPrice);
         mainOrder.setOrderItemList(orderItemList);
         //待付款
         mainOrder.setOrderStatus(OrderStatus.forPay);
@@ -146,12 +158,19 @@ public class MainOrderServiceImpl implements MainOrderService {
     }
 
     @Override
-    public boolean payOrder(long id) {
-        //TODO 还不知道怎么写
+    @Transactional
+    public void payOrder(long id) {
         MainOrder mainOrder = findById(id);
         mainOrder.setPayTime(LocalDateTime.now());
         mainOrder.setOrderStatus(OrderStatus.success);
-        return false;
+        //这是应该保存流水记录
+        CapitalFlow capitalFlow = new CapitalFlow();
+        capitalFlow.setUserId(mainOrder.getPayer().getId());
+        capitalFlow.setOrderId(mainOrder.getOrderId());
+        capitalFlow.setHappenTime(LocalDateTime.now());
+        capitalFlow.setFlowType(FlowType.OUT);
+        capitalFlow.setChanged(mainOrder.getFinalAmount().negate());
+        capitalFlowRepository.save(capitalFlow);
     }
 
     @Override
