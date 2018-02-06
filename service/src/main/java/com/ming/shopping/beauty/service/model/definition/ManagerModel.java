@@ -45,7 +45,9 @@ public class ManagerModel implements DefinitionModel<Login> {
                         .addSelect(loginRoot -> null)
                         .addFormat((data, type) -> {
                             Login login = (Login) data;
-                            return login.getNickName();
+                            if (login.getWechatUser() == null)
+                                return null;
+                            return login.getWechatUser().getNickname();
                         })
                         .addEntityFunction(Function.identity())
                         .build()

@@ -299,7 +299,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
         return Arrays.asList(
                 FieldBuilder.asName(Represent.class, "id").build()
                 , FieldBuilder.asName(Represent.class, "username")
-                        .addSelect(representRoot -> representRoot.join(Represent_.login, JoinType.LEFT).get(Login_.nickName))
+                        .addSelect(representRoot -> representRoot.join(Represent_.login, JoinType.LEFT).join(Login_.wechatUser).get("nickname"))
                         .build()
                 , FieldBuilder.asName(Represent.class, "mobile")
                         .addSelect(representRoot -> representRoot.join(Represent_.login, JoinType.LEFT).get(Login_.loginName))

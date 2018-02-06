@@ -233,8 +233,11 @@ public class LoginServiceImpl implements LoginService {
                 .where(cb.equal(root.get(User_.id),userId));
 
         try{
-            return entityManager.createQuery(cq)
+            BigDecimal rs = entityManager.createQuery(cq)
                     .getSingleResult();
+            if (rs == null)
+                return BigDecimal.ZERO;
+            return rs;
         }catch (NoResultException ignored){
             return BigDecimal.ZERO;
         }

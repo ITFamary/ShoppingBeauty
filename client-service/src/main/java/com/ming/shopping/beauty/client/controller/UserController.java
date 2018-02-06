@@ -50,7 +50,7 @@ public class UserController {
     @GetMapping
     @ResponseBody
     public Object userBaseInfo(@AuthenticationPrincipal Login login) {
-        return RowService.drawEntityToRow(loginService.findOne(login.getId()), new UserModel().getDefinitions(), null);
+        return RowService.drawEntityToRow(loginService.findOne(login.getId()), new UserModel(loginService).getDefinitions(), null);
     }
 
     /**

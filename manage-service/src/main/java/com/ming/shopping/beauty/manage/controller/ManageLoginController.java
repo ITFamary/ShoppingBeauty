@@ -64,7 +64,7 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
         }else{
             login.setConsumption(BigDecimal.ZERO);
         }
-        return RowService.drawEntityToRow(login, new UserModel().getDefinitions(), null);
+        return RowService.drawEntityToRow(login, new UserModel(loginService).getDefinitions(), null);
     }
 
     /**
@@ -122,25 +122,7 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
 
     @Override
     protected List<FieldDefinition<Login>> listFields() {
-        return Arrays.asList(
-                FieldBuilder.asName(Login.class, "loginId")
-                        .addSelect(root -> root.get(Login_.id))
-                        .build()
-                , FieldBuilder.asName(Login.class, "username")
-                        .addSelect(root -> root.get(Login_.nickName))
-                        .build()
-                , FieldBuilder.asName(Login.class, "mobile")
-                        .addSelect(root -> root.get(Login_.loginName))
-                        .build()
-                , FieldBuilder.asName(Login.class, "enabled")
-                        .build()
-                , FieldBuilder.asName(Login.class, "active")
-                        .addBiSelect((loginRoot, cb) -> cb.isNotNull(loginRoot.join(Login_.user).get(User_.cardNo)))
-                        .build()
-                , FieldBuilder.asName(Login.class, "currentAmount")
-                        .addBiSelect(Login::getCurrentBalanceExpr)
-                        .build()
-        );
+        return new UserModel(loginService).getDefinitions();
     }
 
     @Override

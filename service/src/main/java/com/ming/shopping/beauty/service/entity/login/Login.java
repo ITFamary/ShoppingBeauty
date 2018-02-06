@@ -121,9 +121,6 @@ public class Login implements UserDetails, CrudFriendly<Long> {
 
     @Column(length = 30)
     private String loginName;
-
-    @Column
-    private String nickName;
     /**
      * 可推荐别人
      */
