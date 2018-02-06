@@ -138,8 +138,7 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
                         .addBiSelect((loginRoot, cb) -> cb.isNotNull(loginRoot.join(Login_.user).get(User_.cardNo)))
                         .build()
                 , FieldBuilder.asName(Login.class, "currentAmount")
-                        //TODO 余额这里还是有问题的.
-                        .addSelect(loginRoot -> loginRoot.join(Login_.user, JoinType.LEFT).get(User_.currentAmount))
+                        .addBiSelect(Login::getCurrentBalanceExpr)
                         .build()
         );
     }
