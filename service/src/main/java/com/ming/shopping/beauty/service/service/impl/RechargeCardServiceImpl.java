@@ -100,6 +100,7 @@ public class RechargeCardServiceImpl implements RechargeCardService {
         }
         rechargeCard.setUsed(true);
         rechargeCard.setUser(user);
+        rechargeCard.setUsedTime(LocalDateTime.now());
 
 
         user.setCurrentAmount(user.getCurrentAmount().add(rechargeCard.getAmount()));
@@ -108,15 +109,6 @@ public class RechargeCardServiceImpl implements RechargeCardService {
         }
         rechargeCardRepository.saveAndFlush(rechargeCard);
         userRepository.save(user);
-
-        RechargeLog log = new RechargeLog();
-        log.setAmount(rechargeCard.getAmount());
-        log.setUser(user);
-        log.setRechargeCardId(rechargeCard.getId());
-        log.setCreateTime(LocalDateTime.now());
-        //TODO 添加了一个新的充值卡充值类型
-        log.setRechargeType(RechargeType.RECHARGE_CARD);
-        rechargeLogRepository.save(log);
 
     }
 }

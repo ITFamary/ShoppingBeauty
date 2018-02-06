@@ -9,7 +9,9 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum  FlowType {
-    IN("充值"),
+    PLATFORM_CHANGE("后台调整"),
+    RECHARGE_CARD("充值卡充值"),
+    PAY("在线充值"),
     OUT("订单消费");
     private final String message;
 

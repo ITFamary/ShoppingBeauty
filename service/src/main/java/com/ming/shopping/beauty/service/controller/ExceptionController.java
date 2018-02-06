@@ -48,12 +48,14 @@ public class ExceptionController {
         response.sendError(exception.getHttpStatus(), errorMsg);
         if (isAjaxRequestOrBackJson(request)) {
             response.getWriter().write(objectMapper.writeValueAsString(exception.getApiResult()));
+            log.debug(objectMapper.writeValueAsString(exception.getApiResult()));
             return null;
         } else {
             ModelAndView modelAndView = new ModelAndView();
             modelAndView.setViewName("/views/error");
             modelAndView.addObject("status", exception.getHttpStatus());
             modelAndView.addObject("message", errorMsg);
+            log.debug("status:" + exception.getHttpStatus() + ";message:" + errorMsg);
             return modelAndView;
         }
     }
@@ -85,6 +87,12 @@ public class ExceptionController {
         if (!login.getLevelSet().contains(ManageLevel.user)) {
             response.sendError(HttpStatusCustom.SC_LOGIN_NOT_EXIST);
         }
+    }
+
+    @ExceptionHandler(Exception.class)
+    public void forPrintException(Exception e) throws Exception {
+        log.error(e);
+        throw e;
     }
 
     /***
