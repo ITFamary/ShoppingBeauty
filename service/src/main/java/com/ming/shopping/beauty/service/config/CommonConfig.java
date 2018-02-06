@@ -28,7 +28,7 @@ import org.springframework.context.support.ResourceBundleMessageSource;
  */
 @Configuration
 @Import({WebResourceSpringConfig.class, JdbcSpringConfig.class
-        , WechatVerifyConfig.class, GitSpringConfig.class
+        , WechatVerifyConfig.class
         , VerificationCodeConfig.class
         , CrudConfig.class
         , WeixinSpringConfig.class, StandardWeixinConfig.class
