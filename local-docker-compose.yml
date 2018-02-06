@@ -4,6 +4,16 @@
 version: "3"
 services:
 
+  mysqlAdmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      - PMA_HOST=mysql
+      - TZ=Asia/Shanghai
+    ports:
+      - 8033:80
+    depends_on:
+      - mysql
+
   mysql:
     image: registry.cn-shanghai.aliyuncs.com/mingshz/mysql-alirds
     environment:

@@ -77,6 +77,10 @@ public class ExceptionController {
         StringBuilder uri = new StringBuilder("/auth?redirectUrl=");
         String origin = request.getRequestURL().toString();
 
+        if (request.getHeader("X-Forwarded-Host") != null) {
+            origin = origin.replace(request.getServerName(), request.getHeader("X-Forwarded-Host"));
+        }
+
         Matcher matcher = Pattern.compile("http[s]?://[a-zA-Z.0-9]+(:\\d+).*").matcher(origin);
         if (matcher.matches()) {
             origin = origin.replace(matcher.group(1), "");
