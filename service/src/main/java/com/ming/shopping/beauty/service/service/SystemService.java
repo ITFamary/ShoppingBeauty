@@ -6,8 +6,6 @@ package com.ming.shopping.beauty.service.service;
  * @author helloztt
  */
 public interface SystemService {
-
-
     /**
      * 一些请求地址
      */
