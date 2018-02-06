@@ -2,18 +2,14 @@ package com.ming.shopping.beauty.service.service;
 
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import com.ming.shopping.beauty.service.entity.login.Represent;
-import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
-import com.ming.shopping.beauty.service.entity.order.OrderItem;
 import com.ming.shopping.beauty.service.model.request.OrderSearcherBody;
 import com.ming.shopping.beauty.service.model.request.StoreItemNum;
 import me.jiangcai.crud.row.FieldDefinition;
-import me.jiangcai.crud.row.RowDefinition;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -75,11 +71,10 @@ public interface MainOrderService {
      * 支付订单
      *
      * @param id 被支付的订单.
-     * @param amount 实际应付款金额
      * @return 是否成功
      */
     @Transactional
-    boolean payOrder(long id, BigDecimal amount);
+    void payOrder(long id);
 
     /**
      * 根据条件查询订单
