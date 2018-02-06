@@ -82,6 +82,11 @@ public interface LoginService extends UserDetailsService {
     void freezeOrEnable(long id, boolean enable);
 
     /**
+     * 设置一个用户是否可推荐他人
+     */
+    @Transactional(rollbackFor = RuntimeException.class)
+    void setGuidable(long id , boolean guidable);
+    /**
      * 用于登录的验证码
      *
      * @return

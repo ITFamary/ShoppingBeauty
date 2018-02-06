@@ -189,6 +189,12 @@ public class LoginServiceImpl implements LoginService {
         }
     }
 
+    @Override
+    public void setGuidable(long id, boolean guidable) {
+        Login login = loginRepository.findOne(id);
+        login.setGuidable(guidable);
+    }
+
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class)

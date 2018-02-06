@@ -125,7 +125,7 @@ public class Login implements UserDetails, CrudFriendly<Long> {
     @Column
     private String nickName;
     /**
-     * 可推荐
+     * 可推荐别人
      */
     private boolean guidable;
     /**

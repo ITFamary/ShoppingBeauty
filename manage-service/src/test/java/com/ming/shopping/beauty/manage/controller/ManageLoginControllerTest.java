@@ -41,6 +41,31 @@ public class ManageLoginControllerTest extends ManageConfigTest {
     }
 
     @Test
+    public void setGuidable() throws Exception {
+        Login login = mockLogin();
+        Login root = mockRoot();
+        updateAllRunWith(root);
+        //可以推荐他人
+        mockMvc.perform(put("/login/"+login.getId()+"/guidable")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(true)))
+                .andDo(print())
+                .andReturn();
+        Login one = loginRepository.findOne(login.getId());
+        //一定是禁用的
+        assertThat(one.isGuidable()).isTrue();
+        //启用
+        mockMvc.perform(put("/login/"+login.getId()+"/guidable")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(false)))
+                .andDo(print())
+                .andReturn();
+        Login two = loginRepository.findOne(login.getId());
+        //一定是启用的
+        assertThat(two.isEnabled()).isFalse();
+    }
+
+    @Test
     public void setEnable() throws Exception {
         Login login = mockLogin();
         Login root = mockRoot();
