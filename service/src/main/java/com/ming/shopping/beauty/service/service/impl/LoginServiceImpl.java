@@ -80,7 +80,7 @@ public class LoginServiceImpl implements LoginService {
     @BusinessSafe
     public Login getLogin(String openId, String mobile, String verifyCode
             , String familyName, Gender gender, String cardNo, Long guideUserId) {
-        if (!env.acceptsProfiles(ServiceConfig.PROFILE_UNIT_TEST) && !StringUtils.isEmpty(verifyCode)) {
+        if (!env.acceptsProfiles(ServiceConfig.PROFILE_UNIT_TEST,"staging") && !StringUtils.isEmpty(verifyCode)) {
             try {
                 verificationCodeService.verify(mobile, verifyCode, loginVerificationType());
             } catch (IllegalVerificationCodeException ex) {
