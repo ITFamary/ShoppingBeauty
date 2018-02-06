@@ -18,11 +18,11 @@ import java.time.LocalDateTime;
 public class CapitalFlow {
     @Id
     private String id;
-//    @ManyToOne
-//    @JoinColumn(name = "USER_ID")
-//    private User user;
-    @Column(name = "USER_ID")
-    private Long userId;
+    @ManyToOne
+    @JoinColumn(name = "USER_ID")
+    private User user;
+//    @Column(name = "USER_ID")
+//    private Long userId;
     @Column(name = "ORDER_ID")
     private Long orderId;
     @Column(name = "HAPPEN_TIME")

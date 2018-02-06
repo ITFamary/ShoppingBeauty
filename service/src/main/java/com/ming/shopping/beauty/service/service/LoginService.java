@@ -125,7 +125,7 @@ public interface LoginService extends UserDetailsService {
 
     /**
      * 查询用户余额
-     * @param userId
+     * @param  userId
      * @return  余额
      */
     BigDecimal findBalance(long userId);

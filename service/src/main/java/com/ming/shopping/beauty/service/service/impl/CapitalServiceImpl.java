@@ -7,7 +7,6 @@ import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
-import com.ming.shopping.beauty.service.repository.LoginRepository;
 import com.ming.shopping.beauty.service.repository.RechargeLogRepository;
 import com.ming.shopping.beauty.service.service.CapitalService;
 import com.ming.shopping.beauty.service.service.LoginService;
@@ -26,15 +25,13 @@ public class CapitalServiceImpl implements CapitalService {
 
     @Autowired
     private RechargeLogRepository rechargeLogRepository;
+    @Autowired
+    private LoginService loginService;
 
     @Override
     public void manualRecharge(Login manage, User user, BigDecimal amount) {
         //TODO 充值记录中是否应该添加一个操作员?
         if (user != null) {
-            //当前余额
-            BigDecimal currentAmount = user.getCurrentAmount();
-            //充值
-            user.setCurrentAmount(currentAmount.add(amount));
             //记录充值日志
             RechargeLog rechargeLog = new RechargeLog();
             rechargeLog.setAmount(amount);
@@ -50,31 +47,31 @@ public class CapitalServiceImpl implements CapitalService {
 
     @Override
     @Transactional
-    public void deduction(Login manager, User user, BigDecimal amount) {
+    public BigDecimal deduction(Login manager, User user, BigDecimal amount) {
         if(amount == null){
             //清空余额
-            BigDecimal currentAmount = user.getCurrentAmount();
-            user.setCurrentAmount(new BigDecimal("0"));
+            BigDecimal balance = loginService.findBalance(user.getId());
+
             //记录扣款日志
             RechargeLog rechargeLog = new RechargeLog();
-            rechargeLog.setAmount(currentAmount.negate());
+            //取反
+            rechargeLog.setAmount(balance.negate());
             rechargeLog.setUser(user);
             rechargeLog.setCreateTime(LocalDateTime.now());
             rechargeLog.setRechargeType(RechargeType.DEDUCTION);
             //保存记录
             rechargeLogRepository.save(rechargeLog);
+            return balance;
         }else{
-            //扣除给定金额
-            BigDecimal currentAmount = user.getCurrentAmount();
-            user.setCurrentAmount(currentAmount.subtract(amount));
             //记录扣款日志
             RechargeLog rechargeLog = new RechargeLog();
-            rechargeLog.setAmount(amount);
+            rechargeLog.setAmount(amount.negate());
             rechargeLog.setUser(user);
             rechargeLog.setCreateTime(LocalDateTime.now());
             rechargeLog.setRechargeType(RechargeType.DEDUCTION);
             //保存记录
             rechargeLogRepository.save(rechargeLog);
+            return amount;
         }
     }
 }

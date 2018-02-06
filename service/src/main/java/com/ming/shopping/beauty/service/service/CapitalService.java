@@ -29,5 +29,5 @@ public interface CapitalService {
      * @param amount    扣款金额
      */
     @Transactional
-    void deduction(Login manager,User user ,BigDecimal amount);
+    BigDecimal deduction(Login manager,User user ,BigDecimal amount);
 }

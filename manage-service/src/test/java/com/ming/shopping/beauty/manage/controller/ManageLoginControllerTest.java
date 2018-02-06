@@ -2,21 +2,18 @@ package com.ming.shopping.beauty.manage.controller;
 
 import com.ming.shopping.beauty.manage.ManageConfigTest;
 import com.ming.shopping.beauty.service.entity.login.Login;
-import com.ming.shopping.beauty.service.model.HttpStatusCustom;
-import com.ming.shopping.beauty.service.model.request.DepositBody;
 import com.ming.shopping.beauty.service.repository.LoginRepository;
 import org.hamcrest.core.StringStartsWith;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -110,8 +107,71 @@ public class ManageLoginControllerTest extends ManageConfigTest {
 
         assertThat(new BigDecimal(contentAsString).equals(BigDecimal.ZERO)).isTrue();
 
+        //通过管理员后台给他充值
+        Map<String, Object> postData = new HashMap<>();
+        postData.put("mobile",login.getLoginName());
+        BigDecimal b5000 = new BigDecimal("5000.00");
+        postData.put("amount",b5000);
+        mockMvc.perform(post("/manage/manualRecharge")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(postData)))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        //查询login的余额
+        String amount = mockMvc.perform(get("/login/{id}/balance", login.getId()))
+                .andDo(print())
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
 
+        BigDecimal bAmount = new BigDecimal(amount);
+
+        assertThat(bAmount.equals(b5000)).isTrue();
+        Login one = loginRepository.getOne(login.getId());
+        //保证他的余额一直是0
+        assertThat(one.getUser().getCurrentAmount().equals(BigDecimal.ZERO)).isTrue();
+
+        //通过管理员扣款
+
+        BigDecimal b2000 = new BigDecimal("2000.00");
+        postData.put("amount", b2000);
+        mockMvc.perform(post("/manage/deduction")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(postData)))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        //查询他的余额
+        String amountSub = mockMvc.perform(get("/login/{id}/balance", login.getId()))
+                .andDo(print())
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        BigDecimal bSub = new BigDecimal(amountSub);
+        assertThat(bSub.equals(b5000.subtract(b2000))).isTrue();
+
+        one = loginRepository.getOne(login.getId());
+        //保证他的余额一直是0
+        assertThat(one.getUser().getCurrentAmount().equals(BigDecimal.ZERO)).isTrue();
+
+        //清空余额
+        postData.put("amount",null);
+        mockMvc.perform(post("/manage/deduction")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(postData)))
+                .andDo(print())
+                .andExpect(status().isOk());
+        //再次查询应该是0了
+
+        String zero = mockMvc.perform(get("/login/{id}/balance", login.getId()))
+                .andDo(print())
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        BigDecimal bZero = new BigDecimal(zero);
+        assertThat(bZero.equals(new BigDecimal("0.00"))).isTrue();
+
+        one = loginRepository.getOne(login.getId());
+        //保证他的余额一直是0
+        assertThat(one.getUser().getCurrentAmount().equals(BigDecimal.ZERO)).isTrue();
     }
 
 }

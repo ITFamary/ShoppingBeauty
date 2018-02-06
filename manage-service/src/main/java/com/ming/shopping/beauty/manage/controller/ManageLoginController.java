@@ -113,7 +113,11 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
             ",'"+Login.ROLE_PLATFORM_SETTLEMENT+"')")
     @ResponseBody
     public BigDecimal findBalance(@PathVariable("id") Long loginId){
-        return loginService.findBalance(loginId);
+        BigDecimal balance = loginService.findBalance(loginId);
+        if(balance == null){
+            return BigDecimal.ZERO;
+        }
+        return balance;
     }
 
     @Override

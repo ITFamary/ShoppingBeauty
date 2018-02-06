@@ -3,6 +3,7 @@ package com.ming.shopping.beauty.client.controller;
 import com.ming.shopping.beauty.service.entity.log.CapitalFlow;
 import com.ming.shopping.beauty.service.entity.log.CapitalFlow_;
 import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.entity.login.User_;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.order.RechargeOrder;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
@@ -93,7 +94,7 @@ public class CapitalController {
             @Override
             public Specification<CapitalFlow> specification() {
                 return (root, cq, cb) ->
-                        cb.equal(root.get(CapitalFlow_.userId), login.getId());
+                        cb.equal(root.join(CapitalFlow_.user).get(User_.id), login.getId());
             }
         };
     }

@@ -1,5 +1,6 @@
 package com.ming.shopping.beauty.service.entity.login;
 
+import com.ming.shopping.beauty.service.entity.log.CapitalFlow;
 import com.ming.shopping.beauty.service.utils.Constant;
 import lombok.Getter;
 import lombok.Setter;
@@ -7,7 +8,12 @@ import me.jiangcai.wx.model.Gender;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.From;
+import javax.persistence.criteria.Join;
 import java.math.BigDecimal;
+import java.util.Set;
 
 /**
  * 用户
@@ -19,6 +25,8 @@ import java.math.BigDecimal;
 public class User {
     @Id
     private Long id;
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private Set<CapitalFlow> flows;
     /**
      * share primary key
      */
@@ -55,5 +63,9 @@ public class User {
      */
     public boolean isActive() {
         return !StringUtils.isEmpty(cardNo);
+    }
+
+    public static Expression<BigDecimal> getCurrentBalanceExpr(From<?, User> from, CriteriaBuilder cb) {
+        return cb.sum(from.get("flows").get("changed"));
     }
 }

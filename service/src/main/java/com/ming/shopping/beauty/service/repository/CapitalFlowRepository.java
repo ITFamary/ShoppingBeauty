@@ -10,6 +10,6 @@ import java.math.BigDecimal;
 
 public interface CapitalFlowRepository extends JpaRepository<CapitalFlow,Long>,JpaSpecificationExecutor<CapitalFlow> {
 
-    @Query("select sum(c.changed) from CapitalFlow c where c.userId = ?1")
-    BigDecimal findBalanceByUserId(Long userId);
+//    @Query("select sum(c.changed) from CapitalFlow c where c.userId = ?1")
+//    BigDecimal findBalanceByUserId(Long userId);
 }

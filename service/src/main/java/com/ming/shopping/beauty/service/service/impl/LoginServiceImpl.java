@@ -29,6 +29,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -216,12 +221,22 @@ public class LoginServiceImpl implements LoginService {
         }
     }
 
+    @Autowired
+    private EntityManager entityManager;
     @Override
     public BigDecimal findBalance(long userId) {
-        BigDecimal balance = capitalFlowRepository.findBalanceByUserId(userId);
-        if(balance == null){
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<BigDecimal> cq = cb.createQuery(BigDecimal.class);
+        Root<User> root  = cq.from(User.class);
+        cq = cq
+                .select(User.getCurrentBalanceExpr(root,cb))
+                .where(cb.equal(root.get(User_.id),userId));
+
+        try{
+            return entityManager.createQuery(cq)
+                    .getSingleResult();
+        }catch (NoResultException ignored){
             return BigDecimal.ZERO;
         }
-        return balance;
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.CollectionUtils;
 
+import javax.jws.soap.SOAPBinding;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -21,8 +22,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
-import javax.persistence.criteria.From;
-import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -180,6 +180,13 @@ public class Login implements UserDetails, CrudFriendly<Long> {
         return from.get(Login_.levelSet).in(
                 rootLevel
         );
+    }
+
+    public static Expression<BigDecimal> getCurrentBalanceExpr(From<?, Login> from, CriteriaBuilder cb){
+        Join<Login,User> userJoin = from.join(Login_.user, JoinType.LEFT);
+        return cb.<Boolean,BigDecimal>selectCase(cb.isNull(userJoin))
+                .when(true,BigDecimal.ZERO)
+                .otherwise(User.getCurrentBalanceExpr(userJoin,cb));
     }
 
     public static Collection<? extends GrantedAuthority> getGrantedAuthorities(Set<ManageLevel> levelSet) {
