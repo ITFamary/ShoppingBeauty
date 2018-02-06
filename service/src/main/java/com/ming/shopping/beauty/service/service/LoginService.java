@@ -13,6 +13,8 @@ import me.jiangcai.wx.model.Gender;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+
 /**
  * @author helloztt
  */
@@ -80,6 +82,11 @@ public interface LoginService extends UserDetailsService {
     void freezeOrEnable(long id, boolean enable);
 
     /**
+     * 设置一个用户是否可推荐他人
+     */
+    @Transactional(rollbackFor = RuntimeException.class)
+    void setGuidable(long id , boolean guidable);
+    /**
      * 用于登录的验证码
      *
      * @return
@@ -115,4 +122,11 @@ public interface LoginService extends UserDetailsService {
      */
     @Transactional
     void setManageLevel(long loginId, ManageLevel... manageLevel);
+
+    /**
+     * 查询用户余额
+     * @param UserId
+     * @return  余额
+     */
+    BigDecimal findBalance(long userId);
 }

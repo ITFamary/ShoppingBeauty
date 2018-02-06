@@ -70,15 +70,33 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
     /**
      * 冻结/启用 用户
      *
-     * @param loginId
+     * @param loginId 被设置的用户
      * @param putData
      */
     @PutMapping("/{id}/enabled")
-    @PreAuthorize("hasAnyRole('ROOT')")
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void setEnable(@PathVariable(value = "id", required = true) long loginId, @RequestBody Boolean putData) {
         if (putData != null) {
             loginService.freezeOrEnable(loginId, putData);
+        } else {
+            throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), putData), null));
+        }
+    }
+
+    /**
+     * 设置一个用户是否可以推荐他人
+     *
+     * @param loginId 被设置的用户
+     * @param putData
+     */
+    @PutMapping("/{id}/guidable")
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void setGuidable(@PathVariable(value = "id", required = true) long loginId, @RequestBody Boolean putData){
+        if (putData != null) {
+            loginService.setGuidable(loginId, putData);
         } else {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), putData), null));

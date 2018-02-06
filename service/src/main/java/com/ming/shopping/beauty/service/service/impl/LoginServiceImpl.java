@@ -4,13 +4,17 @@ import com.huotu.verification.IllegalVerificationCodeException;
 import com.huotu.verification.service.VerificationCodeService;
 import com.ming.shopping.beauty.service.aop.BusinessSafe;
 import com.ming.shopping.beauty.service.config.ServiceConfig;
+import com.ming.shopping.beauty.service.entity.item.RechargeCard;
+import com.ming.shopping.beauty.service.entity.log.RechargeLog;
 import com.ming.shopping.beauty.service.entity.login.*;
+import com.ming.shopping.beauty.service.entity.order.MainOrder;
+import com.ming.shopping.beauty.service.entity.order.MainOrder_;
 import com.ming.shopping.beauty.service.entity.support.ManageLevel;
+import com.ming.shopping.beauty.service.entity.support.OrderStatus;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
-import com.ming.shopping.beauty.service.repository.LoginRepository;
-import com.ming.shopping.beauty.service.repository.UserRepository;
+import com.ming.shopping.beauty.service.repository.*;
 import com.ming.shopping.beauty.service.service.LoginService;
 import com.ming.shopping.beauty.service.service.RechargeCardService;
 import me.jiangcai.wx.model.Gender;
@@ -23,8 +27,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -44,6 +50,12 @@ public class LoginServiceImpl implements LoginService {
     private StandardWeixinUserRepository standardWeixinUserRepository;
     @Autowired
     private Environment env;
+    @Autowired
+    private RechargeCardRepository rechargeCardRepository;
+    @Autowired
+    private RechargeLogRepository rechargeLogRepository;
+    @Autowired
+    private MainOrderRepository mainOrderRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -177,6 +189,12 @@ public class LoginServiceImpl implements LoginService {
         }
     }
 
+    @Override
+    public void setGuidable(long id, boolean guidable) {
+        Login login = loginRepository.findOne(id);
+        login.setGuidable(guidable);
+    }
+
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
@@ -185,5 +203,34 @@ public class LoginServiceImpl implements LoginService {
         login.getLevelSet().clear();
         login.addLevel(manageLevel);
         loginRepository.save(login);
+    }
+
+    @Override
+    public BigDecimal findBalance(long userId) {
+        User one = userRepository.findOne(userId);
+        List<RechargeCard> cardList = rechargeCardRepository.findByUser(one);
+        BigDecimal cardAmount = BigDecimal.ZERO;
+        for (RechargeCard rechargeCard : cardList) {
+            cardAmount.add(rechargeCard.getAmount());
+        }
+        List<RechargeLog> rechargeList = rechargeLogRepository.findByUser(one);
+        BigDecimal rechargeAmount = BigDecimal.ZERO;
+        for (RechargeLog rechargeLog : rechargeList) {
+            rechargeAmount.add(rechargeLog.getAmount());
+        }
+
+        //消费
+        List<MainOrder> orderList = mainOrderRepository.findAll((root, query, cb) -> {
+            return cb.and(
+                    cb.equal(root.join(MainOrder_.payer).get(User_.id), userId),
+                    cb.equal(root.get(MainOrder_.orderStatus), OrderStatus.success)
+            );
+        });
+        BigDecimal orderAmount = BigDecimal.ZERO;
+        for (MainOrder mainOrder : orderList) {
+            orderAmount.add(mainOrder.getFinalAmount());
+        }
+        //提现
+        return cardAmount.add(rechargeAmount).subtract(orderAmount);
     }
 }
