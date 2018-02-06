@@ -22,8 +22,8 @@
     <Parameter name="me.jiangcai.lib.resource.http.uri" value="http://res.server.staging.sb.lmjia.cn/"/>
     <!--系统的可访问URL-->
     <Parameter name="shopping.url" value="http://staging.sb.lmjia.cn"/>
-    <Parameter name="shopping.mobile.url" value="http://front.staging.sb.lmjia.cn/"/>
-    <Parameter name="shopping.desktop.url" value="http://manager.staging.sb.lmjia.cn/"/>
+    <Parameter name="shopping.mobile.url" value="http://front.staging.sb.lmjia.cn"/>
+    <Parameter name="shopping.desktop.url" value="http://manager.staging.sb.lmjia.cn"/>
 
     <!--微信相关-->
     <Parameter name="huotao.weixin.appId" value="wx198ba167229080c1"/>

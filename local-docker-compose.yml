@@ -31,12 +31,18 @@ services:
 
   server:
     image: mingshz/shopping-beauty-server
+#    开启调试模式，若无需该模式则关闭之
+    environment:
+      - JPDA_ENABLE=1
+      - JPDA_ADDRESS=8989
+      - JPDA_TRANSPORT=dt_socket
     volumes:
       - server_rs:/data/resources
       - ./logs:/usr/local/tomcat/logs
 #      - ./context.xml:/usr/local/tomcat/conf/Catalina/localhost/context.xml.default
     ports:
       - 8080:8080
+      - 8989:8989
     depends_on:
       - mysql
 #
