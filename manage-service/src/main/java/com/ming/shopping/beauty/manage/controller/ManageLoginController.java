@@ -127,6 +127,11 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
     }
 
     @Override
+    protected CriteriaQuery<Login> listGroup(CriteriaBuilder cb, CriteriaQuery<Login> query, Root<Login> root) {
+        return query.groupBy(root);
+    }
+
+    @Override
     protected Specification<Login> listSpecification(Map<String, Object> queryData) {
         return (root, query, cb) -> {
             List<Predicate> conditions = new ArrayList<>();

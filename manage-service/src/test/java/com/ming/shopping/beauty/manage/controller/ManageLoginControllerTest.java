@@ -19,6 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * @author helloztt
  */
+//@ActiveProfiles(ServiceConfig.PROFILE_MYSQL)
 public class ManageLoginControllerTest extends ManageConfigTest {
     public static final String BASE_URL = "/login";
 
@@ -43,15 +44,6 @@ public class ManageLoginControllerTest extends ManageConfigTest {
 //                .andExpect(jsonPath("$.consumption").value(BigDecimal.ZERO));
     }
 
-    @Test
-    public void listLogin() throws Exception {
-        updateAllRunWith(mockRoot());
-
-        mockMvc.perform(
-                get("/login")
-        )
-                .andDo(print());
-    }
 
     @Test
     public void setGuidable() throws Exception {
@@ -119,9 +111,9 @@ public class ManageLoginControllerTest extends ManageConfigTest {
 
         //通过管理员后台给他充值
         Map<String, Object> postData = new HashMap<>();
-        postData.put("mobile",login.getLoginName());
+        postData.put("mobile", login.getLoginName());
         BigDecimal b5000 = new BigDecimal("5000.00");
-        postData.put("amount",b5000);
+        postData.put("amount", b5000);
         mockMvc.perform(post("/manage/manualRecharge")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(postData)))
@@ -164,7 +156,7 @@ public class ManageLoginControllerTest extends ManageConfigTest {
         assertThat(one.getUser().getCurrentAmount().equals(BigDecimal.ZERO)).isTrue();
 
         //清空余额
-        postData.put("amount",null);
+        postData.put("amount", null);
         mockMvc.perform(post("/manage/deduction")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(postData)))
