@@ -20,9 +20,19 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Order;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -60,9 +70,9 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
     public Object getOne(@PathVariable("id") Long aLong) {
         Login login = loginService.findOne(aLong);
         BigDecimal consumption = mainOrderRepository.sumFinalAmountLByPayer(login.getId());
-        if(consumption != null){
+        if (consumption != null) {
             login.setConsumption(consumption);
-        }else{
+        } else {
             login.setConsumption(BigDecimal.ZERO);
         }
         return RowService.drawEntityToRow(login, new UserModel(loginService, conversionService).getDefinitions(), null);
@@ -95,7 +105,7 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
     @PutMapping("/{id}/guidable")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void setGuidable(@PathVariable(value = "id", required = true) long loginId, @RequestBody Boolean putData){
+    public void setGuidable(@PathVariable(value = "id", required = true) long loginId, @RequestBody Boolean putData) {
         if (putData != null) {
             loginService.setGuidable(loginId, putData);
         } else {
@@ -106,16 +116,17 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
 
     /**
      * 根据用户id查询余额
+     *
      * @param loginId 用户id
      * @return 余额
      */
     @GetMapping("/{id}/balance")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_STORE_ROOT + "'" +
-            ",'"+Login.ROLE_PLATFORM_SETTLEMENT+"')")
+            ",'" + Login.ROLE_PLATFORM_SETTLEMENT + "')")
     @ResponseBody
-    public BigDecimal findBalance(@PathVariable("id") Long loginId){
+    public BigDecimal findBalance(@PathVariable("id") Long loginId) {
         BigDecimal balance = loginService.findBalance(loginId);
-        if(balance == null){
+        if (balance == null) {
             return BigDecimal.ZERO;
         }
         return balance;
@@ -147,7 +158,7 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
                 }
             }
             if (queryData.get("mobile") != null) {
-                conditions.add(cb.equal(root.get(Login_.loginName), queryData.get("mobile")));
+                conditions.add(cb.like(root.get(Login_.loginName), "%" + queryData.get("mobile") + "%"));
             }
             return cb.and(conditions.toArray(new Predicate[conditions.size()]));
         };

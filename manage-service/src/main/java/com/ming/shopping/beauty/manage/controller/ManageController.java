@@ -89,7 +89,7 @@ public class ManageController extends AbstractCrudController<Login, Long> {
             List<Predicate> conditionList = new ArrayList<>();
             conditionList.add(Login.getManageableExpr(root));
             if (queryData.get("username") != null) {
-                conditionList.add(cb.equal(root.get(Login_.loginName), queryData.get("username")));
+                conditionList.add(cb.like(root.get(Login_.loginName), "%" + queryData.get("username") + "%"));
             }
             return cb.and(conditionList.toArray(new Predicate[conditionList.size()]));
         };

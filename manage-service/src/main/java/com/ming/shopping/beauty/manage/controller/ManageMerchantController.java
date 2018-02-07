@@ -337,7 +337,7 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
         return (root, cq, cb) -> {
             List<Predicate> conditionList = new ArrayList<>();
             if (queryData.get("username") != null) {
-                conditionList.add(cb.equal(root.join(Merchant_.login).get(Login_.loginName), queryData.get("username")));
+                conditionList.add(cb.like(root.join(Merchant_.login).get(Login_.loginName), "%" + queryData.get("username") + "%"));
             }
             return cb.and(conditionList.toArray(new Predicate[conditionList.size()]));
         };

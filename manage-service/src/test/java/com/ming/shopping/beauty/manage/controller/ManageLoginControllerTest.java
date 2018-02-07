@@ -3,6 +3,7 @@ package com.ming.shopping.beauty.manage.controller;
 import com.ming.shopping.beauty.manage.ManageConfigTest;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.repository.LoginRepository;
+import com.ming.shopping.beauty.service.service.InitService;
 import org.hamcrest.core.StringStartsWith;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,16 @@ public class ManageLoginControllerTest extends ManageConfigTest {
                 .andExpect(jsonPath("$.enabled").value(mockLogin.isEnabled()))
                 .andExpect(jsonPath("$.balance").value(BigDecimal.ZERO));
 //                .andExpect(jsonPath("$.consumption").value(BigDecimal.ZERO));
+    }
+
+    @Test
+    public void listByMobile() throws Exception {
+        updateAllRunWith(mockRoot());
+        mockMvc.perform(
+                get("/login?mobile={mobile}", InitService.cjMobile.substring(1))
+                        .accept(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(jsonPath("$.list.length()").value(1));
     }
 
 
