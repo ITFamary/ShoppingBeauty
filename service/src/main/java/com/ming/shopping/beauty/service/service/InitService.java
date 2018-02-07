@@ -80,9 +80,9 @@ public class InitService implements VersionUpgrade<Version> {
             user.setGender(Gender.male);
             userRepository.save(user);
         }
-        if (environment.acceptsProfiles("staging")) {
+        int count = 20;
+        if (environment.acceptsProfiles("staging") && loginRepository.count() <= count) {
             // 在staging 中 建立足够多的测试帐号
-            int count = 20;
             while (count-- > 0)
                 createDemoUser();
         }
