@@ -45,9 +45,7 @@ public class CapitalControllerTest extends ClientConfigTest {
         //1、格式错误
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
-                .header(HttpHeaders.ACCEPT,MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                .content(objectMapper.writeValueAsString(postData))
-                .contentType(MediaType.APPLICATION_JSON_UTF8))
+                .header(HttpHeaders.ACCEPT,MediaType.APPLICATION_FORM_URLENCODED_VALUE))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", new Contains("/error?status="+HttpStatusCustom.SC_DATA_NOT_VALIDATE
                         + "&message=")));
@@ -55,8 +53,7 @@ public class CapitalControllerTest extends ClientConfigTest {
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
                 .header(HttpHeaders.ACCEPT,MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                .content(objectMapper.writeValueAsString(postData)))
+                .param("depositSum",postData.getDepositSum().toString()))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", new Contains("/error?status="+HttpStatusCustom.SC_DATA_NOT_VALIDATE
                         + "&message=")));
@@ -65,8 +62,7 @@ public class CapitalControllerTest extends ClientConfigTest {
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
                 .header(HttpHeaders.ACCEPT,MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                .content(objectMapper.writeValueAsString(postData)))
+                .param("cdKey",postData.getCdKey()))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", new Contains("/error?status="+HttpStatusCustom.SC_DATA_NOT_VALIDATE
                         + "&message=")));
@@ -75,8 +71,7 @@ public class CapitalControllerTest extends ClientConfigTest {
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
                 .header(HttpHeaders.ACCEPT,MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                .content(objectMapper.writeValueAsString(postData)))
+                .param("cdKey",postData.getCdKey()))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", new Contains("/error?status="+HttpStatusCustom.SC_DATA_NOT_VALIDATE
                         + "&message=")));
@@ -86,8 +81,7 @@ public class CapitalControllerTest extends ClientConfigTest {
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
                 .header(HttpHeaders.ACCEPT,MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                .content(objectMapper.writeValueAsString(postData)))
+                .param("cdKey",postData.getCdKey()))
                 .andExpect(status().isFound());
         mockLogin = loginService.findOne(mockLogin.getId());
         assertThat(mockLogin.getUser().isActive()).isTrue();
@@ -96,8 +90,7 @@ public class CapitalControllerTest extends ClientConfigTest {
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
                 .header(HttpHeaders.ACCEPT,MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                .content(objectMapper.writeValueAsString(postData)))
+                .param("cdKey",postData.getCdKey()))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", new Contains("/error?status="+HttpStatusCustom.SC_DATA_NOT_VALIDATE
                         + "&message=")));
