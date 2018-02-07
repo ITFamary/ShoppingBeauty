@@ -40,17 +40,18 @@ public class WeixinPayService implements PayableSystemService {
         if (payOrder instanceof WeixinPayOrder) {
             WeixinPayOrder weixinPayOrder = (WeixinPayOrder) payOrder;
             weixinPayOrder.setRedirectUrl(additionalParameters.get("redirectUrl").toString());
-            modelAndView.setViewName("/weixin-pay/paying");
+            modelAndView.setViewName("/views/paying");
             modelAndView.addObject("payRequestParam", weixinPayOrder.getJavascriptToPay());
-            log.debug("js for pay:" + weixinPayOrder.getJavascriptToPay()
-                    + ",successUri:" + additionalParameters.get("successUri")
-                    + "redirectUrl:" + weixinPayOrder.getRedirectUrl());
-            modelAndView.addObject("successRedirectUrl", additionalParameters.get("successUri").toString());
+            modelAndView.addObject("successRedirectUrl", systemService.toMobileUrl(additionalParameters.get("successUri").toString()));
             try {
                 modelAndView.addObject("failureRedirectUrl", URLEncoder.encode(systemService.toMobileUrl("/error?status=400&message=充值失败"), Constant.UTF8_ENCODIND));
             } catch (UnsupportedEncodingException e) {
                 log.error("url encode error:", e);
             }
+            log.debug("js for pay:" + weixinPayOrder.getJavascriptToPay()
+                    + ",successUri:" + modelAndView.getModelMap().get("successRedirectUrl")
+                    + ",failureUri:" + modelAndView.getModelMap().get("failureRedirectUrl")
+                    + "redirectUrl:" + weixinPayOrder.getRedirectUrl());
         }
         return modelAndView;
     }

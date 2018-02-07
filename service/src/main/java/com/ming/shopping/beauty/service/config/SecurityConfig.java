@@ -3,6 +3,7 @@ package com.ming.shopping.beauty.service.config;
 import com.ming.shopping.beauty.service.config.security.UnauthorizedEntryPoint;
 import com.ming.shopping.beauty.service.service.LoginService;
 import com.ming.shopping.beauty.service.service.SystemService;
+import me.jiangcai.wx.pay.model.WeixinPayUrl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -82,6 +83,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/toLoginWechat", "/wechatLogin").permitAll()
                 // 微信绑定
                 .antMatchers("/wechat/bindTo**").permitAll()
+                //微信支付相关
+                .antMatchers(WeixinPayUrl.relUrl, "/_payment/**").permitAll()
                 // 手机号码可用性检测
                 .antMatchers("/loginData/mobileValidation").permitAll()
                 //错误页面
