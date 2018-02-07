@@ -2,6 +2,7 @@ package com.ming.shopping.beauty;
 
 import com.ming.shopping.beauty.config.WebConfig;
 import com.ming.shopping.beauty.service.utils.Constant;
+import me.jiangcai.crud.filter.MultiReadSupportFilter;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.filter.HttpPutFormContentFilter;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
@@ -34,7 +35,8 @@ public class DispatcherServletInitializer extends AbstractAnnotationConfigDispat
     protected Filter[] getServletFilters() {
         return new Filter[]{
                 new CharacterEncodingFilter(Constant.UTF8_ENCODIND)
-                ,new HttpPutFormContentFilter()
+                , new HttpPutFormContentFilter()
+                , new MultiReadSupportFilter()
         };
     }
 
