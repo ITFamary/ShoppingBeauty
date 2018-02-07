@@ -25,6 +25,7 @@ import me.jiangcai.payment.service.PaymentService;
 import me.jiangcai.wx.pay.service.WeixinPaymentForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -69,6 +70,8 @@ public class CapitalController {
     private LoginService loginService;
     @Autowired
     private MainOrderService mainOrderService;
+    @Autowired
+    private Environment env;
 
     @GetMapping("/flow")
     @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
@@ -100,7 +103,7 @@ public class CapitalController {
     }
 
     @PostMapping(value = "/deposit", produces = "application/x-www-form-urlencoded;charset=UTF-8")
-    public ModelAndView deposit(@AuthenticationPrincipal Login login, @Valid @RequestBody  DepositBody postData
+    public ModelAndView deposit(@AuthenticationPrincipal Login login, @Valid DepositBody postData
             , BindingResult bindingResult, HttpServletRequest request, HttpServletResponse response) throws SystemMaintainException {
         if (bindingResult.hasErrors()) {
             throw new ApiResultException(
@@ -110,7 +113,8 @@ public class CapitalController {
                             , null));
         }
         if (postData.getDepositSum() != null) {
-            Integer minAmount = systemStringService.getCustomSystemString("shopping.service.recharge.min.amount", null, true, Integer.class, 500);
+            Integer minAmount = systemStringService.getCustomSystemString("shopping.service.recharge.min.amount", null, true, Integer.class
+                    ,env.acceptsProfiles("staging") ? 0 : 5000 );
             if (postData.getDepositSum().compareTo(BigDecimal.valueOf(minAmount)) == -1) {
                 throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.RECHARGE_MONEY_NOT_ENOUGH.getCode()
                         , MessageFormat.format(ResultCodeEnum.RECHARGE_MONEY_NOT_ENOUGH.getMessage(), minAmount.toString()), null));
