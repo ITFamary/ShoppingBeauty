@@ -1,5 +1,6 @@
 package com.ming.shopping.beauty.service.service;
 
+import com.ming.shopping.beauty.service.Version;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.entity.support.ManageLevel;
@@ -7,13 +8,17 @@ import com.ming.shopping.beauty.service.repository.LoginRepository;
 import com.ming.shopping.beauty.service.repository.UserRepository;
 import me.jiangcai.lib.jdbc.ConnectionProvider;
 import me.jiangcai.lib.jdbc.JdbcService;
+import me.jiangcai.lib.upgrade.VersionUpgrade;
+import me.jiangcai.lib.upgrade.service.UpgradeService;
 import me.jiangcai.wx.model.Gender;
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,12 +30,13 @@ import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
+import java.util.Random;
 
 /**
  * @author helloztt
  */
 @Service
-public class InitService {
+public class InitService implements VersionUpgrade<Version> {
     private static final Log log = LogFactory.getLog(InitService.class);
     public static final String cjMobile = "18606509616";
 
@@ -42,12 +48,17 @@ public class InitService {
     private LoginRepository loginRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private UpgradeService upgradeService;
+    @Autowired
+    private Environment environment;
 
     @PostConstruct
     @Transactional(rollbackFor = RuntimeException.class)
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public void init() throws IOException, SQLException {
         database();
+        upgradeService.systemUpgrade(this);
         initSuperManage();
     }
 
@@ -59,9 +70,9 @@ public class InitService {
             Login login = new Login();
             login.setLoginName(cjMobile);
             login.setGuidable(true);
-            login.addLevel(ManageLevel.root,ManageLevel.user);
+            login.addLevel(ManageLevel.root, ManageLevel.user);
             login.setCreateTime(LocalDateTime.now());
-            loginRepository.saveAndFlush(login);
+            login = loginRepository.saveAndFlush(login);
             User user = new User();
             user.setId(login.getId());
             user.setLogin(login);
@@ -69,6 +80,28 @@ public class InitService {
             user.setGender(Gender.male);
             userRepository.save(user);
         }
+        if (environment.acceptsProfiles("staging")) {
+            // 在staging 中 建立足够多的测试帐号
+            int count = 20;
+            while (count-- > 0)
+                createDemoUser();
+        }
+    }
+
+    private void createDemoUser() {
+        // TODO 最好是走现有的service
+        Login login = new Login();
+        login.setLoginName(RandomStringUtils.randomNumeric(11));
+        login.setGuidable(new Random().nextBoolean());
+//        login.addLevel(ManageLevel.root, ManageLevel.user);
+        login.setCreateTime(LocalDateTime.now());
+        login = loginRepository.saveAndFlush(login);
+        User user = new User();
+        user.setId(login.getId());
+        user.setLogin(login);
+        user.setFamilyName(RandomStringUtils.randomAlphabetic(1));
+        user.setGender(Gender.values()[new Random().nextInt(Gender.values().length)]);
+        userRepository.save(user);
     }
 
     private void database() throws SQLException {
@@ -104,6 +137,16 @@ public class InitService {
             }
         } catch (IOException e) {
             throw new IllegalStateException(e);
+        }
+    }
+
+    @Override
+    public void upgradeToVersion(Version version) throws Exception {
+        switch (version) {
+            case init:
+                //never happen
+                break;
+            default:
         }
     }
 }
