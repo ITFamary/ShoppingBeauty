@@ -22,7 +22,7 @@ import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
 import me.jiangcai.lib.sys.service.SystemStringService;
 import me.jiangcai.payment.exception.SystemMaintainException;
 import me.jiangcai.payment.service.PaymentService;
-import me.jiangcai.wx.standard.service.WeixinPaymentForm;
+import me.jiangcai.wx.pay.service.WeixinPaymentForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.domain.Specification;
