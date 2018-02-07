@@ -20,6 +20,7 @@
                 <value>me.jiangcai.jpa.entity</value>
                 <value>me.jiangcai.payment.entity</value>
                 <value>me.jiangcai.wx.standard.entity</value>
+                <value>me.jiangcai.wx.pay.entity</value>
                 <value>com.huotu.verification.entity</value>
                 <value>me.jiangcai.lib.sys.entity</value>
                 <value>com.ming.shopping.beauty.service.entity</value>

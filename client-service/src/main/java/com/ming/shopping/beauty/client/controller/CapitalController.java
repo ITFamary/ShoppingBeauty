@@ -99,8 +99,8 @@ public class CapitalController {
         };
     }
 
-    @PostMapping(value = "/deposit", produces = "application/x-www-form-urlencoded")
-    public ModelAndView deposit(@AuthenticationPrincipal Login login, @Valid @RequestBody DepositBody postData
+    @PostMapping(value = "/deposit", produces = "application/x-www-form-urlencoded;charset=UTF-8")
+    public ModelAndView deposit(@AuthenticationPrincipal Login login, @Valid @RequestBody  DepositBody postData
             , BindingResult bindingResult, HttpServletRequest request, HttpServletResponse response) throws SystemMaintainException {
         if (bindingResult.hasErrors()) {
             throw new ApiResultException(
@@ -120,6 +120,7 @@ public class CapitalController {
             //走支付流程
             Map<String,Object> additionalParam = new HashMap<>(1);
             additionalParam.put("redirectUrl",postData.getRedirectUrl());
+            additionalParam.put("openId",login.getWechatUser().getOpenId());
             return paymentService.startPay(request, rechargeOrder, weixinPaymentForm, additionalParam);
         } else if (!StringUtils.isEmpty(postData.getCdKey())) {
             //使用充值卡
