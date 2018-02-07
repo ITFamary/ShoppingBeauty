@@ -113,8 +113,8 @@ public class CapitalController {
                             , null));
         }
         if (postData.getDepositSum() != null) {
-            Integer minAmount = systemStringService.getCustomSystemString("shopping.service.recharge.min.amount", null, true, Integer.class
-                    ,env.acceptsProfiles("staging") ? 0 : 5000 );
+            Double minAmount = systemStringService.getCustomSystemString("shopping.service.recharge.min.amount", null, true, Double.class
+                    ,env.acceptsProfiles("staging") ? 0D : 5000D );
             if (postData.getDepositSum().compareTo(BigDecimal.valueOf(minAmount)) == -1) {
                 throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.RECHARGE_MONEY_NOT_ENOUGH.getCode()
                         , MessageFormat.format(ResultCodeEnum.RECHARGE_MONEY_NOT_ENOUGH.getMessage(), minAmount.toString()), null));

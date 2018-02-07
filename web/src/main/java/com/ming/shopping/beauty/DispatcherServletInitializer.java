@@ -36,7 +36,7 @@ public class DispatcherServletInitializer extends AbstractAnnotationConfigDispat
         return new Filter[]{
                 new CharacterEncodingFilter(Constant.UTF8_ENCODIND)
                 , new HttpPutFormContentFilter()
-                , new MultiReadSupportFilter()
+//                , new MultiReadSupportFilter()
         };
     }
 
