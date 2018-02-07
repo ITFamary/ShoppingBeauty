@@ -420,10 +420,7 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
 
     protected Specification<Merchant> listSpecificationForManage(long merchantId) {
         return (root, cq, cb) ->
-                cb.and(
-                        cb.isNotNull(root.get(Merchant_.merchant))
-                        , cb.equal(root.join(Merchant_.merchant, JoinType.LEFT).get(Merchant_.id), merchantId)
-                );
+                cb.equal(root.get(Merchant_.id), merchantId);
     }
 
     @Override

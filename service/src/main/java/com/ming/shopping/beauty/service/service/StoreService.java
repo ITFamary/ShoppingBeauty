@@ -29,15 +29,6 @@ public interface StoreService {
     Store addStore(long loginId, long merchantId, String name, String telephone, String contact, Address address);
 
     /**
-     * 添加门店管理员
-     *
-     * @param loginId 角色
-     * @param storeId 所属门店
-     */
-    @Transactional(rollbackFor = RuntimeException.class)
-    Store addStore(long loginId, long storeId);
-
-    /**
      * 冻结或启用门店或门店管理员
      *
      * @param id     storeId
@@ -47,15 +38,7 @@ public interface StoreService {
     void freezeOrEnable(long id, boolean enable);
 
     /**
-     * 删除管理员与门店的关联
-     *
-     * @param managerId 门店管理员编号
-     */
-    @Transactional(rollbackFor = RuntimeException.class)
-    void removeStoreManage(long managerId);
-
-    /**
-     * 查找门店或者门店管理员，同时检查角色是否可用，如果不可用则抛出异常
+     * 查找门店，同时检查角色是否可用，如果不可用则抛出异常
      *
      * @param id storeId
      * @return

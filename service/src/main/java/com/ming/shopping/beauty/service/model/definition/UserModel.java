@@ -2,6 +2,7 @@ package com.ming.shopping.beauty.service.model.definition;
 
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Login_;
+import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.login.Store_;
 import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.entity.login.User_;
@@ -77,8 +78,8 @@ public class UserModel implements DefinitionModel<Login> {
                         .addFormat((data, type) -> conversionService.convert(data, String.class))
                         .build()
                 , FieldBuilder.asName(Login.class, "balance")
-                        .addBiSelect(Login::getCurrentBalanceExpr)
-//                        .addBiSelect((loginRoot, criteriaBuilder) -> criteriaBuilder.literal(BigDecimal.ZERO))
+//                        .addBiSelect(Login::getCurrentBalanceExpr)
+                        .addBiSelect((loginRoot, criteriaBuilder) -> criteriaBuilder.literal(BigDecimal.ZERO))
                         .addEntityFunction(login -> login.getUser() == null ? 0 : loginService.findBalance(login.getUser().getId()))
                         .build()
 //                , FieldBuilder.asName(Login.class, "consumption")
@@ -87,11 +88,12 @@ public class UserModel implements DefinitionModel<Login> {
                         .addSelect(loginRoot -> loginRoot.get(Login_.guidable))
                         .build()
                 , FieldBuilder.asName(Login.class, "storeId")
-                        .addBiSelect((loginRoot, cb) -> cb.<Long>selectCase().when(cb.isNull(loginRoot.get(Login_.store)), (Long) null)
-                                .otherwise(cb.<Long>selectCase()
-                                        .when(cb.isNull(loginRoot.join(Login_.store, JoinType.LEFT).get(Store_.store)), loginRoot.get(Login_.id))
-                                        .otherwise(loginRoot.join(Login_.store, JoinType.LEFT).join(Store_.store, JoinType.LEFT).get(Store_.id))))
-                        .addEntityFunction(login -> login.getStore() == null ? "" : login.getStore().getStoreId())
+                        .addBiSelect((loginRoot, cb) -> {
+                            final Join<Login, Store> join = loginRoot.join(Login_.store, JoinType.LEFT);
+                            return cb.<Long>selectCase().when(cb.isNull(join), (Long) null)
+                                    .otherwise(join.get(Store_.id));
+                        })
+                        .addEntityFunction(login -> login.getStore() == null ? "" : login.getStore().getId())
                         .build()
                 , FieldBuilder.asName(Login.class, "enabled")
                         .build()

@@ -58,26 +58,6 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
-    public Store addStore(long loginId, long storeId) {
-        Login login = loginService.findOne(loginId);
-        if (login.getStore() != null) {
-            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.LOGIN_STORE_EXIST));
-        }
-        Store store = findStore(storeId);
-        Store manage = new Store();
-        manage.setId(loginId);
-        manage.setLogin(login);
-        manage.setStore(store);
-        manage.setMerchant(store.getMerchant());
-        manage.setCreateTime(LocalDateTime.now());
-        login.setStore(store);
-        login.addLevel(ManageLevel.storeRoot);
-        storeRepository.save(manage);
-        return manage;
-    }
-
-    @Override
-    @Transactional(rollbackFor = RuntimeException.class)
     public void freezeOrEnable(long id, boolean enable) {
         Store store = storeRepository.findOne(id);
         if (store == null) {
@@ -87,45 +67,23 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
-    @Transactional(rollbackFor = RuntimeException.class)
-    public void removeStoreManage(long managerId) {
-        Store store = storeRepository.findOne(managerId);
-        if (store == null) {
-            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.STORE_NOT_EXIST));
-        }
-        if (store.isManageable()) {
-            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.STORE_CANNOT_DELETE));
-        }
-        storeRepository.delete(store);
-    }
-
-    @Override
     public Store findOne(long id) throws ApiResultException {
         Store store = storeRepository.findOne(id);
         if (store == null) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.STORE_NOT_EXIST));
         }
-        if (!store.isStoreUsable()) {
+        if (!store.isEnabled()) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.STORE_NOT_ENABLE));
         }
-        if (!store.isManageable() && !store.isEnabled()) {
-            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.MANAGE_NOT_ENABLE));
-        }
+//        if (!store.isManageable() && !store.isEnabled()) {
+//            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.MANAGE_NOT_ENABLE));
+//        }
         return store;
     }
 
     @Override
     public Store findStore(long storeId) {
-        Store store = storeRepository.findOne((root, cq, cb) ->
-                cb.and(cb.equal(root.get(Store_.id), storeId), cb.isNull(root.get(Store_.store)))
-        );
-        if (store == null) {
-            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.STORE_NOT_EXIST));
-        }
-        if (!store.isStoreUsable()) {
-            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.STORE_NOT_ENABLE));
-        }
-        return store;
+        return findOne(storeId);
     }
 
     @Override

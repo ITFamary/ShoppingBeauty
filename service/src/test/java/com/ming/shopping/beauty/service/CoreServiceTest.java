@@ -286,16 +286,6 @@ public abstract class CoreServiceTest extends SpringWebTest {
         return representService.addRepresent(login.getId(), store.getId());
     }
 
-    /**
-     * 生成门店管理员
-     *
-     * @param storeId
-     * @return
-     */
-    protected Store mockStoreManager(long storeId) throws Exception {
-        Login login = mockLogin();
-        return storeService.addStore(login.getId(), storeId);
-    }
 
     /**
      * 在商户下生成一个审核过的项目
