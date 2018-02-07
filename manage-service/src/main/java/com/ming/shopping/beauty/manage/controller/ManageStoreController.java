@@ -280,7 +280,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
                 conditionList.add(cb.equal(root.join(Store_.merchant, JoinType.LEFT).get(Merchant_.id), Long.valueOf(queryData.get("merchantId").toString())));
             }
             if (queryData.get("username") != null) {
-                conditionList.add(cb.equal(root.join(Store_.login).get(Login_.loginName), queryData.get("username")));
+                conditionList.add(cb.like(root.join(Store_.login).get(Login_.loginName), "%" + queryData.get("username") + "%"));
             }
             return cb.and(conditionList.toArray(new Predicate[conditionList.size()]));
         };
