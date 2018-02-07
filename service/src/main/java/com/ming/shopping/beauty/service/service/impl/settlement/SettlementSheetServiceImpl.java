@@ -63,13 +63,13 @@ public class SettlementSheetServiceImpl implements SettlementSheetService {
         mainOrderSet.addAll(okList);
         for (MainOrder mainOrder : mainOrderSet) {
             mainOrder.setSettlementSheet(settlementSheet);
-            mainOrderRepository.save(mainOrder);
+            //mainOrderRepository.save(mainOrder);
         }
         settlementSheet.setMainOrderSet(mainOrderSet);
         settlementSheet.setMerchant(merchant);
         settlementSheet.setCreateTime(LocalDateTime.now());
         settlementSheet.setSettlementStatus(SettlementStatus.UNSUBMIT);
-        return settlementSheet;
+        return settlementSheetRepository.save(settlementSheet);
     }
 
     @Override

@@ -11,5 +11,4 @@ import java.util.List;
  * Created by helloztt on 2018/1/4.
  */
 public interface RechargeCardRepository extends JpaRepository<RechargeCard,Long>,JpaSpecificationExecutor<RechargeCard> {
-    List<RechargeCard> findByUser(User one);
 }

@@ -41,6 +41,27 @@
         <!--<version>${jiangcai.notice.version}</version>-->
         <!--<scope>runtime</scope>-->
         <!--</dependency>-->
+        <dependency>
+            <groupId>com.it.shopping-beauty</groupId>
+            <artifactId>service</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.it.shopping-beauty</groupId>
+            <artifactId>client-service</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.it.shopping-beauty</groupId>
+            <artifactId>manage-service</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

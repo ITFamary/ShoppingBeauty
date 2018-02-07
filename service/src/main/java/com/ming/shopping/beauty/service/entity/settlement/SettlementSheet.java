@@ -70,4 +70,19 @@ public class SettlementSheet implements CrudFriendly<Long> {
      */
     @Column(columnDefinition = Constant.DATE_NULLABLE_COLUMN_DEFINITION)
     private LocalDateTime transferTime;
+
+    @Override
+    public String toString() {
+        return "SettlementSheet{" +
+                "id=" + id +
+                ", merchant=" + merchant +
+                ", mainOrderSet=" + mainOrderSet +
+                ", variableAmount=" + variableAmount +
+                ", actualAmount=" + actualAmount +
+                ", settlementStatus=" + settlementStatus +
+                ", comment='" + comment + '\'' +
+                ", createTime=" + createTime +
+                ", transferTime=" + transferTime +
+                '}';
+    }
 }
