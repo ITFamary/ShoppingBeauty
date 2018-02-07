@@ -72,6 +72,11 @@
             <artifactId>payment-api</artifactId>
             <version>1.1-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>me.jiangcai.lib</groupId>
+            <artifactId>upgrade</artifactId>
+            <version>${jiangcai.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
