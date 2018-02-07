@@ -50,7 +50,7 @@ public class ClientMainOrderController {
     @GetMapping("/orders")
     @ResponseBody
     public void orderList(@AuthenticationPrincipal Login login
-            , @RequestBody OrderSearcherBody postData, NativeWebRequest webRequest) throws IOException {
+            , OrderSearcherBody postData, NativeWebRequest webRequest) throws IOException {
         if ("store".equalsIgnoreCase(postData.getOrderType())) {
             if (login.getRepresent() == null) {
                 throw new ApiResultException(HttpStatusCustom.SC_FORBIDDEN);

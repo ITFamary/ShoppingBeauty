@@ -19,22 +19,28 @@ import me.jiangcai.crud.row.RowCustom;
 import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
+import me.jiangcai.crud.utils.MapUtils;
 import me.jiangcai.lib.sys.SystemStringConfig;
-import me.jiangcai.lib.sys.service.SystemStringService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.criteria.*;
+import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author lxf
@@ -42,13 +48,50 @@ import java.util.*;
 @RequestMapping("/settlementSheet")
 @Controller
 @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
-@PreAuthorize("hasAnyRole('ROOT','"+ SystemStringConfig.MANAGER_ROLE+"','" + Login.ROLE_PLATFORM_SETTLEMENT + "')")
+@PreAuthorize("hasAnyRole('ROOT','" + SystemStringConfig.MANAGER_ROLE + "','" + Login.ROLE_PLATFORM_SETTLEMENT + "')")
 public class ManageSettlementSheetController extends AbstractCrudController<SettlementSheet, Long> {
 
     @Autowired
     private SettlementSheetService settlementSheetService;
     @Autowired
     private MerchantService merchantService;
+
+    /**
+     * 结算单
+     *
+     * @param request 请求
+     * @return
+     */
+    @Override
+    public RowDefinition<SettlementSheet> list(HttpServletRequest request) {
+        Map<String, Object> queryData = MapUtils.changeIt(request.getParameterMap());
+        return new RowDefinition<SettlementSheet>() {
+            @Override
+            public CriteriaQuery<SettlementSheet> dataGroup(CriteriaBuilder cb, CriteriaQuery<SettlementSheet> query, Root<SettlementSheet> root) {
+                return query.groupBy(root);
+            }
+
+            @Override
+            public List<Order> defaultOrder(CriteriaBuilder criteriaBuilder, Root<SettlementSheet> root) {
+                return listOrder(criteriaBuilder, root);
+            }
+
+            @Override
+            public Class<SettlementSheet> entityClass() {
+                return SettlementSheet.class;
+            }
+
+            @Override
+            public List<FieldDefinition<SettlementSheet>> fields() {
+                return listFields();
+            }
+
+            @Override
+            public Specification<SettlementSheet> specification() {
+                return listSpecification(queryData);
+            }
+        };
+    }
 
     /**
      * 提交申请
@@ -158,11 +201,12 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
      */
     @PostMapping("/{merchantId}")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
+    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity productSheet(@PathVariable("merchantId") Long merchantId) throws URISyntaxException {
         Merchant merchant = merchantService.findMerchant(merchantId);
         SettlementSheet settlementSheet = settlementSheetService.addSheet(merchant);
         return ResponseEntity
-                .created(new URI("/settlementSheet/" + settlementSheet.getId()))
+                .created(new URI("/settlementSheet/" + settlementSheet.getId() + "/store"))
                 .build();
     }
 
@@ -236,17 +280,12 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
                 , FieldBuilder.asName(SettlementSheet.class, "actualAmount")
                         .build()
                 , FieldBuilder.asName(SettlementSheet.class, "createTime")
+                        .addFormat((data, type) -> {
+                            return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(((LocalDateTime) data));
+                        })
                         .build()
                 , FieldBuilder.asName(SettlementSheet.class, "settlementAmount")
-                        .addSelect(settlementSheetRoot -> settlementSheetRoot.get(SettlementSheet_.mainOrderSet))
-                        .addFormat((data, type) -> {
-                            BigDecimal result = new BigDecimal(0);
-                            Set<MainOrder> orderSet = (Set<MainOrder>) data;
-                            for (MainOrder mainOrder : orderSet) {
-                                result.add(mainOrder.getSettlementAmount());
-                            }
-                            return result;
-                        })
+                        .addBiSelect((settlementSheetRoot, criteriaBuilder) -> criteriaBuilder.sum(settlementSheetRoot.get("mainOrderSet").get("settlementAmount")))
                         .build()
                 , FieldBuilder.asName(SettlementSheet.class, "status")
                         .addSelect(settlementSheetRoot -> settlementSheetRoot.get(SettlementSheet_.settlementStatus))

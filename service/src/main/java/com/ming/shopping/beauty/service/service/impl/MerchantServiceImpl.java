@@ -2,7 +2,6 @@ package com.ming.shopping.beauty.service.service.impl;
 
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Merchant;
-import com.ming.shopping.beauty.service.entity.login.Merchant_;
 import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
@@ -15,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 /**
  * @author lxf
@@ -29,17 +29,34 @@ public class MerchantServiceImpl implements MerchantService {
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
-    public Merchant addMerchant(long loginId, Merchant merchant, ManageLevel... manageLevels) throws ApiResultException {
+    public Merchant addMerchant(long loginId, Merchant merchant) throws ApiResultException {
         Login login = loginService.findOne(loginId);
+        if (login.getLevelSet().stream().anyMatch(Login.rootLevel::contains)) {
+            throw new IllegalArgumentException("平台管理员无法被设置为商户管理员");
+        }
         if (login.getMerchant() != null) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.LOGIN_MERCHANT_EXIST));
         }
         login.setMerchant(merchant);
-        login.addLevel(manageLevels);
+        login.addLevel(ManageLevel.merchantRoot);
         merchant.setId(login.getId());
         merchant.setLogin(login);
         merchant.setCreateTime(LocalDateTime.now());
         return merchantRepository.save(merchant);
+    }
+
+    @Override
+    public void addMerchantManager(Merchant merchant, long loginId, Set<ManageLevel> set) {
+        Login login = loginService.findOne(loginId);
+        // 如果这个用户是平台管理员则血崩
+        if (login.getLevelSet().stream().anyMatch(Login.rootLevel::contains)) {
+            throw new IllegalArgumentException("平台管理员无法被设置为商户管理员");
+        }
+        if (login.getLevelSet().contains(ManageLevel.merchantRoot))
+            throw new IllegalArgumentException("它已经是一个商户主了。");
+
+        login.setMerchant(merchant);
+        login.setLevelSet(set);
     }
 
     @Override
@@ -54,41 +71,19 @@ public class MerchantServiceImpl implements MerchantService {
     }
 
     @Override
-    @Transactional(rollbackFor = RuntimeException.class)
-    public void removeMerchantManage(long managerId) throws ApiResultException {
-        Merchant merchant = merchantRepository.findOne(managerId);
-        if (merchant.isManageable()) {
-            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.MERCHANT_CANNOT_DELETE));
-        }
-        merchant.getLogin().setMerchant(null);
-        merchantRepository.delete(merchant);
-    }
-
-    @Override
     public Merchant findOne(long merchantId) throws ApiResultException {
         Merchant merchant = merchantRepository.findOne(merchantId);
         if (merchant == null) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.LOGIN_NOT_EXIST));
-        }
-        if (!merchant.isMerchantUsable()) {
-            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.MERCHANT_NOT_ENABLE));
-        }
-        if (!merchant.isManageable() && !merchant.isEnabled()) {
-            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.MANAGE_NOT_ENABLE));
         }
         return merchant;
     }
 
     @Override
     public Merchant findMerchant(long merchantId) throws ApiResultException {
-        Merchant merchant = merchantRepository.findOne((root, cq, cb) ->
-                cb.and(cb.equal(root.get(Merchant_.id), merchantId), cb.isNull(root.get(Merchant_.merchant))));
-        if (merchant == null) {
-            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.MERCHANT_NOT_EXIST));
-        }
-        if (!merchant.isMerchantUsable()) {
+        Merchant merchant = findOne(merchantId);
+        if (!merchant.isEnabled())
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.MERCHANT_NOT_ENABLE));
-        }
         return merchant;
     }
 }

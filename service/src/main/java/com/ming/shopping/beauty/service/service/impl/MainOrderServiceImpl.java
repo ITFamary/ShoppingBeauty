@@ -114,7 +114,7 @@ public class MainOrderServiceImpl implements MainOrderService {
         BigDecimal costPrice = BigDecimal.ZERO;
         BigDecimal finalPrice = BigDecimal.ZERO;
         List<OrderItem> orderItemList = new ArrayList<>();
-        amounts.keySet().forEach(storeItem -> {
+        for (StoreItem storeItem : amounts.keySet()) {
             OrderItem orderItem = new OrderItem();
             orderItem.setMainOrder(mainOrder);
             orderItem.setItem(storeItem.getItem());
@@ -124,15 +124,16 @@ public class MainOrderServiceImpl implements MainOrderService {
             //销售价从门店项目中获取
             orderItem.setSalesPrice(storeItem.getSalesPrice());
             orderItem.setCostPrice(orderItem.getItem().getCostPrice());
-            //将orderItem总的成本价统计起来.
-            costPrice.add(orderItem.getCostPrice());
-            //统计销售价格
-            finalPrice.add(orderItem.getSalesPrice());
             orderItem.setNum(amounts.get(storeItem));
+            //将orderItem总的成本价统计起来.
+            costPrice = costPrice.add(orderItem.getCostPrice().multiply(BigDecimal.valueOf(orderItem.getNum())));
+            //统计销售价格
+            finalPrice = finalPrice.add(orderItem.getSalesPrice().multiply(BigDecimal.valueOf(orderItem.getNum())));
             orderItemList.add(orderItem);
-        });
+        }
         //统计成本价格
         mainOrder.setSettlementAmount(costPrice);
+        //实付金额
         mainOrder.setFinalAmount(finalPrice);
         mainOrder.setOrderItemList(orderItemList);
         //待付款

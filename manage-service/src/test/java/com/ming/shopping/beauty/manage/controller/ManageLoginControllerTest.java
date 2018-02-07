@@ -44,6 +44,16 @@ public class ManageLoginControllerTest extends ManageConfigTest {
     }
 
     @Test
+    public void listLogin() throws Exception {
+        updateAllRunWith(mockRoot());
+
+        mockMvc.perform(
+                get("/login")
+        )
+                .andDo(print());
+    }
+
+    @Test
     public void setGuidable() throws Exception {
         Login login = mockLogin();
         Login root = mockRoot();

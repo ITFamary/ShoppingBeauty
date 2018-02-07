@@ -11,7 +11,10 @@ import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.repository.MerchantRepository;
 import com.ming.shopping.beauty.service.service.MerchantService;
 import me.jiangcai.crud.controller.AbstractCrudController;
-import me.jiangcai.crud.row.*;
+import me.jiangcai.crud.row.FieldDefinition;
+import me.jiangcai.crud.row.RowCustom;
+import me.jiangcai.crud.row.RowDefinition;
+import me.jiangcai.crud.row.RowService;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,15 +29,34 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Order;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Selection;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -87,7 +109,7 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "请求数据"), null));
         }
-        Merchant merchant = merchantService.addMerchant(Long.parseLong(otherData.get(param).toString()), postData, ManageLevel.merchantRoot);
+        Merchant merchant = merchantService.addMerchant(Long.parseLong(otherData.get(param).toString()), postData);
         return ResponseEntity
                 .created(new URI("/merchant/" + merchant.getId()))
                 .build();
@@ -236,20 +258,19 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.NEED_LEVEL));
         }
         Object level = postData.get(param);
-        Set<ManageLevel> manageLevelSet = new HashSet<>();
-        if (level instanceof Collection) {
-            ((Collection) level).forEach(p->manageLevelSet.add(getManageLevel(p.toString())));
-        } else {
-            manageLevelSet.add(getManageLevel(level.toString()));
-        }
+        Collection<?> collection = (Collection<?>) level;
+        Set<ManageLevel> manageLevelSet = collection.stream()
+                .map(Object::toString)
+                .map(ManageLevel::valueOf)
+                .collect(Collectors.toSet());
+
+        if (!Login.merchantLevel.containsAll(manageLevelSet))
+            throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                    , "只允许添加商户级别的管理员", null));
+
         //找这个商户
         Merchant merchant = merchantService.findMerchant(merchantId);
-        Merchant merchantManage = merchantRepository.findOne(manageId);
-        if(merchantManage == null){
-            merchantManage = new Merchant();
-        }
-        merchantManage.setMerchant(merchant);
-        merchantService.addMerchant(manageId, merchantManage, manageLevelSet.toArray(new ManageLevel[manageLevelSet.size()]));
+        merchantService.addMerchantManager(merchant, manageId, manageLevelSet);
     }
 
     private ManageLevel getManageLevel(String level) {
@@ -315,7 +336,6 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
     protected Specification<Merchant> listSpecification(Map<String, Object> queryData) {
         return (root, cq, cb) -> {
             List<Predicate> conditionList = new ArrayList<>();
-            conditionList.add(cb.isNull(root.get(Merchant_.merchant)));
             if (queryData.get("username") != null) {
                 conditionList.add(cb.equal(root.join(Merchant_.login).get(Login_.loginName), queryData.get("username")));
             }
@@ -400,10 +420,7 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
 
     protected Specification<Merchant> listSpecificationForManage(long merchantId) {
         return (root, cq, cb) ->
-                cb.and(
-                        cb.isNotNull(root.get(Merchant_.merchant))
-                        , cb.equal(root.join(Merchant_.merchant, JoinType.LEFT).get(Merchant_.id), merchantId)
-                );
+                cb.equal(root.get(Merchant_.id), merchantId);
     }
 
     @Override

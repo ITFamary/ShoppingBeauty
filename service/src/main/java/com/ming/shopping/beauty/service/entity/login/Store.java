@@ -5,7 +5,15 @@ import lombok.Setter;
 import me.jiangcai.crud.CrudFriendly;
 import me.jiangcai.jpa.entity.support.Address;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -33,11 +41,6 @@ public class Store implements CrudFriendly<Long> {
 
     @ManyToOne
     private Merchant merchant;
-    /**
-     * 所属门店
-     */
-    @ManyToOne
-    private Store store;
     /**
      * 门店名称
      */
@@ -72,32 +75,6 @@ public class Store implements CrudFriendly<Long> {
      * 冻结或删除都应设置为 false
      */
     private boolean enabled = true;
-
-    /**
-     * 是否是个门店
-     *
-     * @return
-     */
-    public boolean isManageable() {
-        return store == null;
-    }
-
-    /**
-     * 门店是否可用
-     */
-    public boolean isStoreUsable() {
-        return (isManageable() && enabled)
-                || (!isManageable() && store.enabled);
-    }
-
-    /**
-     * 获取门店ID
-     *
-     * @return
-     */
-    public long getStoreId() {
-        return isManageable() ? id : store.getId();
-    }
 
     @Override
     public boolean equals(Object o) {

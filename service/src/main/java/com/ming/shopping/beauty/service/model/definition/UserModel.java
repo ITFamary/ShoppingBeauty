@@ -2,6 +2,7 @@ package com.ming.shopping.beauty.service.model.definition;
 
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Login_;
+import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.login.Store_;
 import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.entity.login.User_;
@@ -12,10 +13,12 @@ import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.field.Fields;
 import me.jiangcai.wx.model.Gender;
 import me.jiangcai.wx.standard.entity.StandardWeixinUser;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
@@ -27,7 +30,7 @@ public class UserModel implements DefinitionModel<Login> {
 
     private final List<FieldDefinition<Login>> definitions;
 
-    public UserModel(LoginService loginService) {
+    public UserModel(LoginService loginService, ConversionService conversionService) {
         super();
         definitions = Arrays.asList(
                 Fields.asBasic("id")
@@ -71,8 +74,12 @@ public class UserModel implements DefinitionModel<Login> {
                         .addSelect(loginRoot -> loginRoot.join(Login_.wechatUser, JoinType.LEFT).get("headImageUrl"))
                         .addEntityFunction(login -> login.getWechatUser() != null ? login.getWechatUser().getHeadImageUrl() : null)
                         .build()
+                , FieldBuilder.asName(Login.class, "createTime")
+                        .addFormat((data, type) -> conversionService.convert(data, String.class))
+                        .build()
                 , FieldBuilder.asName(Login.class, "balance")
-                        .addBiSelect(Login::getCurrentBalanceExpr)
+//                        .addBiSelect(Login::getCurrentBalanceExpr)
+                        .addBiSelect((loginRoot, criteriaBuilder) -> criteriaBuilder.literal(BigDecimal.ZERO))
                         .addEntityFunction(login -> login.getUser() == null ? 0 : loginService.findBalance(login.getUser().getId()))
                         .build()
 //                , FieldBuilder.asName(Login.class, "consumption")
@@ -81,15 +88,14 @@ public class UserModel implements DefinitionModel<Login> {
                         .addSelect(loginRoot -> loginRoot.get(Login_.guidable))
                         .build()
                 , FieldBuilder.asName(Login.class, "storeId")
-                        .addBiSelect((loginRoot, cb) -> cb.<Long>selectCase().when(cb.isNull(loginRoot.get(Login_.store)), 0L)
-                                .otherwise(cb.<Long>selectCase()
-                                        .when(cb.isNull(loginRoot.join(Login_.store, JoinType.LEFT).get(Store_.store)), loginRoot.get(Login_.id))
-                                        .otherwise(loginRoot.join(Login_.store, JoinType.LEFT).join(Store_.store, JoinType.LEFT).get(Store_.id))))
-                        .addEntityFunction(login -> login.getStore() == null ? "" : login.getStore().getStoreId())
+                        .addBiSelect((loginRoot, cb) -> {
+                            final Join<Login, Store> join = loginRoot.join(Login_.store, JoinType.LEFT);
+                            return cb.<Long>selectCase().when(cb.isNull(join), (Long) null)
+                                    .otherwise(join.get(Store_.id));
+                        })
+                        .addEntityFunction(login -> login.getStore() == null ? "" : login.getStore().getId())
                         .build()
                 , FieldBuilder.asName(Login.class, "enabled")
-                        .addSelect(loginRoot -> loginRoot.join(Login_.store, JoinType.LEFT).get(Store_.enabled))
-                        .addEntityFunction(login -> login.getStore() == null ? login.isEnabled() : login.getStore().isEnabled())
                         .build()
         );
     }
