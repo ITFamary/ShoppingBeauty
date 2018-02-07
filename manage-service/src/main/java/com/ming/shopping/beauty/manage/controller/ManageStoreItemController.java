@@ -1,5 +1,6 @@
 package com.ming.shopping.beauty.manage.controller;
 
+import com.ming.shopping.beauty.manage.modal.StoreItemCreation;
 import com.ming.shopping.beauty.service.entity.item.Item_;
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import com.ming.shopping.beauty.service.entity.item.StoreItem_;
@@ -26,8 +27,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.context.request.WebRequest;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Order;
@@ -49,7 +50,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/storeItem")
 @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_READ + "','" + Login.ROLE_PLATFORM_READ + "','" + Login.ROLE_STORE_ROOT + "')")
-public class ManageStoreItemController extends AbstractCrudController<StoreItem, Long> {
+public class ManageStoreItemController extends AbstractCrudController<StoreItem, Long, StoreItemCreation> {
 
     @Autowired
     private StoreItemService storeItemService;
@@ -64,8 +65,8 @@ public class ManageStoreItemController extends AbstractCrudController<StoreItem,
     /**
      * 添加门店项目
      *
-     * @param postData  门店项目
-     * @param otherData 其他信息
+     * @param postData 门店项目
+     * @param request  其他信息
      * @return
      * @throws URISyntaxException
      */
@@ -73,14 +74,15 @@ public class ManageStoreItemController extends AbstractCrudController<StoreItem,
     @Override
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_STORE + "','" + Login.ROLE_MERCHANT_ITEM + "','" + Login.ROLE_STORE_ROOT + "')")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity addOne(@RequestBody StoreItem postData, @RequestBody Map<String, Object> otherData) throws URISyntaxException {
+    public ResponseEntity addOne(@RequestBody StoreItemCreation postData, WebRequest request) throws URISyntaxException {
         final String storeId = "storeId";
         final String itemId = "itemId";
-        if (otherData.get(storeId) == null || otherData.get(itemId) == null) {
+        if (postData.getStoreId() == null || postData.getItemId() == null) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), storeId + itemId), null));
         }
-        StoreItem storeItem = storeItemService.addStoreItem(Long.parseLong(otherData.get(storeId).toString()), Long.parseLong(otherData.get(itemId).toString()), postData);
+        StoreItem storeItem = storeItemService.addStoreItem(postData.getStoreId()
+                , postData.getItemId(), postData);
         return ResponseEntity
                 .created(new URI("/storeItem/" + storeItem.getId()))
                 .build();

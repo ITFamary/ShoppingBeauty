@@ -5,7 +5,15 @@ import lombok.Setter;
 import me.jiangcai.crud.CrudFriendly;
 import me.jiangcai.jpa.entity.support.Address;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.OrderBy;
+import javax.persistence.PrimaryKeyJoinColumn;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -73,5 +81,12 @@ public class Merchant implements CrudFriendly<Long> {
         if (!(o instanceof Merchant)) return false;
         Merchant merchant = (Merchant) o;
         return Objects.equals(id, merchant.id);
+    }
+
+    public void fromRequest(Merchant merchant) {
+        setTelephone(merchant.telephone);
+        setContact(merchant.contact);
+        setName(merchant.name);
+        setAddress(merchant.address);
     }
 }

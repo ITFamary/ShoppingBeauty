@@ -49,7 +49,7 @@ import java.util.Map;
 @Controller
 @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
 @PreAuthorize("hasAnyRole('ROOT','" + SystemStringConfig.MANAGER_ROLE + "','" + Login.ROLE_PLATFORM_SETTLEMENT + "')")
-public class ManageSettlementSheetController extends AbstractCrudController<SettlementSheet, Long> {
+public class ManageSettlementSheetController extends AbstractCrudController<SettlementSheet, Long, SettlementSheet> {
 
     @Autowired
     private SettlementSheetService settlementSheetService;

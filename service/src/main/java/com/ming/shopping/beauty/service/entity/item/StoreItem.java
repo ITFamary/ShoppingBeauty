@@ -6,7 +6,12 @@ import lombok.Getter;
 import lombok.Setter;
 import me.jiangcai.crud.CrudFriendly;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import java.math.BigDecimal;
 import java.util.Objects;
 
@@ -60,5 +65,9 @@ public class StoreItem implements CrudFriendly<Long> {
         return Objects.equals(id, storeItem.id) &&
                 Objects.equals(store, storeItem.store) &&
                 Objects.equals(item, storeItem.item);
+    }
+
+    public void fromRequest(StoreItem storeItem) {
+        setSalesPrice((storeItem.salesPrice));
     }
 }

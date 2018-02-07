@@ -1,5 +1,6 @@
 package com.ming.shopping.beauty.manage.controller;
 
+import com.ming.shopping.beauty.manage.modal.ItemCreation;
 import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.item.Item_;
 import com.ming.shopping.beauty.service.entity.login.Login;
@@ -34,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.context.request.WebRequest;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.JoinType;
@@ -56,7 +58,7 @@ import java.util.Map;
 @Controller
 @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
 @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_READ + "','" + Login.ROLE_PLATFORM_READ + "')")
-public class ManageItemController extends AbstractCrudController<Item, Long> {
+public class ManageItemController extends AbstractCrudController<Item, Long, ItemCreation> {
 
     @Autowired
     private ItemService itemService;
@@ -76,17 +78,17 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
      * 添加项目，只有root或者具备商户项目权限的人
      *
      * @param item      项目
-     * @param otherData 其他信息
+     * @param request 其他信息
      * @return 商户项目列表
      */
     @PostMapping
     @Override
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ITEM + "')")
-    public ResponseEntity addOne(@RequestBody Item item, @RequestBody Map<String, Object> otherData) throws URISyntaxException {
+    public ResponseEntity addOne(@RequestBody ItemCreation item, WebRequest request) throws URISyntaxException {
         final String param = "merchantId";
 
-        if (otherData.get(param) == null) {
+        if (item.getMerchantId() == null) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), param), null));
         }
@@ -94,12 +96,12 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "请求数据"), null));
         }
-        if (StringUtils.isEmpty((String) otherData.get("imagePath"))) {
+        if (StringUtils.isEmpty(item.getImagePath())) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "请求数据"), null));
         }
-        Merchant merchant = merchantService.findOne(Long.parseLong(otherData.get(param).toString()));
-        Item responseItem = itemService.addItem(merchant, item, (String) otherData.get("imagePath"));
+        Merchant merchant = merchantService.findOne(item.getMerchantId());
+        Item responseItem = itemService.addItem(merchant, item, item.getImagePath());
         return ResponseEntity
                 .created(new URI("/item/" + responseItem.getId()))
                 .build();
@@ -109,15 +111,14 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
      * 编辑项目
      *
      * @param item      要编辑的项目信息
-     * @param otherData 其他的一些信息
      * @throws URISyntaxException
      */
     @PutMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ITEM + "')")
-    public void updateItem(@RequestBody Item item, @RequestBody Map<String, Object> otherData) throws URISyntaxException {
+    public void updateItem(@RequestBody ItemCreation item, WebRequest request) throws URISyntaxException {
         // TODO 并非什么都可以改
-        addOne(item, otherData);
+        addOne(item, request);
     }
 
     /**

@@ -1,17 +1,11 @@
 package com.ming.shopping.beauty.manage.controller;
 
-import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.service.StoreItemService;
-import me.jiangcai.crud.controller.AbstractCrudController;
-import me.jiangcai.crud.row.FieldDefinition;
-import me.jiangcai.crud.row.RowDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -19,24 +13,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Root;
-import javax.servlet.http.HttpServletRequest;
-import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 
 /**
- *
  * 这个controller仅仅是为了解决StoreItem中URL冲突而创建的,所以将额外的方法全部禁用了,测试还是在ManageStoreControllerTest中
  *
  * @author lxf
  */
 @Controller
 @RequestMapping("/storeItemUpdater")
-public class ManageStoreItemUpdateController extends AbstractCrudController<StoreItem, Long> {
+public class ManageStoreItemUpdateController {
 
     @Autowired
     private StoreItemService storeItemService;
@@ -55,13 +43,13 @@ public class ManageStoreItemUpdateController extends AbstractCrudController<Stor
         final String storeItems = "storeItems";
         //失败的个数
         int count = 0;
-        List<Integer> itemList = (List<Integer>) putData.get(storeItems);
+        List<Long> itemList = ManageItemUpdateController.toIdList(putData, storeItems);
         //总个数
         int size = itemList.size();
         if (putData.get(recommended) != null || putData.get(storeItems) != null) {
-            for (Integer storeItemId : itemList) {
+            for (Long storeItemId : itemList) {
                 try {
-                    storeItemService.recommended((boolean) putData.get(recommended), Long.parseLong(storeItemId.toString()));
+                    storeItemService.recommended((boolean) putData.get(recommended), storeItemId);
                 } catch (Exception e) {
                     count++;
                 }
@@ -87,13 +75,13 @@ public class ManageStoreItemUpdateController extends AbstractCrudController<Stor
         final String storeItems = "storeItems";
         //失败的个数
         int count = 0;
-        List<Integer> itemList = (List<Integer>) putData.get(storeItems);
+        List<Long> itemList = ManageItemUpdateController.toIdList(putData, storeItems);
         //总个数
         int size = itemList.size();
         if (putData.get(enabled) != null || putData.get(storeItems) != null) {
-            for (Integer storeItemId : itemList) {
+            for (Long storeItemId : itemList) {
                 try {
-                    storeItemService.freezeOrEnable((boolean) putData.get(enabled), Long.parseLong(storeItemId.toString()));
+                    storeItemService.freezeOrEnable((boolean) putData.get(enabled), storeItemId);
                 } catch (Exception e) {
                     count++;
                 }
@@ -106,51 +94,4 @@ public class ManageStoreItemUpdateController extends AbstractCrudController<Stor
         return ApiResult.withOk("总数:" + size + ",成功数:" + (size - count) + ",失败数:" + count);
     }
 
-    @Override
-    @PreAuthorize("denyAll()")
-    protected List<FieldDefinition<StoreItem>> listFields() {
-        return null;
-    }
-
-    @Override
-    @PreAuthorize("denyAll()")
-    protected Specification<StoreItem> listSpecification(Map<String, Object> queryData) {
-        return null;
-    }
-
-    @Override
-    @PreAuthorize("denyAll()")
-    public Object getOne(Long aLong) {
-        return super.getOne(aLong);
-    }
-
-    @Override
-    @PreAuthorize("denyAll()")
-    public RowDefinition<StoreItem> getDetail(Long aLong) {
-        return super.getDetail(aLong);
-    }
-
-    @Override
-    @PreAuthorize("denyAll()")
-    public ResponseEntity addOne(StoreItem postData, Map<String, Object> otherData) throws URISyntaxException {
-        return super.addOne(postData, otherData);
-    }
-
-    @Override
-    @PreAuthorize("denyAll()")
-    public void deleteOne(Long aLong) {
-        super.deleteOne(aLong);
-    }
-
-    @Override
-    @PreAuthorize("denyAll()")
-    public RowDefinition<StoreItem> list(HttpServletRequest request) {
-        return super.list(request);
-    }
-
-    @Override
-    @PreAuthorize("denyAll()")
-    protected List<Order> listOrder(CriteriaBuilder criteriaBuilder, Root<StoreItem> root) {
-        return super.listOrder(criteriaBuilder, root);
-    }
 }

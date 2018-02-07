@@ -48,7 +48,7 @@ import java.util.Map;
 @RequestMapping("/login")
 @PreAuthorize("hasAnyRole('ROOT')")
 @RowCustom(dramatizer = AntDesignPaginationDramatizer.class, distinct = true)
-public class ManageLoginController extends AbstractCrudController<Login, Long> {
+public class ManageLoginController extends AbstractCrudController<Login, Long, Login> {
 
     @Autowired
     private LoginService loginService;

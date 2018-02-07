@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.context.request.WebRequest;
 
 import javax.persistence.criteria.Predicate;
 import java.net.URISyntaxException;
@@ -43,7 +44,7 @@ import java.util.Set;
 @RequestMapping("/manage")
 @PreAuthorize("hasAnyRole('ROOT')")
 @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
-public class ManageController extends AbstractCrudController<Login, Long> {
+public class ManageController extends AbstractCrudController<Login, Long, Login> {
     @Autowired
     private LoginService loginService;
     @Autowired
@@ -51,7 +52,7 @@ public class ManageController extends AbstractCrudController<Login, Long> {
 
     @PreAuthorize("denyAll()")
     @Override
-    public ResponseEntity addOne(Login postData, Map<String, Object> otherData) throws URISyntaxException {
+    public ResponseEntity addOne(Login postData, WebRequest otherData) throws URISyntaxException {
         return null;
     }
 
