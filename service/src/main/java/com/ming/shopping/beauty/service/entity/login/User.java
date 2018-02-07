@@ -12,6 +12,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.From;
 import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
 import java.math.BigDecimal;
 import java.util.Set;
 
@@ -66,6 +67,6 @@ public class User {
     }
 
     public static Expression<BigDecimal> getCurrentBalanceExpr(From<?, User> from, CriteriaBuilder cb) {
-        return cb.sum(from.get("flows").get("changed"));
+        return cb.sum(from.join("flows", JoinType.LEFT).get("changed"));
     }
 }

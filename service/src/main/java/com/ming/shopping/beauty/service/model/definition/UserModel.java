@@ -23,6 +23,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
+ * 调用它的方法需要对Login进行group!
+ *
  * @author helloztt
  */
 @Getter
@@ -78,8 +80,8 @@ public class UserModel implements DefinitionModel<Login> {
                         .addFormat((data, type) -> conversionService.convert(data, String.class))
                         .build()
                 , FieldBuilder.asName(Login.class, "balance")
-//                        .addBiSelect(Login::getCurrentBalanceExpr)
-                        .addBiSelect((loginRoot, criteriaBuilder) -> criteriaBuilder.literal(BigDecimal.ZERO))
+                        .addBiSelect(Login::getCurrentBalanceExpr)
+//                        .addBiSelect((loginRoot, criteriaBuilder) -> criteriaBuilder.literal(BigDecimal.ZERO))
                         .addEntityFunction(login -> login.getUser() == null ? 0 : loginService.findBalance(login.getUser().getId()))
                         .build()
 //                , FieldBuilder.asName(Login.class, "consumption")
