@@ -30,11 +30,6 @@ public class Merchant implements CrudFriendly<Long> {
     @PrimaryKeyJoinColumn(name = "id", referencedColumnName = "id")
     private Login login;
     /**
-     * 所属商户
-     */
-    @ManyToOne
-    private Merchant merchant;
-    /**
      * 商户名称
      */
     @Column(length = 50)
@@ -72,39 +67,11 @@ public class Merchant implements CrudFriendly<Long> {
     @Column(columnDefinition = DATE_COLUMN_DEFINITION)
     private LocalDateTime createTime;
 
-    /**
-     * 商户是否可用
-     *
-     * @return
-     */
-    public boolean isMerchantUsable() {
-        return (isManageable() && enabled)
-                || (!isManageable() && merchant.enabled);
-    }
-
-    /**
-     * 是否是个商户
-     * @return
-     */
-    public boolean isManageable(){
-        return merchant == null;
-    }
-
-    /**
-     * 获取商户ID
-     *
-     * @return
-     */
-    public long getMerchantId() {
-        return isManageable() ? id : merchant.getId();
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Merchant)) return false;
         Merchant merchant = (Merchant) o;
-        return Objects.equals(id, merchant.id) &&
-                Objects.equals(isManageable(), merchant.isMerchantUsable());
+        return Objects.equals(id, merchant.id);
     }
 }

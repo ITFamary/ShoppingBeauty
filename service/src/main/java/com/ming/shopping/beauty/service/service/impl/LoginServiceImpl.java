@@ -201,6 +201,9 @@ public class LoginServiceImpl implements LoginService {
     @Transactional(rollbackFor = RuntimeException.class)
     public void setManageLevel(long loginId, ManageLevel... manageLevel) {
         Login login = loginRepository.findOne(loginId);
+        if (login.getLevelSet().stream().anyMatch(Login.merchantLevel::contains)) {
+            throw new IllegalArgumentException("商户管理员无法被设置为平台管理员");
+        }
         if (login.getLevelSet().contains(ManageLevel.user)) {
             login.getLevelSet().clear();
             login.addLevel(manageLevel);

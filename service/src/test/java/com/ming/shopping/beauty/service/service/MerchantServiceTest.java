@@ -26,28 +26,28 @@ public class MerchantServiceTest extends CoreServiceTest {
     @Test
     public void addMerchant() throws Exception {
         assertThat(mockMerchant).isNotNull();
-        assertThat(mockMerchant.isManageable()).isTrue();
+//        assertThat(mockMerchant.isManageable()).isTrue();
         //看看关联有没有问题
         assertThat(mockMerchant.getLogin()).isNotNull();
         assertThat(mockMerchant.getLogin().getMerchant()).isNotNull();
     }
 
-    @Test
-    public void addMerchantManage() throws Exception {
-        //单个级别
-        Merchant mockManage = mockMerchantManager(mockMerchant, ManageLevel.merchantItemManager);
-        assertThat(mockManage).isNotNull();
-        assertThat(mockManage.isManageable()).isFalse();
-        assertThat(mockManage.getMerchant()).isEqualTo(mockMerchant);
-        assertThat(mockManage.getLogin().getLevelSet()).contains(ManageLevel.merchantItemManager);
-
-        //多个级别
-        Merchant mockMultiLevelManage = mockMerchantManager(mockMerchant,ManageLevel.merchantItemManager,ManageLevel.merchantSettlementManager);
-        assertThat(mockMultiLevelManage).isNotNull();
-        assertThat(mockMultiLevelManage.isManageable()).isFalse();
-        assertThat(mockMultiLevelManage.getMerchant()).isEqualTo(mockMerchant);
-        assertThat(mockMultiLevelManage.getLogin().getLevelSet()).contains(ManageLevel.merchantItemManager,ManageLevel.merchantSettlementManager);
-    }
+//    @Test
+//    public void addMerchantManage() throws Exception {
+//        //单个级别
+//        Merchant mockManage = mockMerchantManager(mockMerchant, ManageLevel.merchantItemManager);
+//        assertThat(mockManage).isNotNull();
+//        assertThat(mockManage.isManageable()).isFalse();
+//        assertThat(mockManage.getMerchant()).isEqualTo(mockMerchant);
+//        assertThat(mockManage.getLogin().getLevelSet()).contains(ManageLevel.merchantItemManager);
+//
+//        //多个级别
+//        Merchant mockMultiLevelManage = mockMerchantManager(mockMerchant,ManageLevel.merchantItemManager,ManageLevel.merchantSettlementManager);
+//        assertThat(mockMultiLevelManage).isNotNull();
+//        assertThat(mockMultiLevelManage.isManageable()).isFalse();
+//        assertThat(mockMultiLevelManage.getMerchant()).isEqualTo(mockMerchant);
+//        assertThat(mockMultiLevelManage.getLogin().getLevelSet()).contains(ManageLevel.merchantItemManager,ManageLevel.merchantSettlementManager);
+//    }
 
     @Test
     public void freezeOrEnable() throws Exception {
@@ -60,19 +60,6 @@ public class MerchantServiceTest extends CoreServiceTest {
             assertThat(ex.getApiResult().getCode()).isEqualTo(ResultCodeEnum.MERCHANT_NOT_ENABLE.getCode());
         }
         merchantService.freezeOrEnable(mockMerchant.getId(), mockMerchant.isEnabled());
-    }
-
-    @Test
-    public void removeMerchantManage() throws Exception {
-        Merchant removeManage = mockMerchantManager(mockMerchant);
-        merchantService.removeMerchantManage(removeManage.getId());
-        try {
-            merchantService.findOne(removeManage.getId());
-        } catch (ApiResultException ex) {
-            assertThat(ex.getApiResult().getCode()).isEqualTo(ResultCodeEnum.LOGIN_NOT_EXIST.getCode());
-        }
-        Login login = loginService.findOne(removeManage.getId());
-        assertThat(login.getMerchant()).isNull();
     }
 
 }

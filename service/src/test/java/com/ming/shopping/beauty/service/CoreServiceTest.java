@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -229,7 +230,7 @@ public abstract class CoreServiceTest extends SpringWebTest {
         merchant.setName(randomChinese(5));
         merchant.setContact(randomChinese(3));
         merchant.setTelephone(randomMobile());
-        return merchantService.addMerchant(login.getId(), merchant, ManageLevel.merchantRoot);
+        return merchantService.addMerchant(login.getId(), merchant);
     }
 
     protected Login mockRoot() throws Exception {
@@ -257,26 +258,15 @@ public abstract class CoreServiceTest extends SpringWebTest {
     /**
      * 设置某个角色为商户的操作员
      *
-     * @param login 登录角色
-     * @param merchant 所属商户
+     * @param login        登录角色
+     * @param merchant     所属商户
      * @param manageLevels 操作员级别
      * @return
      * @throws Exception
      */
     protected Merchant mockMerchantManager(Login login, Merchant merchant, ManageLevel... manageLevels) throws Exception {
-        if (allRunWith != null && (allRunWith.getLevelSet().contains(ManageLevel.root)
-                || allRunWith.getLevelSet().contains(ManageLevel.merchantRoot))) {
-            System.out.println(objectMapper.writeValueAsString(manageLevels));
-            mockMvc.perform(post("/merchant/" + merchant.getId() + "/manage/" + login.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("{\"level\":" + objectMapper.writeValueAsString(manageLevels) + "}"))
-                    .andExpect(status().isCreated());
-            return merchantService.findOne(login.getId());
-        } else {
-            Merchant merchantManage = new Merchant();
-            merchantManage.setMerchant(merchant);
-            return merchantService.addMerchant(login.getId(), merchantManage, manageLevels);
-        }
+        merchantService.addMerchantManager(merchant, login.getId(), Stream.of(manageLevels).collect(Collectors.toSet()));
+        return merchant;
     }
 
     /**

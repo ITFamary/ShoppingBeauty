@@ -26,3 +26,5 @@ buildNumber.properties
 /wechat-service/src/main/webapp/
 /manage-service/src/main/webapp/
 /logs
+/debug
+

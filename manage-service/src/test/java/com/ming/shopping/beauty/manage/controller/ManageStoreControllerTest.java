@@ -76,14 +76,14 @@ public class ManageStoreControllerTest extends ManageConfigTest {
         //不带参数，获取门店列表,第一条记录必定是最新添加的
         mockMvc.perform(get(BASE_URL))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.pagination.total").value(new GreaterOrEqual(2)))
+                .andExpect(jsonPath("$.pagination.total").value(new GreaterOrEqual<>(2)))
                 .andExpect(jsonPath("$.list[0].id").value(store1.getId()))
                 .andExpect(jsonPath("$.list[1].id").value(rsb.getLoginId()));
         mockMvc.perform(get(BASE_URL)
-                .param("merchantId", String.valueOf(merchant.getMerchantId())))
+                .param("merchantId", String.valueOf(merchant.getId())))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.pagination.total").value(new GreaterOrEqual(2)))
+                .andExpect(jsonPath("$.pagination.total").value(new GreaterOrEqual<>(2)))
                 .andExpect(jsonPath("$.list[0].id").value(store1.getId()))
                 .andExpect(jsonPath("$.list[1].id").value(rsb.getLoginId()));
 

@@ -5,6 +5,8 @@ import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Set;
+
 
 /**
  * @author
@@ -12,16 +14,25 @@ import org.springframework.transaction.annotation.Transactional;
 public interface MerchantService {
 
     /**
-     * 添加商户或者商户操作员，并且将loginId设置为商户主
+     * 添加商户，并且将loginId设置为商户主
      *
-     * @param loginId      一个可登录的角色
-     * @param merchant     商户基本信息，包含名称、电话、联系人、地址
-     * @param manageLevels login等级
+     * @param loginId  一个可登录的角色
+     * @param merchant 商户基本信息，包含名称、电话、联系人、地址
      * @return
      * @throws ApiResultException
      */
     @Transactional(rollbackFor = RuntimeException.class)
-    Merchant addMerchant(long loginId, Merchant merchant, ManageLevel... manageLevels) throws ApiResultException;
+    Merchant addMerchant(long loginId, Merchant merchant) throws ApiResultException;
+
+    /**
+     * 添加商户操作员
+     *
+     * @param merchant 商户
+     * @param loginId  操作员id
+     * @param set      权限集合
+     */
+    @Transactional(rollbackFor = RuntimeException.class)
+    void addMerchantManager(Merchant merchant, long loginId, Set<ManageLevel> set);
 
     /**
      * 冻结或启用商户
@@ -32,15 +43,6 @@ public interface MerchantService {
      */
     @Transactional(rollbackFor = RuntimeException.class)
     void freezeOrEnable(long id, boolean enable) throws ApiResultException;
-
-    /**
-     * 删除角色与商户的关联
-     *
-     * @param managerId 商户管理员
-     * @throws ApiResultException
-     */
-    @Transactional(rollbackFor = RuntimeException.class)
-    void removeMerchantManage(long managerId) throws ApiResultException;
 
     /**
      * 查找商户或商户管理员，同时检查商户或商户管理员是否可用，如果不可用就抛出异常
