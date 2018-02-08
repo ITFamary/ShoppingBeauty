@@ -94,7 +94,7 @@ public class ClientItemController {
                         FieldBuilder.asName(Item.class, "itemId")
                                 .addSelect(root -> root.get(Item_.id))
                                 .build()
-                        , FieldBuilder.asName(Item.class, "mainImagePath")
+                        , FieldBuilder.asName(Item.class, "thumbnail")
                                 .addSelect(root -> root.get(Item_.mainImagePath))
                                 .addFormat(Utils.formatResourcePathToURL(resourceService))
                                 .build()
