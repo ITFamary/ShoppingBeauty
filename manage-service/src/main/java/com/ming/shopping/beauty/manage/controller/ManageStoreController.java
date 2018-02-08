@@ -300,7 +300,10 @@ public class ManageStoreController extends AbstractCrudController<Store, Long, S
 
     private List<FieldDefinition<Represent>> listFieldsForRepresent() {
         return Arrays.asList(
-                FieldBuilder.asName(Represent.class, "id").build()
+                FieldBuilder.asName(Represent.class, "enabled")
+                        .addSelect(representRoot -> representRoot.get(Represent_.enable))
+                        .build()
+                , FieldBuilder.asName(Represent.class, "id").build()
                 , FieldBuilder.asName(Represent.class, "username")
                         .addSelect(representRoot -> representRoot.join(Represent_.login, JoinType.LEFT).join(Login_.wechatUser).get("nickname"))
                         .build()
