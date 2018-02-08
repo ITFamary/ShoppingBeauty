@@ -3,6 +3,7 @@ package com.ming.shopping.beauty.manage.controller;
 import com.jayway.jsonpath.JsonPath;
 import com.ming.shopping.beauty.manage.ManageConfigTest;
 import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.entity.login.Merchant;
 import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import com.ming.shopping.beauty.service.model.definition.ManagerModel;
@@ -39,7 +40,24 @@ public class ManageControllerTest extends ManageConfigTest {
     private ConversionService conversionService;
     private static final String manageLogin = "/managerLogin", managerLoginRequest = "/managerLoginRequest", manageLoginResult = "/manageLoginResult";
 
+    @Test
+    public void goList() throws Exception {
+        Login root = mockRoot();
+        mockManager(ManageLevel.rootItemManager);
+        updateAllRunWith(root);
 
+        //默认的一个. 我添加了两个 共3个
+        mockMvc.perform(get("/manage"))
+                .andDo(print())
+                .andExpect(jsonPath("$.pagination.total").value(3));
+
+        //默认的一个. 我添加了两个 共1个
+        mockMvc.perform(get("/manage")
+                .param("username",root.getLoginName()))
+                .andDo(print())
+                .andExpect(jsonPath("$.pagination.total").value(1));
+
+    }
     @Autowired
     private LoginRepository loginRepository;
 //

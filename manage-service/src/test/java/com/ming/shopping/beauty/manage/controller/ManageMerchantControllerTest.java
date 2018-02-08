@@ -34,6 +34,32 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
     private MerchantRepository merchantRepository;
 
     @Test
+    public void goList() throws Exception {
+        Login root = mockRoot();
+        updateAllRunWith(root);
+        Merchant merchant = mockMerchant();
+        mockMerchant();
+        mockMerchant();
+
+        int size = merchantRepository.findAll().size();
+        //所有
+        mockMvc.perform(get("/merchant"))
+                .andDo(print())
+                .andExpect(jsonPath("$.pagination.total").value(size));
+
+        //条件 还是所有
+        mockMvc.perform(get("/merchant")
+                .param("username"," "))
+                .andDo(print())
+                .andExpect(jsonPath("$.pagination.total").value(size));
+
+
+        mockMvc.perform(get("/merchant")
+                .param("username",merchant.getLogin().getLoginName()))
+                .andDo(print())
+                .andExpect(jsonPath("$.pagination.total").value(1));
+    }
+    @Test
     public void merchantList() throws Exception {
         //首先是不具有管理员权限的人访问,拒绝访问
         //随便来个人只要不是管理员

@@ -43,6 +43,30 @@ public class ManageLoginControllerTest extends ManageConfigTest {
                 .andExpect(jsonPath("$.enabled").value(mockLogin.isEnabled()))
                 .andExpect(jsonPath("$.balance").value(BigDecimal.ZERO));
 //                .andExpect(jsonPath("$.consumption").value(BigDecimal.ZERO));
+
+        //条件查询
+        //如果是空字符串的时候, 查询所有
+        mockLogin();
+        mockLogin();
+        mockLogin.setEnabled(false);
+        loginRepository.save(mockLogin);
+
+        //默认1个, 我创建了4个 5个   mobile是空的,当查询所有
+        int size = loginRepository.findAll().size();
+        mockMvc.perform(get(BASE_URL)
+                .param("mobile"," "))
+                .andDo(print())
+                .andExpect(jsonPath("$.pagination.total").value(size));
+
+        mockMvc.perform(get(BASE_URL)
+                .param("mobile",mockLogin.getLoginName()))
+                .andDo(print())
+                .andExpect(jsonPath("$.pagination.total").value(1));
+
+        mockMvc.perform(get(BASE_URL)
+                .param("enabled","false"))
+                .andDo(print())
+                .andExpect(jsonPath("$.pagination.total").value(1));
     }
 
     @Test

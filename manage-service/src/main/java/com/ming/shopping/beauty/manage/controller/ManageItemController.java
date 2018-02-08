@@ -251,14 +251,20 @@ public class ManageItemController extends AbstractCrudController<Item, Long, Ite
         return ((root, query, cb) -> {
             List<Predicate> conditions = new ArrayList<>();
             if (queryData.get("itemName") != null) {
-                conditions.add(cb.like(root.get(Item_.name), "%" + queryData.get("itemName") + "%"));
+                if(StringUtils.isNotBlank(queryData.get("itemName").toString())) {
+                    conditions.add(cb.like(root.get(Item_.name), "%" + queryData.get("itemName") + "%"));
+                }
             }
             if (queryData.get("itemType") != null) {
-                conditions.add(cb.like(root.get(Item_.itemType), "%" + queryData.get("itemType") + "%"));
+                if(StringUtils.isNotBlank(queryData.get("itemType").toString())) {
+                    conditions.add(cb.like(root.get(Item_.itemType), "%" + queryData.get("itemType") + "%"));
+                }
             }
             if (queryData.get("merchantName") != null) {
-                conditions.add(cb.equal(root.join(Item_.merchant, JoinType.LEFT)
-                        .get(Merchant_.name), queryData.get("merchantName")));
+                if(StringUtils.isNotBlank(queryData.get("merchantName").toString())){
+                    conditions.add(cb.equal(root.join(Item_.merchant, JoinType.LEFT)
+                            .get(Merchant_.name), queryData.get("merchantName")));
+                }
             }
             if (queryData.get("merchantId") != null) {
                 conditions.add(cb.equal(root.join(Item_.merchant).get(Merchant_.id),
