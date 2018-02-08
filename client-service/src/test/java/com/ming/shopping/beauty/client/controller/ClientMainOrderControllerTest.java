@@ -58,10 +58,11 @@ public class ClientMainOrderControllerTest extends ClientConfigTest {
         int randomOrderNum = 2 + random.nextInt(5);
         for (int i = 0; i < randomOrderNum; i++) {
             //先获取用户的 orderId
-            long orderId = Long.valueOf(mockMvc.perform(get("/user/vipCard")
+            response = mockMvc.perform(get("/user/vipCard")
                     .session(activeUserSession))
                     .andExpect(status().isOk())
-                    .andReturn().getResponse().getHeader("X-Order-Id"));
+                    .andReturn().getResponse().getContentAsString();
+            long orderId = objectMapper.readTree(response).get("orderId").asLong();
             NewOrderBody orderBody = new NewOrderBody();
             orderBody.setOrderId(orderId);
             Map<StoreItem, Integer> randomMap = randomOrderItemSet(mockStore.getId());
