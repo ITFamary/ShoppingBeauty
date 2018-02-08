@@ -33,7 +33,7 @@ public class UserControllerTest extends ClientConfigTest {
         mockMvc.perform(get(BASE_URL)
                 .session(activeUserSession))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.balance").value(new GreaterThan(0) ));
+                .andExpect(jsonPath("$.balance").value(new GreaterThan<>(0)));
 
         final String vipCardUrl = BASE_URL + "/vipCard";
         //未激活用户请求会员卡

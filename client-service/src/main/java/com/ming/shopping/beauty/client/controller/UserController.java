@@ -65,18 +65,18 @@ public class UserController {
      */
     @GetMapping("/vipCard")
     @ResponseBody
-    public Object vipCard(@AuthenticationPrincipal Login login, HttpServletResponse response) throws IOException, WriterException {
+    public Object vipCard(@AuthenticationPrincipal Login login) throws IOException, WriterException {
         //未激活的用户没有二维码
         if (!login.getUser().isActive()) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.USER_NOT_ACTIVE));
         }
         MainOrder mainOrder = orderService.newEmptyOrder(login.getUser());
-        response.setHeader("X-Order-Id", String.valueOf(mainOrder.getOrderId()));
         Map<String, Object> result = new HashMap<>(2);
         //前端购物车地址
         String text = systemService.toMobileUrl("/shop/" + mainOrder.getOrderId());
         result.put("vipCard", login.getUser().getCardNo());
         result.put("qrCode", qrController.urlForText(text).toString());
+        result.put("orderId", mainOrder.getOrderId());
         return result;
     }
 }
