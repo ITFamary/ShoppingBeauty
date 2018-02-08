@@ -33,7 +33,7 @@ public class ClientItemController {
 
     @GetMapping("/items")
     @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
-    public RowDefinition<Item> itemList(String itemType, int lat, int lon) {
+    public RowDefinition<Item> itemList(String itemType, Integer lat, Integer lon) {
         //TODO 带坐标的还不会写.
         return new RowDefinition<Item>() {
 

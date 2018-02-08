@@ -26,6 +26,14 @@ public interface SystemService {
     String toDesktopUrl(String uri);
 
     /**
+     * @param orderId 订单号
+     * @return 前端打开这个订单的页面
+     */
+    default String toMobileShopUrl(Object orderId) {
+        return toMobileUrl("/#/shop/" + orderId);
+    }
+
+    /**
      * @return 前端首页
      */
     default String toMobileHomeUrl() {
