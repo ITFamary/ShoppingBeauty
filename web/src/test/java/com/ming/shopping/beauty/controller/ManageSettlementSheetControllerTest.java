@@ -8,7 +8,9 @@ import com.ming.shopping.beauty.service.entity.login.Represent;
 import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.settlement.SettlementSheet;
+import com.ming.shopping.beauty.service.entity.support.SettlementStatus;
 import com.ming.shopping.beauty.service.model.request.DepositBody;
+import com.ming.shopping.beauty.service.model.request.SheetReviewBody;
 import com.ming.shopping.beauty.service.repository.MainOrderRepository;
 import com.ming.shopping.beauty.service.repository.RechargeCardRepository;
 import com.ming.shopping.beauty.service.repository.settlementSheet.SettlementSheetRepository;
@@ -97,8 +99,7 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
 
         mockMvc.perform(post("/capital/deposit")
                 .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                .content(objectMapper.writeValueAsString(depositBody)))
+                .param("cdKey", depositBody.getCdKey()))
                 .andDo(print())
                 .andExpect(status().isFound());
 
@@ -179,6 +180,7 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
         //应该只有一个结算单
         List<SettlementSheet> all = settlementSheetRepository.findAll();
         assertThat(all.size()).isEqualTo(1);
+        SettlementSheet settlementSheet = all.get(0);
 
         updateAllRunWith(root);
         //查看结算单列表
@@ -190,6 +192,89 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
         String sumAmount = objectMapper.readTree(contentAsString2).get("list").get(0).get("settlementAmount").asText();
         BigDecimal bSumAmount = new BigDecimal(sumAmount);
         //偷个懒
-        assertThat(bSumAmount.setScale(1)).isEqualTo(mainOrder.getSettlementAmount().add(mainOrderTwo.getSettlementAmount()).setScale(1));
+        assertThat(bSumAmount.setScale(1))
+                .isEqualTo(mainOrder.getSettlementAmount().add(mainOrderTwo.getSettlementAmount()).setScale(1));
+
+        //商户将结算单提交
+        SheetReviewBody srb = new SheetReviewBody();
+        srb.setComment("我是一个备注");
+        srb.setStatus("TO_AUDIT");
+
+        updateAllRunWith(merchant.getLogin());
+        mockMvc.perform(put("/settlementSheet/{id}/statusMerchant",settlementSheet.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(srb)))
+                .andDo(print())
+                .andExpect(status().isNoContent());
+
+        SettlementSheet one = settlementSheetRepository.findOne(settlementSheet.getId());
+        assertThat(one.getComment()).isEqualTo("我是一个备注");
+        assertThat(one.getSettlementStatus()).isEqualTo(SettlementStatus.TO_AUDIT);
+
+
+        updateAllRunWith(root);
+        //打回  "打回申请的备注"
+        srb.setComment("打回申请的备注");
+        srb.setStatus("REJECT");
+        mockMvc.perform(put("/settlementSheet/{id}/statusManage",settlementSheet.getId())
+                .content(objectMapper.writeValueAsString(srb))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNoContent());
+
+        one = settlementSheetRepository.findOne(settlementSheet.getId());
+        assertThat(one.getComment()).isEqualTo("打回申请的备注");
+        assertThat(one.getSettlementStatus()).isEqualTo(SettlementStatus.REJECT);
+
+
+        updateAllRunWith(merchant.getLogin());
+        //再次提交  "我是一个备注"
+        srb.setComment("我是一个备注");
+        srb.setStatus("TO_AUDIT");
+        mockMvc.perform(put("/settlementSheet/{id}/statusMerchant",settlementSheet.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(srb)))
+                .andDo(print())
+                .andExpect(status().isNoContent());
+
+        //同意申请  "同意申请"
+        srb.setComment("同意申请");
+        srb.setStatus("APPROVAL");
+        updateAllRunWith(root);
+        mockMvc.perform(put("/settlementSheet/{id}/statusManage",settlementSheet.getId())
+                .content(objectMapper.writeValueAsString(srb))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNoContent());
+
+        one = settlementSheetRepository.findOne(settlementSheet.getId());
+        assertThat(one.getSettlementStatus()).isEqualTo(SettlementStatus.APPROVAL);
+
+        //线下打款了
+
+        //修改状态以打款
+        srb.setStatus("ALREADY_PAID");
+        srb.setAmount(mainOrder.getSettlementAmount().add(mainOrderTwo.getSettlementAmount()));
+        mockMvc.perform(put("/settlementSheet/{id}/statusManage",settlementSheet.getId())
+                .content(objectMapper.writeValueAsString(srb))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNoContent());
+
+        one = settlementSheetRepository.findOne(settlementSheet.getId());
+        assertThat(one.getSettlementStatus()).isEqualTo(SettlementStatus.ALREADY_PAID);
+
+        //确认收款
+        updateAllRunWith(merchant.getLogin());
+        srb.setStatus("COMPLETE");
+        //商户确认接收
+        mockMvc.perform(put("/settlementSheet/{id}/statusMerchant",settlementSheet.getId())
+                .content(objectMapper.writeValueAsString(srb))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNoContent());
+
+        one = settlementSheetRepository.findOne(settlementSheet.getId());
+        assertThat(one.getSettlementStatus()).isEqualTo(SettlementStatus.COMPLETE);
     }
 }

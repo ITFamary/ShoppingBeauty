@@ -76,7 +76,7 @@ public class SettlementSheetServiceImpl implements SettlementSheetService {
     @Transactional
     public void submitSheet(SettlementSheet settlementSheet,String comment) {
         SettlementSheet one = settlementSheetRepository.findOne(settlementSheet.getId());
-        if(one.getSettlementStatus().equals(SettlementStatus.UNSUBMIT)){
+        if(one.getSettlementStatus().equals(SettlementStatus.UNSUBMIT) || one.getSettlementStatus().equals(SettlementStatus.REJECT)){
             one.setSettlementStatus(SettlementStatus.TO_AUDIT);
             if(comment != null){
                 one.setComment(comment);
@@ -150,8 +150,20 @@ public class SettlementSheetServiceImpl implements SettlementSheetService {
     @Transactional
     public void completeSheet(SettlementSheet settlementSheet) {
         SettlementSheet one = settlementSheetRepository.findOne(settlementSheet.getId());
-        if(one.getSettlementStatus().equals(SettlementStatus.APPROVAL)){
+        if(one.getSettlementStatus().equals(SettlementStatus.ALREADY_PAID)){
             one.setSettlementStatus(SettlementStatus.COMPLETE);
+            settlementSheetRepository.save(one);
+        }else{
+            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.SHEET_STATUS_ERROR));
+        }
+    }
+
+    @Override
+    public void putEnabled(SettlementSheet settlementSheet,boolean delete) {
+        SettlementSheet one = settlementSheetRepository.findOne(settlementSheet.getId());
+        if(one.getSettlementStatus().equals(SettlementStatus.REJECT)
+                || one.getSettlementStatus().equals(SettlementStatus.REVOKE)){
+            one.setDetect(delete);
             settlementSheetRepository.save(one);
         }else{
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.SHEET_STATUS_ERROR));

@@ -33,6 +33,16 @@ public class ManagerModel implements DefinitionModel<Login> {
                         })
                         .addEntityFunction(Function.identity())
                         .build()
+                , FieldBuilder.asName(Login.class, "avatar")
+                        .addSelect(loginRoot -> null)
+                        .addFormat((data, type) -> {
+                            Login login = (Login) data;
+                            if (login.getWechatUser() == null)
+                                return null;
+                            return login.getWechatUser().getHeadImageUrl();
+                        })
+                        .addEntityFunction(Function.identity())
+                        .build()
                 , FieldBuilder.asName(Login.class, "username")
                         .addSelect(loginRoot -> null)
                         .addFormat((data, type) -> {

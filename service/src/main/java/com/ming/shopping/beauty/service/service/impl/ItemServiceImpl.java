@@ -126,14 +126,10 @@ public class ItemServiceImpl implements ItemService {
             Item findOld = findOne(item.getId());
             if (!findOld.isEnabled()) {
                 //下架才可以编辑
-                findOld.setName(item.getName());
-                findOld.setMainImagePath(item.getMainImagePath());
-                findOld.setPrice(item.getPrice());
-                findOld.setSalesPrice(item.getSalesPrice());
-                findOld.setCostPrice(item.getCostPrice());
-                findOld.setDescription(item.getDescription());
-                findOld.setRichDescription(item.getRichDescription());
+                findOld.fromRequest(item);
+
                 findOld.setAuditStatus(AuditStatus.NOT_SUBMIT);
+                findOld.setMainImagePath(item.getMainImagePath());
                 forImage(findOld, mainImagePath);
                 return itemRepository.save(findOld);
             } else {
@@ -142,13 +138,16 @@ public class ItemServiceImpl implements ItemService {
             }
         } else {
             //新增
-            forImage(item, mainImagePath);
+            Item newItem = new Item();
+            newItem.fromRequest(item);
+            forImage(newItem, mainImagePath);
             if (merchant != null) {
-                item.setMerchant(merchant);
+                newItem.setMerchant(merchant);
             }
-            item.setAuditStatus(AuditStatus.NOT_SUBMIT);
+            newItem.setAuditStatus(AuditStatus.NOT_SUBMIT);
+            return itemRepository.save(newItem);
         }
-        return itemRepository.save(item);
+
     }
 
 
@@ -164,13 +163,13 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     public Item freezeOrEnable(long id, boolean enable) {
         Item item = findOne(id);
-        if(enable){
+        if (enable) {
             if (item.getAuditStatus() == AuditStatus.AUDIT_PASS) {
                 item.setEnabled(enable);
-            }else
+            } else
                 throw new ApiResultException(ApiResult.withError(ResultCodeEnum.ITEM_NOT_AUDIT));
             return itemRepository.save(item);
-        }else{
+        } else {
             item.setEnabled(enable);
             //项目下架的同时, 所有相关的门店项目全部下架
             List<StoreItem> byItem = storeItemRepository.findByItem(item);

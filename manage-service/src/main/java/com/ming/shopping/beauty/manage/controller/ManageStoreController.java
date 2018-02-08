@@ -1,5 +1,6 @@
 package com.ming.shopping.beauty.manage.controller;
 
+import com.ming.shopping.beauty.manage.modal.StoreCreation;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Login_;
 import com.ming.shopping.beauty.service.entity.login.Merchant_;
@@ -19,6 +20,7 @@ import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
 import me.jiangcai.crud.row.supplier.SingleRowDramatizer;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -33,6 +35,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.context.request.WebRequest;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.JoinType;
@@ -55,7 +58,7 @@ import java.util.Map;
  */
 @Controller
 @RequestMapping("/store")
-public class ManageStoreController extends AbstractCrudController<Store, Long> {
+public class ManageStoreController extends AbstractCrudController<Store, Long, StoreCreation> {
 
     @Autowired
     private StoreService storeService;
@@ -78,8 +81,8 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
     /**
      * 新增门店
      *
-     * @param postData  门店信息
-     * @param otherData 其他信息
+     * @param postData 门店信息
+     * @param request  其他信息
      * @return
      * @throws URISyntaxException
      */
@@ -87,18 +90,19 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
     @PostMapping
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_STORE + "')")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity addOne(@RequestBody Store postData, @RequestBody Map<String, Object> otherData) throws URISyntaxException {
+    public ResponseEntity addOne(@RequestBody StoreCreation postData, WebRequest request) throws URISyntaxException {
         final String loginId = "loginId";
         final String merchantId = "merchantId";
-        if (otherData.get(loginId) == null) {
+        if (postData.getLoginId() == null) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), loginId), null));
         }
-        if (otherData.get(merchantId) == null) {
+        if (postData.getMerchantId() == null) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), merchantId), null));
         }
-        Store store = storeService.addStore(Long.parseLong(otherData.get(loginId).toString()), Long.parseLong(otherData.get(merchantId).toString()),
+        Store store = storeService.addStore(postData.getLoginId()
+                , postData.getMerchantId(),
                 postData.getName(), postData.getTelephone(), postData.getContact(), postData.getAddress());
         return ResponseEntity.created(new URI("/store/" + store.getId()))
                 .build();
@@ -280,7 +284,9 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
                 conditionList.add(cb.equal(root.join(Store_.merchant, JoinType.LEFT).get(Merchant_.id), Long.valueOf(queryData.get("merchantId").toString())));
             }
             if (queryData.get("username") != null) {
-                conditionList.add(cb.like(root.join(Store_.login).get(Login_.loginName), "%" + queryData.get("username") + "%"));
+                if(StringUtils.isNotBlank(queryData.get("username").toString())){
+                    conditionList.add(cb.like(root.join(Store_.login).get(Login_.loginName), "%" + queryData.get("username") + "%"));
+                }
             }
             return cb.and(conditionList.toArray(new Predicate[conditionList.size()]));
         };
@@ -297,7 +303,10 @@ public class ManageStoreController extends AbstractCrudController<Store, Long> {
 
     private List<FieldDefinition<Represent>> listFieldsForRepresent() {
         return Arrays.asList(
-                FieldBuilder.asName(Represent.class, "id").build()
+                FieldBuilder.asName(Represent.class, "enabled")
+                        .addSelect(representRoot -> representRoot.get(Represent_.enable))
+                        .build()
+                , FieldBuilder.asName(Represent.class, "id").build()
                 , FieldBuilder.asName(Represent.class, "username")
                         .addSelect(representRoot -> representRoot.join(Represent_.login, JoinType.LEFT).join(Login_.wechatUser).get("nickname"))
                         .build()

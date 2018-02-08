@@ -85,19 +85,22 @@ public class StoreItemServiceImpl implements StoreItemService {
         Store store = storeService.findStore(storeId);
         Item item = itemService.findOne(itemId);
         //是否通过审核
-        if(item.getAuditStatus().equals(AuditStatus.AUDIT_PASS)){
-            storeItem.setStore(store);
-            storeItem.setItem(item);
-            if (storeItem.getSalesPrice() != null) {
+        StoreItem newItem = new StoreItem();
+        newItem.fromRequest(storeItem);
+
+        if (item.getAuditStatus().equals(AuditStatus.AUDIT_PASS)) {
+            newItem.setStore(store);
+            newItem.setItem(item);
+            if (newItem.getSalesPrice() != null) {
                 //这个价格必须大于等于 项目的销售价
-                if (storeItem.getSalesPrice().compareTo(item.getSalesPrice()) == -1) {
+                if (newItem.getSalesPrice().compareTo(item.getSalesPrice()) < 0) {
                     throw new ApiResultException(ApiResult.withError(ResultCodeEnum.STORE_ITEM_PRICE_ERROR));
                 }
             } else {
-                storeItem.setSalesPrice(item.getSalesPrice());
+                newItem.setSalesPrice(item.getSalesPrice());
             }
-            return storeItemRepository.save(storeItem);
-        }else{
+            return storeItemRepository.save(newItem);
+        } else {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.ITEM_NOT_AUDIT));
         }
     }
@@ -116,15 +119,15 @@ public class StoreItemServiceImpl implements StoreItemService {
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
     public void freezeOrEnable(boolean enabled, Long storeItemId) {
-            StoreItem storeItem = storeItemRepository.findOne(storeItemId);
-            storeItem.setEnable(enabled);
+        StoreItem storeItem = storeItemRepository.findOne(storeItemId);
+        storeItem.setEnable(enabled);
     }
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
     public void recommended(boolean recommended, Long storeItemId) {
-            StoreItem storeItem = storeItemRepository.findOne(storeItemId);
-            storeItem.setRecommended(recommended);
+        StoreItem storeItem = storeItemRepository.findOne(storeItemId);
+        storeItem.setRecommended(recommended);
     }
 
     @Override

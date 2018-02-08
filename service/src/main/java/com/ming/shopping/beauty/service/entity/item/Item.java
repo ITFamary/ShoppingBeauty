@@ -109,4 +109,14 @@ public class Item implements CrudFriendly<Long> {
         Item item = (Item) o;
         return Objects.equals(id, item.getId());
     }
+
+    public void fromRequest(Item item) {
+        setName(item.getName());
+        setItemType(item.itemType);
+        setPrice(item.getPrice());
+        setSalesPrice(item.getSalesPrice());
+        setCostPrice(item.getCostPrice());
+        setDescription(item.getDescription());
+        setRichDescription(item.getRichDescription());
+    }
 }

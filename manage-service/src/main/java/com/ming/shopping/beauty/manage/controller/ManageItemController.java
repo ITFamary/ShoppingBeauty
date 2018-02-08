@@ -1,5 +1,6 @@
 package com.ming.shopping.beauty.manage.controller;
 
+import com.ming.shopping.beauty.manage.modal.ItemCreation;
 import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.item.Item_;
 import com.ming.shopping.beauty.service.entity.login.Login;
@@ -19,6 +20,7 @@ import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
 import me.jiangcai.lib.resource.service.ResourceService;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
@@ -26,14 +28,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.NumberUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.context.request.WebRequest;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.JoinType;
@@ -56,7 +59,7 @@ import java.util.Map;
 @Controller
 @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
 @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_READ + "','" + Login.ROLE_PLATFORM_READ + "')")
-public class ManageItemController extends AbstractCrudController<Item, Long> {
+public class ManageItemController extends AbstractCrudController<Item, Long, ItemCreation> {
 
     @Autowired
     private ItemService itemService;
@@ -75,18 +78,18 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
     /**
      * 添加项目，只有root或者具备商户项目权限的人
      *
-     * @param item      项目
-     * @param otherData 其他信息
+     * @param item    项目
+     * @param request 其他信息
      * @return 商户项目列表
      */
     @PostMapping
     @Override
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ITEM + "')")
-    public ResponseEntity addOne(@RequestBody Item item, @RequestBody Map<String, Object> otherData) throws URISyntaxException {
+    public ResponseEntity addOne(@RequestBody ItemCreation item, WebRequest request) throws URISyntaxException {
         final String param = "merchantId";
 
-        if (otherData.get(param) == null) {
+        if (item.getMerchantId() == null) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), param), null));
         }
@@ -94,12 +97,12 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "请求数据"), null));
         }
-        if (StringUtils.isEmpty((String) otherData.get("imagePath"))) {
+        if (StringUtils.isEmpty(item.getImagePath())) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "请求数据"), null));
         }
-        Merchant merchant = merchantService.findOne(Long.parseLong(otherData.get(param).toString()));
-        Item responseItem = itemService.addItem(merchant, item, (String) otherData.get("imagePath"));
+        Merchant merchant = merchantService.findOne(item.getMerchantId());
+        Item responseItem = itemService.addItem(merchant, item, item.getImagePath());
         return ResponseEntity
                 .created(new URI("/item/" + responseItem.getId()))
                 .build();
@@ -108,16 +111,15 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
     /**
      * 编辑项目
      *
-     * @param item      要编辑的项目信息
-     * @param otherData 其他的一些信息
+     * @param item 要编辑的项目信息
      * @throws URISyntaxException
      */
     @PutMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAnyRole('ROOT', '" + Login.ROLE_MERCHANT_ITEM + "')")
-    public void updateItem(@RequestBody Item item, @RequestBody Map<String, Object> otherData) throws URISyntaxException {
+    public void updateItem(@RequestBody ItemCreation item, WebRequest request) throws URISyntaxException {
         // TODO 并非什么都可以改
-        addOne(item, otherData);
+        addOne(item, request);
     }
 
     /**
@@ -140,31 +142,7 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
 
             @Override
             public List<FieldDefinition<Item>> fields() {
-                return Arrays.asList(
-                        FieldBuilder.asName(Item.class, "id")
-                                .build()
-                        , FieldBuilder.asName(Item.class, "name")
-                                .build()
-                        , FieldBuilder.asName(Item.class, "itemType")
-                                .build()
-                        , FieldBuilder.asName(Item.class, "mainImagePath")
-                                .addFormat(Utils.formatResourcePathToURL(resourceService))
-                                .build()
-                        , FieldBuilder.asName(Item.class, "merchantName")
-                                .addSelect(itemRoot -> itemRoot.join(Item_.merchant).get(Merchant_.name))
-                                .build()
-                        , FieldBuilder.asName(Item.class, "price")
-                                .build()
-                        , FieldBuilder.asName(Item.class, "salesPrice")
-                                .build()
-                        , FieldBuilder.asName(Item.class, "auditStatus")
-                                .addFormat((data, type) -> data == null ? null : ((AuditStatus) data).getMessage())
-                                .build()
-                        , FieldBuilder.asName(Item.class, "enabled")
-                                .build()
-                        , FieldBuilder.asName(Item.class, "recommended")
-                                .build()
-                );
+                return listFields();
             }
 
             @Override
@@ -221,7 +199,8 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
                         .build()
                 , FieldBuilder.asName(Item.class, "itemType")
                         .build()
-                , FieldBuilder.asName(Item.class, "mainImagePath")
+                , FieldBuilder.asName(Item.class, "thumbnailUrl")
+                        .addSelect(itemRoot -> itemRoot.get(Item_.mainImagePath))
                         .addFormat(Utils.formatResourcePathToURL(resourceService))
                         .build()
                 , FieldBuilder.asName(Item.class, "merchantName")
@@ -248,30 +227,37 @@ public class ManageItemController extends AbstractCrudController<Item, Long> {
         return ((root, query, cb) -> {
             List<Predicate> conditions = new ArrayList<>();
             if (queryData.get("itemName") != null) {
-                conditions.add(cb.like(root.get(Item_.name), "%" + queryData.get("itemName") + "%"));
+                if(StringUtils.isNotBlank(queryData.get("itemName").toString())) {
+                    conditions.add(cb.like(root.get(Item_.name), "%" + queryData.get("itemName") + "%"));
+                }
             }
             if (queryData.get("itemType") != null) {
-                conditions.add(cb.equal(root.get(Item_.itemType), queryData.get("itemType")));
+                if(StringUtils.isNotBlank(queryData.get("itemType").toString())) {
+                    conditions.add(cb.like(root.get(Item_.itemType), "%" + queryData.get("itemType") + "%"));
+                }
             }
             if (queryData.get("merchantName") != null) {
-                conditions.add(cb.equal(root.join(Item_.merchant, JoinType.LEFT)
-                        .get(Merchant_.name), queryData.get("merchantName")));
+                if(StringUtils.isNotBlank(queryData.get("merchantName").toString())){
+                    conditions.add(cb.equal(root.join(Item_.merchant, JoinType.LEFT)
+                            .get(Merchant_.name), queryData.get("merchantName")));
+                }
             }
             if (queryData.get("merchantId") != null) {
-                conditions.add(cb.equal(root.join(Item_.merchant).get(Merchant_.id), queryData.get("merchantId")));
+                conditions.add(cb.equal(root.join(Item_.merchant).get(Merchant_.id),
+                        NumberUtils.parseNumber(queryData.get("merchantId").toString(), Long.class)));
             }
             if (queryData.get("auditStatus") != null) {
                 conditions.add(cb.equal(root.get(Item_.auditStatus)
                         , AuditStatus.valueOf(queryData.get("auditStatus").toString())));
             }
             if (queryData.get("enabled") != null) {
-                if ((boolean) queryData.get("enabled"))
+                if (BooleanUtils.toBoolean(queryData.get("enabled").toString()))
                     conditions.add(cb.isTrue(root.get(Item_.enabled)));
                 else
                     conditions.add(cb.isFalse(root.get(Item_.enabled)));
             }
             if (queryData.get("recommended") != null) {
-                if ((boolean) queryData.get("recommended"))
+                if (BooleanUtils.toBoolean(queryData.get("recommended").toString()))
                     conditions.add(cb.isTrue(root.get(Item_.recommended)));
                 else
                     conditions.add(cb.isFalse(root.get(Item_.recommended)));

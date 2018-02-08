@@ -50,7 +50,7 @@ public interface ItemService {
      * 添加新项目, 状态为待审核
      *
      * @param merchant 所属上家
-     * @param item     添加的项目
+     * @param item     添加的项目；可能并非绝对Item
      * @param mainImagePath 缩略图路径
      * @return item
      */

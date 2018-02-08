@@ -1,5 +1,6 @@
 package com.ming.shopping.beauty.manage.controller;
 
+import com.ming.shopping.beauty.manage.modal.MerchantCreation;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Login_;
 import com.ming.shopping.beauty.service.entity.login.Merchant;
@@ -17,6 +18,7 @@ import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.RowService;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.domain.Specification;
@@ -28,7 +30,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,6 +38,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.context.request.WebRequest;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -65,7 +67,7 @@ import java.util.stream.Collectors;
  */
 @Controller
 @RequestMapping("/merchant")
-public class ManageMerchantController extends AbstractCrudController<Merchant, Long> {
+public class ManageMerchantController extends AbstractCrudController<Merchant, Long, MerchantCreation> {
     @Autowired
     private MerchantService merchantService;
     @Autowired
@@ -90,17 +92,17 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
     /**
      * 新增商户
      *
-     * @param postData  商户信息
-     * @param otherData 其他信息
+     * @param postData 商户信息
+     * @param request  其他信息
      * @return
      * @throws URISyntaxException
      */
     @PostMapping
     @PreAuthorize("hasAnyRole('ROOT')")
     @Override
-    public ResponseEntity addOne(@RequestBody Merchant postData, @RequestBody Map<String, Object> otherData) throws URISyntaxException {
+    public ResponseEntity addOne(@RequestBody MerchantCreation postData, WebRequest request) throws URISyntaxException {
         final String param = "loginId";
-        if (otherData.get(param) == null) {
+        if (postData.getLoginId() == null) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), param), null));
         }
@@ -109,7 +111,7 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "请求数据"), null));
         }
-        Merchant merchant = merchantService.addMerchant(Long.parseLong(otherData.get(param).toString()), postData);
+        Merchant merchant = merchantService.addMerchant(postData.getLoginId(), postData);
         return ResponseEntity
                 .created(new URI("/merchant/" + merchant.getId()))
                 .build();
@@ -337,7 +339,9 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
         return (root, cq, cb) -> {
             List<Predicate> conditionList = new ArrayList<>();
             if (queryData.get("username") != null) {
-                conditionList.add(cb.like(root.join(Merchant_.login).get(Login_.loginName), "%" + queryData.get("username") + "%"));
+                if(StringUtils.isNotBlank(queryData.get("username").toString())){
+                    conditionList.add(cb.like(root.join(Merchant_.login).get(Login_.loginName), "%" + queryData.get("username") + "%"));
+                }
             }
             return cb.and(conditionList.toArray(new Predicate[conditionList.size()]));
         };

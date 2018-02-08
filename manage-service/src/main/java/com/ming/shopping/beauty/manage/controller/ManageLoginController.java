@@ -14,6 +14,8 @@ import me.jiangcai.crud.row.RowCustom;
 import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.RowService;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.domain.Specification;
@@ -48,7 +50,7 @@ import java.util.Map;
 @RequestMapping("/login")
 @PreAuthorize("hasAnyRole('ROOT')")
 @RowCustom(dramatizer = AntDesignPaginationDramatizer.class, distinct = true)
-public class ManageLoginController extends AbstractCrudController<Login, Long> {
+public class ManageLoginController extends AbstractCrudController<Login, Long, Login> {
 
     @Autowired
     private LoginService loginService;
@@ -151,14 +153,16 @@ public class ManageLoginController extends AbstractCrudController<Login, Long> {
                 conditions.add(cb.equal(root.get(Login_.id), queryData.get("loginId")));
             }
             if (queryData.get("enabled") != null) {
-                if ((boolean) queryData.get("enabled")) {
+                if (BooleanUtils.toBoolean(queryData.get("enabled").toString())) {
                     conditions.add(cb.isTrue(root.get(Login_.enabled)));
                 } else {
                     conditions.add(cb.isFalse(root.get(Login_.enabled)));
                 }
             }
             if (queryData.get("mobile") != null) {
-                conditions.add(cb.like(root.get(Login_.loginName), "%" + queryData.get("mobile") + "%"));
+                if(StringUtils.isNotBlank(queryData.get("mobile").toString())){
+                    conditions.add(cb.like(root.get(Login_.loginName), "%" + queryData.get("mobile") + "%"));
+                }
             }
             return cb.and(conditions.toArray(new Predicate[conditions.size()]));
         };

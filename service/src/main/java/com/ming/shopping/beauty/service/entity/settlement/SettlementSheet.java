@@ -71,6 +71,11 @@ public class SettlementSheet implements CrudFriendly<Long> {
     @Column(columnDefinition = Constant.DATE_NULLABLE_COLUMN_DEFINITION)
     private LocalDateTime transferTime;
 
+    /**
+     * 在为true的情况下,不在列表里面显示.
+     */
+    private boolean detect ;
+
     @Override
     public String toString() {
         return "SettlementSheet{" +

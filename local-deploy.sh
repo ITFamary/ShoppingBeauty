@@ -3,7 +3,7 @@
 # 第一步先login到 docker; docker login --username xx@mingshz registry.cn-shanghai.aliyuncs.com
 # 然后调用本shell, 后面随便跟一个餐宿那就是推送
 mkdir logs
-mvn -Dmaven.test.skip=true clean package
+mvn -Dmaven.test.skip=true clean install
 cd web
 if [ -z "$1" ]; then
 mvn -Dmaven.test.skip=true io.fabric8:docker-maven-plugin:0.23.0:build

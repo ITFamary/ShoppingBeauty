@@ -37,12 +37,19 @@ public class MerchantServiceImpl implements MerchantService {
         if (login.getMerchant() != null) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.LOGIN_MERCHANT_EXIST));
         }
-        login.setMerchant(merchant);
+        final Merchant newMerchant;
+        if (merchant.getClass() == Merchant.class) {
+            newMerchant = merchant;
+        } else {
+            newMerchant = new Merchant();
+            newMerchant.fromRequest(merchant);
+        }
+        login.setMerchant(newMerchant);
         login.addLevel(ManageLevel.merchantRoot);
-        merchant.setId(login.getId());
-        merchant.setLogin(login);
-        merchant.setCreateTime(LocalDateTime.now());
-        return merchantRepository.save(merchant);
+        newMerchant.setId(login.getId());
+        newMerchant.setLogin(login);
+        newMerchant.setCreateTime(LocalDateTime.now());
+        return merchantRepository.save(newMerchant);
     }
 
     @Override

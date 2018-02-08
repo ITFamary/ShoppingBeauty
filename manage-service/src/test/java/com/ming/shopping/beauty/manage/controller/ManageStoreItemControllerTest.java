@@ -3,6 +3,7 @@ package com.ming.shopping.beauty.manage.controller;
 import com.ming.shopping.beauty.manage.ManageConfigTest;
 import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
+import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Merchant;
 import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.support.AuditStatus;
@@ -33,6 +34,41 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
     @Autowired
     private ItemRepository itemRepository;
 
+    @Test
+    public void goTest() throws Exception {
+        Login root = mockRoot();
+        updateAllRunWith(root);
+
+        Merchant merchant = mockMerchant();
+        Store store = mockStore(merchant);
+        Item item = mockItem(merchant);
+
+        StoreItem storeItem = mockStoreItem(store, item);
+        mockStoreItem(mockStore(merchant), mockItem(merchant));
+        mockStoreItem(mockStore(merchant), mockItem(merchant));
+        int size = storeItemRepository.findAll().size();
+
+        mockMvc.perform(get("/storeItem")
+                .param("storeName"," ")
+                .param("itemName"," "))
+                .andDo(print())
+                .andExpect(jsonPath("$.pagination.total").value(size));
+
+
+        mockMvc.perform(get("/storeItem")
+                .param("itemName",item.getName()))
+                .andDo(print())
+                .andExpect(jsonPath("$.pagination.total").value(1));
+
+
+        mockMvc.perform(get("/storeItem")
+                .param("storeName",store.getName()))
+                .andDo(print())
+                .andExpect(jsonPath("$.pagination.total").value(1));
+
+
+
+    }
     @Test
     public void listTest() throws Exception {
         //创建一个商户,以他来运行

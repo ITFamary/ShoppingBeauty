@@ -21,11 +21,11 @@ buildNumber.properties
 # Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
 !/.mvn/wrapper/maven-wrapper.jar
 
-/dealer/src/main/webapp/
-/core-service/src/main/webapp/
-/wechat-service/src/main/webapp/
+/service/src/main/webapp/
 /manage-service/src/main/webapp/
 /logs
 /debug
 
 /web/logs/
+/client-service/src/main/webapp/
+/web/src/main/webapp/_resources/
