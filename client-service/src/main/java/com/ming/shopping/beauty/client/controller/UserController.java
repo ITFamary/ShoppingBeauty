@@ -1,6 +1,5 @@
 package com.ming.shopping.beauty.client.controller;
 
-import com.google.zxing.WriterException;
 import com.ming.shopping.beauty.service.controller.QRController;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
@@ -21,8 +20,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,15 +62,15 @@ public class UserController {
      */
     @GetMapping("/vipCard")
     @ResponseBody
-    public Object vipCard(@AuthenticationPrincipal Login login) throws IOException, WriterException {
+    public Object vipCard(@AuthenticationPrincipal Login login) {
         //未激活的用户没有二维码
         if (!login.getUser().isActive()) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.USER_NOT_ACTIVE));
         }
         MainOrder mainOrder = orderService.newEmptyOrder(login.getUser());
-        Map<String, Object> result = new HashMap<>(2);
+        Map<String, Object> result = new HashMap<>(3);
         //前端购物车地址
-        String text = systemService.toMobileUrl("/shop/" + mainOrder.getOrderId());
+        String text = systemService.toMobileShopUrl(mainOrder.getOrderId());
         result.put("vipCard", login.getUser().getCardNo());
         result.put("qrCode", qrController.urlForText(text).toString());
         result.put("orderId", mainOrder.getOrderId());

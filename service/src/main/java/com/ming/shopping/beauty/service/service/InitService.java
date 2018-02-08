@@ -11,7 +11,6 @@ import me.jiangcai.lib.jdbc.JdbcService;
 import me.jiangcai.lib.upgrade.VersionUpgrade;
 import me.jiangcai.lib.upgrade.service.UpgradeService;
 import me.jiangcai.wx.model.Gender;
-import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +29,6 @@ import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
-import java.util.Random;
 
 /**
  * @author helloztt
@@ -52,6 +50,8 @@ public class InitService implements VersionUpgrade<Version> {
     private UpgradeService upgradeService;
     @Autowired
     private Environment environment;
+    @Autowired
+    private StagingService stagingService;
 
     @PostConstruct
     @Transactional(rollbackFor = RuntimeException.class)
@@ -80,28 +80,10 @@ public class InitService implements VersionUpgrade<Version> {
             user.setGender(Gender.male);
             userRepository.save(user);
         }
-        int count = 20;
-        if (environment.acceptsProfiles("staging") && loginRepository.count() <= count) {
-            // 在staging 中 建立足够多的测试帐号
-            while (count-- > 0)
-                createDemoUser();
+        if (environment.acceptsProfiles("staging")) {
+            stagingService.initStagingEnv();
         }
-    }
 
-    private void createDemoUser() {
-        // TODO 最好是走现有的service
-        Login login = new Login();
-        login.setLoginName(RandomStringUtils.randomNumeric(11));
-        login.setGuidable(new Random().nextBoolean());
-//        login.addLevel(ManageLevel.root, ManageLevel.user);
-        login.setCreateTime(LocalDateTime.now());
-        login = loginRepository.saveAndFlush(login);
-        User user = new User();
-        user.setId(login.getId());
-        user.setLogin(login);
-        user.setFamilyName(RandomStringUtils.randomAlphabetic(1));
-        user.setGender(Gender.values()[new Random().nextInt(Gender.values().length)]);
-        userRepository.save(user);
     }
 
     private void database() throws SQLException {
@@ -149,4 +131,5 @@ public class InitService implements VersionUpgrade<Version> {
             default:
         }
     }
+
 }
