@@ -152,7 +152,7 @@ public class ManageLoginController extends AbstractCrudController<Login, Long, L
                 conditions.add(cb.equal(root.get(Login_.id), queryData.get("loginId")));
             }
             if (queryData.get("enabled") != null) {
-                if (BooleanUtils.toBoolean(queryData.get("enabled").toString())) {
+                if (BooleanUtils.toBoolean(queryData.get("enabled").to)) {
                     conditions.add(cb.isTrue(root.get(Login_.enabled)));
                 } else {
                     conditions.add(cb.isFalse(root.get(Login_.enabled)));
