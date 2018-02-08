@@ -150,7 +150,7 @@ public class SettlementSheetServiceImpl implements SettlementSheetService {
     @Transactional
     public void completeSheet(SettlementSheet settlementSheet) {
         SettlementSheet one = settlementSheetRepository.findOne(settlementSheet.getId());
-        if(one.getSettlementStatus().equals(SettlementStatus.APPROVAL)){
+        if(one.getSettlementStatus().equals(SettlementStatus.ALREADY_PAID)){
             one.setSettlementStatus(SettlementStatus.COMPLETE);
             settlementSheetRepository.save(one);
         }else{

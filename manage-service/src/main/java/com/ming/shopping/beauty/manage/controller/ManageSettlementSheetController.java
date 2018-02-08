@@ -95,111 +95,6 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
     }
 
     /**
-     * 提交申请
-     *
-     * @param id
-     * @param comment
-     */
-    @PutMapping("/{id}/submit")
-    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_MERCHANT_SETTLEMENT + "')")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void submitSheet(@PathVariable("id") Long id, @RequestBody String comment) {
-        if (id == null) {
-            throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
-                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "结算单id"), null));
-        }
-        SettlementSheet sheet = settlementSheetService.findSheet(id);
-        settlementSheetService.submitSheet(sheet, comment);
-    }
-
-    /**
-     * 同意申请,未打款
-     *
-     * @param id
-     * @param comment
-     */
-    @PutMapping("/{id}/approval")
-    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_PLATFORM_SETTLEMENT + "')")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void approvalSheet(@PathVariable("id") Long id, @RequestBody String comment) {
-        if (id == null) {
-            throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
-                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "结算单id"), null));
-        }
-        SettlementSheet sheet = settlementSheetService.findSheet(id);
-        settlementSheetService.approvalSheet(sheet, comment);
-    }
-
-    /**
-     * 打回申请
-     *
-     * @param id
-     * @param comment
-     */
-    @PutMapping("/{id}/reject")
-    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_PLATFORM_SETTLEMENT + "')")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void rejectSheet(@PathVariable("id") Long id, @RequestBody String comment) {
-        if (id == null) {
-            throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
-                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "结算单id"), null));
-        }
-        SettlementSheet sheet = settlementSheetService.findSheet(id);
-        settlementSheetService.rejectSheet(sheet, comment);
-    }
-
-    /**
-     * 撤销结算单
-     *
-     * @param id
-     */
-    @PutMapping("/{id}/revoke")
-    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void revokeSheet(@PathVariable("id") Long id) {
-        if (id == null) {
-            throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
-                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "结算单id"), null));
-        }
-        SettlementSheet sheet = settlementSheetService.findSheet(id);
-        settlementSheetService.revokeSheet(sheet);
-    }
-
-    /**
-     * 已支付结算款
-     *
-     * @param id
-     */
-    @PutMapping("/{id}/already")
-    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_PLATFORM_SETTLEMENT + "')")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void alreadySheet(@PathVariable("id") Long id, @RequestBody BigDecimal actualAmount) {
-        if (id == null) {
-            throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
-                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "结算单id"), null));
-        }
-        SettlementSheet sheet = settlementSheetService.findSheet(id);
-        settlementSheetService.alreadyPaid(sheet, actualAmount);
-    }
-
-    /**
-     * 商户收到结算款,确认
-     *
-     * @param id
-     */
-    @PutMapping("{id}/complete")
-    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void complete(@PathVariable("id") Long id) {
-        if (id == null) {
-            throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
-                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "结算单id"), null));
-        }
-        SettlementSheet sheet = settlementSheetService.findSheet(id);
-        settlementSheetService.completeSheet(sheet);
-    }
-
-    /**
      * 产生一个结算单,由商户发起,统计系统规定的时间周期内的订单的MainOrder的信息.
      *
      * @param merchantId 商户id
@@ -217,41 +112,91 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
                 .build();
     }
 
-    @PutMapping("/{id}/enabled")
-    public void putEnabled(@PathVariable("id") Long id, @RequestBody SheetReviewBody putData) {
+    @PutMapping("/{id}/statusManage")
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_PLATFORM_SETTLEMENT + "')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void putEnabledManage(@PathVariable("id") Long id, @RequestBody SheetReviewBody putData) {
         if (id == null) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "结算单id"), null));
         }
-
-        switch (putData.getStatus()) {
-            case "TO_AUDIT":
-                //提交审核
-
-                break;
-            case "APPROVAL":
-                //同意申请
-
-                break;
-            case "REJECT" :
-                //打回申请
-
-                break;
-            case "ALREADY_PAID" :
-                //同意申请
-
-                break;
-            case "COMPLETE" :
-                //已收款
-
-                break;
-            case "REVOKE" :
-
-                break;
-            default:
+        if (putData != null) {
+            if (putData.getStatus() == null) {
+                throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                        , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "status"), null));
+            }
+            SettlementSheet sheet = settlementSheetService.findSheet(id);
+            switch (putData.getStatus()) {
+                case "APPROVAL":
+                    //同意申请
+                    if (putData.getComment() == null) {
+                        throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                                , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "comment"), null));
+                    }
+                    settlementSheetService.approvalSheet(sheet, putData.getComment());
+                    break;
+                case "REJECT":
+                    //打回申请
+                    if (putData.getComment() == null) {
+                        throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                                , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "comment"), null));
+                    }
+                    settlementSheetService.rejectSheet(sheet, putData.getComment());
+                    break;
+                case "ALREADY_PAID":
+                    //已经支付
+                    if(putData.getAmount() == null){
+                        throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                                , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "amount"), null));
+                    }
+                    settlementSheetService.alreadyPaid(sheet, putData.getAmount());
+                    break;
+                default:
+            }
+        } else {
+            throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "putData"), null));
         }
-        SettlementSheet sheet = settlementSheetService.findSheet(id);
-        settlementSheetService.completeSheet(sheet);
+    }
+
+    @PutMapping("/{id}/statusMerchant")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_MERCHANT_SETTLEMENT + "')")
+    public void putEnabledMerchant(@PathVariable("id") Long id, @RequestBody(required = false) SheetReviewBody putData) {
+        if (id == null) {
+            throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "结算单id"), null));
+        }
+        if (putData != null) {
+            if (putData.getStatus() == null) {
+                throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                        , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "status"), null));
+            }
+
+            SettlementSheet sheet = settlementSheetService.findSheet(id);
+            switch (putData.getStatus()) {
+                case "TO_AUDIT":
+                    //提交审核
+                    if (putData.getComment() == null) {
+                        throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                                , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "comment"), null));
+                    }
+                    settlementSheetService.submitSheet(sheet, putData.getComment());
+                    break;
+                case "COMPLETE":
+                    //已收款
+                    settlementSheetService.completeSheet(sheet);
+                    break;
+                case "REVOKE":
+                    //撤销
+                    settlementSheetService.revokeSheet(sheet);
+                    break;
+                default:
+            }
+        } else {
+            throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "putData"), null));
+        }
     }
 
     /**
@@ -262,16 +207,17 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
     @PutMapping("{id}/delete")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void putEnabled(@PathVariable("id") Long id,@RequestBody Boolean delete ) {
+    public void putEnabled(@PathVariable("id") Long id, @RequestBody Boolean delete) {
         if (id == null) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "结算单id"), null));
-        }if(delete == null){
+        }
+        if (delete == null) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "delete"), null));
         }
         SettlementSheet sheet = settlementSheetService.findSheet(id);
-        settlementSheetService.putEnabled(sheet,delete);
+        settlementSheetService.putEnabled(sheet, delete);
     }
 
 
@@ -284,9 +230,9 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
     @GetMapping("/{id}/store")
     public RowDefinition<MainOrder> getDetailForStore(@PathVariable("id") Long id) {
         SettlementSheet sheet = settlementSheetService.findSheet(id);
-        if(sheet.getSettlementStatus().equals(SettlementStatus.REJECT) || sheet.getSettlementStatus().equals(SettlementStatus.REVOKE)){
+        if (sheet.getSettlementStatus().equals(SettlementStatus.REJECT) || sheet.getSettlementStatus().equals(SettlementStatus.REVOKE)) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
-                , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "结算单id"), null));
+                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "结算单id"), null));
         }
         return new RowDefinition<MainOrder>() {
             @Override

@@ -302,6 +302,45 @@ public class ManageItemControllerTest extends ManageConfigTest {
         assertThat(one6.isRecommended()).isFalse();
     }
 
+    @Test
+    public void testList() throws Exception {
+        Login root = mockRoot();
+        updateAllRunWith(root);
+        Merchant merchant = mockMerchant();
+        Item item = mockItem(merchant);
+        int i = 1;
+        while(i < 3){
+            i++;
+            mockItem(merchant);
+        }
+        //所有
+        mockMvc.perform(get("/item"))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        int size = itemRepository.findAll().size();
+        //条件
+        //还是所有的  一共3个
+        mockMvc.perform(get("/item")
+                .param("itemName"," ")
+                .param("itemType"," ")
+                .param("merchantName"," "))
+                .andDo(print())
+                .andExpect(jsonPath("$.pagination.total").value(3));
+
+        //设置一个name条件
+        mockMvc.perform(get("/item")
+                .param("itemName",item.getName()))
+                .andDo(print())
+                .andExpect(jsonPath("$.pagination.total").value(1));
+
+
+        mockMvc.perform(get("/item")
+                .param("merchantName",merchant.getName()))
+                .andDo(print())
+                .andExpect(jsonPath("$.pagination.total").value(3));
+
+    }
     /**
      * 用于测试, 项目审核/状态改变/提交审核
      */

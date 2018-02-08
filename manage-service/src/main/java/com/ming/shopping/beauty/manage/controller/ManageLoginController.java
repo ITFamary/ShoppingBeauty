@@ -15,6 +15,7 @@ import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.RowService;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.domain.Specification;
@@ -159,7 +160,9 @@ public class ManageLoginController extends AbstractCrudController<Login, Long, L
                 }
             }
             if (queryData.get("mobile") != null) {
-                conditions.add(cb.like(root.get(Login_.loginName), "%" + queryData.get("mobile") + "%"));
+                if(StringUtils.isNotBlank(queryData.get("mobile").toString())){
+                    conditions.add(cb.like(root.get(Login_.loginName), "%" + queryData.get("mobile") + "%"));
+                }
             }
             return cb.and(conditions.toArray(new Predicate[conditions.size()]));
         };

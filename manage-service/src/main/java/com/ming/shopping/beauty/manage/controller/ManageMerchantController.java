@@ -18,6 +18,7 @@ import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.RowService;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.domain.Specification;
@@ -29,7 +30,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -339,7 +339,9 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
         return (root, cq, cb) -> {
             List<Predicate> conditionList = new ArrayList<>();
             if (queryData.get("username") != null) {
-                conditionList.add(cb.like(root.join(Merchant_.login).get(Login_.loginName), "%" + queryData.get("username") + "%"));
+                if(StringUtils.isNotBlank(queryData.get("username").toString())){
+                    conditionList.add(cb.like(root.join(Merchant_.login).get(Login_.loginName), "%" + queryData.get("username") + "%"));
+                }
             }
             return cb.and(conditionList.toArray(new Predicate[conditionList.size()]));
         };
