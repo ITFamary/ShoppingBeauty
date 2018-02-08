@@ -14,6 +14,7 @@ import me.jiangcai.crud.row.RowCustom;
 import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.RowService;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
+import org.apache.commons.lang.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.domain.Specification;
@@ -151,7 +152,7 @@ public class ManageLoginController extends AbstractCrudController<Login, Long, L
                 conditions.add(cb.equal(root.get(Login_.id), queryData.get("loginId")));
             }
             if (queryData.get("enabled") != null) {
-                if ((boolean) queryData.get("enabled")) {
+                if (BooleanUtils.toBoolean(queryData.get("enabled").toString())) {
                     conditions.add(cb.isTrue(root.get(Login_.enabled)));
                 } else {
                     conditions.add(cb.isFalse(root.get(Login_.enabled)));

@@ -16,6 +16,7 @@ import me.jiangcai.crud.row.RowCustom;
 import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
+import org.apache.commons.lang.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -129,19 +130,19 @@ public class ManageStoreItemController extends AbstractCrudController<StoreItem,
         return ((root, query, cb) -> {
             List<Predicate> conditionList = new ArrayList<>();
             if (queryData.get("storeId") != null)
-                conditionList.add(cb.equal(root.join(StoreItem_.store).get(Store_.id), queryData.get("storeId")));
+                conditionList.add(cb.equal(root.join(StoreItem_.store).get(Store_.id), Long.parseLong(queryData.get("storeId").toString())));
             if (queryData.get("itemName") != null)
                 conditionList.add(cb.like(root.join(StoreItem_.item).get(Item_.name), "%" + queryData.get("itemName") + "%"));
             if (queryData.get("storeName") != null)
                 conditionList.add(cb.like(root.join(StoreItem_.store).get(Store_.name), "%" + queryData.get("storeName") + "%"));
             if (queryData.get("enabled") != null) {
-                if ((boolean) queryData.get("enabled"))
+                if (BooleanUtils.toBoolean(queryData.get("enabled").toString()))
                     conditionList.add(cb.isTrue(root.get(StoreItem_.enable)));
                 else
                     conditionList.add(cb.isFalse(root.get(StoreItem_.enable)));
             }
             if (queryData.get("recommended") != null) {
-                if ((boolean) queryData.get("recommended"))
+                if (BooleanUtils.toBoolean(queryData.get("recommended").toString()))
                     conditionList.add(cb.isTrue(root.get(StoreItem_.recommended)));
                 else
                     conditionList.add(cb.isFalse(root.get(StoreItem_.recommended)));
