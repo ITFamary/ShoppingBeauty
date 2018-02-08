@@ -20,6 +20,7 @@ import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
 import me.jiangcai.lib.resource.service.ResourceService;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
@@ -27,6 +28,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.NumberUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -252,27 +254,28 @@ public class ManageItemController extends AbstractCrudController<Item, Long, Ite
                 conditions.add(cb.like(root.get(Item_.name), "%" + queryData.get("itemName") + "%"));
             }
             if (queryData.get("itemType") != null) {
-                conditions.add(cb.equal(root.get(Item_.itemType), queryData.get("itemType")));
+                conditions.add(cb.like(root.get(Item_.itemType), "%" + queryData.get("itemType") + "%"));
             }
             if (queryData.get("merchantName") != null) {
                 conditions.add(cb.equal(root.join(Item_.merchant, JoinType.LEFT)
                         .get(Merchant_.name), queryData.get("merchantName")));
             }
             if (queryData.get("merchantId") != null) {
-                conditions.add(cb.equal(root.join(Item_.merchant).get(Merchant_.id), queryData.get("merchantId")));
+                conditions.add(cb.equal(root.join(Item_.merchant).get(Merchant_.id),
+                        NumberUtils.parseNumber(queryData.get("merchantId").toString(), Long.class)));
             }
             if (queryData.get("auditStatus") != null) {
                 conditions.add(cb.equal(root.get(Item_.auditStatus)
                         , AuditStatus.valueOf(queryData.get("auditStatus").toString())));
             }
             if (queryData.get("enabled") != null) {
-                if ((boolean) queryData.get("enabled"))
+                if (BooleanUtils.toBoolean(queryData.get("enabled").toString()))
                     conditions.add(cb.isTrue(root.get(Item_.enabled)));
                 else
                     conditions.add(cb.isFalse(root.get(Item_.enabled)));
             }
             if (queryData.get("recommended") != null) {
-                if ((boolean) queryData.get("recommended"))
+                if (BooleanUtils.toBoolean(queryData.get("recommended").toString()))
                     conditions.add(cb.isTrue(root.get(Item_.recommended)));
                 else
                     conditions.add(cb.isFalse(root.get(Item_.recommended)));
