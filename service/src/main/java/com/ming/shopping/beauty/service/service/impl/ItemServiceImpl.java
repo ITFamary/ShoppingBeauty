@@ -78,22 +78,15 @@ public class ItemServiceImpl implements ItemService {
     public Item addItem(Merchant merchant, String mainImagePath, String name, String itemType, BigDecimal price, BigDecimal salesPrice,
                         BigDecimal costPrice, String description, String richDescription, boolean recommended) {
         Item item = new Item();
-        if (merchant != null) {
-            item.setMerchant(merchant);
-        }
-        item.setName(name);
         item.setItemType(itemType);
-        item.setPrice(price);
-        item.setSalesPrice(salesPrice);
         item.setCostPrice(costPrice);
         item.setDescription(description);
-        item.setAuditStatus(AuditStatus.NOT_SUBMIT);
-        if (richDescription != null) {
-            item.setRichDescription(richDescription);
-        }
+        item.setName(name);
+        item.setPrice(price);
+        item.setSalesPrice(salesPrice);
+        item.setRichDescription(richDescription);
         item.setRecommended(recommended);
-        forImage(item, mainImagePath);
-        return itemRepository.save(item);
+        return addItem(merchant, item, mainImagePath);
     }
 
     /**

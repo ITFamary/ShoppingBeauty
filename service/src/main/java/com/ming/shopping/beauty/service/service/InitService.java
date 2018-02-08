@@ -65,7 +65,7 @@ public class InitService implements VersionUpgrade<Version> {
     /**
      * 定义一些超级管理员
      */
-    private void initSuperManage() {
+    private void initSuperManage() throws IOException {
         if (loginRepository.findByLoginName(cjMobile) == null) {
             Login login = new Login();
             login.setLoginName(cjMobile);

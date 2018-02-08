@@ -1,8 +1,10 @@
 package com.ming.shopping.beauty.controller;
 
-import com.ming.shopping.beauty.service.service.InitService;
+import com.ming.shopping.beauty.service.service.StagingService;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.io.IOException;
 
 /**
  * <ol>
@@ -20,12 +22,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class WechatSimpleProcessTest extends TogetherTest {
 
     @Autowired
-    private InitService initService;
+    private StagingService stagingService;
 
     @Test
-    public void flow() {
+    public void flow() throws IOException {
         // 1
-//        Object[] genratingData = initService.generateStagingData();
+        Object[] generatingData = stagingService.generateStagingData();
 
     }
 

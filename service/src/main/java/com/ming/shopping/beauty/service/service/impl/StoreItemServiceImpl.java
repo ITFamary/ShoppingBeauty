@@ -61,22 +61,10 @@ public class StoreItemServiceImpl implements StoreItemService {
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
     public StoreItem addStoreItem(long storeId, long itemId, BigDecimal salesPrice, boolean recommended) {
-        Store store = storeService.findStore(storeId);
-        Item item = itemService.findOne(itemId);
         StoreItem storeItem = new StoreItem();
-        storeItem.setStore(store);
-        storeItem.setItem(item);
-        if (salesPrice != null) {
-            //这个价格必须大于等于 项目的销售价
-            if (salesPrice.compareTo(item.getSalesPrice()) == -1) {
-                throw new ApiResultException(ApiResult.withError(ResultCodeEnum.STORE_ITEM_PRICE_ERROR));
-            }
-            storeItem.setSalesPrice(salesPrice);
-        } else {
-            storeItem.setSalesPrice(item.getSalesPrice());
-        }
+        storeItem.setSalesPrice(salesPrice);
         storeItem.setRecommended(recommended);
-        return storeItemRepository.save(storeItem);
+        return addStoreItem(storeId, itemId, storeItem);
     }
 
     @Override
