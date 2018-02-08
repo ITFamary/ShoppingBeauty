@@ -6,6 +6,7 @@ import com.ming.shopping.beauty.service.repository.LoginRepository;
 import com.ming.shopping.beauty.service.service.InitService;
 import org.hamcrest.core.StringStartsWith;
 import org.junit.Test;
+import org.mockito.internal.matchers.GreaterOrEqual;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
@@ -66,7 +67,7 @@ public class ManageLoginControllerTest extends ManageConfigTest {
         mockMvc.perform(get(BASE_URL)
                 .param("enabled","false"))
                 .andDo(print())
-                .andExpect(jsonPath("$.pagination.total").value(1));
+                .andExpect(jsonPath("$.pagination.total").value(new GreaterOrEqual<>(1)));
     }
 
     @Test

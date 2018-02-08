@@ -13,6 +13,7 @@ import com.ming.shopping.beauty.service.service.InitService;
 import com.ming.shopping.beauty.service.service.SystemService;
 import me.jiangcai.wx.web.exception.NoWeixinClientException;
 import org.junit.Test;
+import org.mockito.internal.matchers.GreaterOrEqual;
 import org.mockito.internal.matchers.StartsWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
@@ -49,7 +50,7 @@ public class ManageControllerTest extends ManageConfigTest {
         //默认的一个. 我添加了两个 共3个
         mockMvc.perform(get("/manage"))
                 .andDo(print())
-                .andExpect(jsonPath("$.pagination.total").value(3));
+                .andExpect(jsonPath("$.pagination.total").value(new GreaterOrEqual(3)));
 
         //默认的一个. 我添加了两个 共1个
         mockMvc.perform(get("/manage")
