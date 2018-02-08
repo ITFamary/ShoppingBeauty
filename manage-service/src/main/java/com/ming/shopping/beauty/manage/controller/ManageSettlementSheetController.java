@@ -11,6 +11,7 @@ import com.ming.shopping.beauty.service.entity.support.SettlementStatus;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
+import com.ming.shopping.beauty.service.model.request.SheetReviewBody;
 import com.ming.shopping.beauty.service.service.MerchantService;
 import com.ming.shopping.beauty.service.service.settlement.SettlementSheetService;
 import me.jiangcai.crud.controller.AbstractCrudController;
@@ -57,7 +58,7 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
     private MerchantService merchantService;
 
     /**
-     * 结算单
+     * 结算单列表
      *
      * @param request 请求
      * @return
@@ -101,6 +102,7 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
      */
     @PutMapping("/{id}/submit")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_MERCHANT_SETTLEMENT + "')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void submitSheet(@PathVariable("id") Long id, @RequestBody String comment) {
         if (id == null) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
@@ -118,6 +120,7 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
      */
     @PutMapping("/{id}/approval")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_PLATFORM_SETTLEMENT + "')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void approvalSheet(@PathVariable("id") Long id, @RequestBody String comment) {
         if (id == null) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
@@ -135,6 +138,7 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
      */
     @PutMapping("/{id}/reject")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_PLATFORM_SETTLEMENT + "')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void rejectSheet(@PathVariable("id") Long id, @RequestBody String comment) {
         if (id == null) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
@@ -151,6 +155,7 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
      */
     @PutMapping("/{id}/revoke")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void revokeSheet(@PathVariable("id") Long id) {
         if (id == null) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
@@ -167,6 +172,7 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
      */
     @PutMapping("/{id}/already")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_PLATFORM_SETTLEMENT + "')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void alreadySheet(@PathVariable("id") Long id, @RequestBody BigDecimal actualAmount) {
         if (id == null) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
@@ -183,6 +189,7 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
      */
     @PutMapping("{id}/complete")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void complete(@PathVariable("id") Long id) {
         if (id == null) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
@@ -210,6 +217,64 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
                 .build();
     }
 
+    @PutMapping("/{id}/enabled")
+    public void putEnabled(@PathVariable("id") Long id, @RequestBody SheetReviewBody putData) {
+        if (id == null) {
+            throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "结算单id"), null));
+        }
+
+        switch (putData.getStatus()) {
+            case "TO_AUDIT":
+                //提交审核
+
+                break;
+            case "APPROVAL":
+                //同意申请
+
+                break;
+            case "REJECT" :
+                //打回申请
+
+                break;
+            case "ALREADY_PAID" :
+                //同意申请
+
+                break;
+            case "COMPLETE" :
+                //已收款
+
+                break;
+            case "REVOKE" :
+
+                break;
+            default:
+        }
+        SettlementSheet sheet = settlementSheetService.findSheet(id);
+        settlementSheetService.completeSheet(sheet);
+    }
+
+    /**
+     * 结算单是否在列表中展示出来
+     *
+     * @param id
+     */
+    @PutMapping("{id}/delete")
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void putEnabled(@PathVariable("id") Long id,@RequestBody Boolean delete ) {
+        if (id == null) {
+            throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "结算单id"), null));
+        }if(delete == null){
+            throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "delete"), null));
+        }
+        SettlementSheet sheet = settlementSheetService.findSheet(id);
+        settlementSheetService.putEnabled(sheet,delete);
+    }
+
+
     /**
      * 结算单中根据门店划分的明细
      *
@@ -218,6 +283,11 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
      */
     @GetMapping("/{id}/store")
     public RowDefinition<MainOrder> getDetailForStore(@PathVariable("id") Long id) {
+        SettlementSheet sheet = settlementSheetService.findSheet(id);
+        if(sheet.getSettlementStatus().equals(SettlementStatus.REJECT) || sheet.getSettlementStatus().equals(SettlementStatus.REVOKE)){
+            throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "结算单id"), null));
+        }
         return new RowDefinition<MainOrder>() {
             @Override
             public Class<MainOrder> entityClass() {
@@ -303,7 +373,7 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
         return (root, query, cb) -> {
             List<Predicate> queryList = new ArrayList<>();
             if (queryData.get("id") != null) {
-                queryList.add(cb.equal(root.get(SettlementSheet_.id), queryData.get("id")));
+                queryList.add(cb.equal(root.get(SettlementSheet_.id), Long.valueOf(queryData.get("id").toString())));
             }
             if (queryData.get("status") != null) {
                 queryList.add(cb.equal(root.get(SettlementSheet_.settlementStatus),

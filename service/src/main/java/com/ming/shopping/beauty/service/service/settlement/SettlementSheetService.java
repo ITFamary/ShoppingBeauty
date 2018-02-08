@@ -71,4 +71,12 @@ public interface SettlementSheetService {
      */
     @Transactional
     void completeSheet(SettlementSheet settlementSheet);
+
+    /**
+     * 修改enabled, 使结算单不在显示出来
+     * @param settlementSheet
+     * @param delete
+     */
+    @Transactional
+    void putEnabled(SettlementSheet settlementSheet,boolean delete);
 }
