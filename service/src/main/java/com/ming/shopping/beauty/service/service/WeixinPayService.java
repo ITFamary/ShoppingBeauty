@@ -1,5 +1,6 @@
 package com.ming.shopping.beauty.service.service;
 
+import com.ming.shopping.beauty.service.repository.RechargeOrderRepository;
 import com.ming.shopping.beauty.service.utils.Constant;
 import me.jiangcai.payment.PayableOrder;
 import me.jiangcai.payment.entity.PayOrder;
@@ -9,6 +10,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.NumberUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
@@ -24,6 +27,8 @@ public class WeixinPayService implements PayableSystemService {
     private static final Log log = LogFactory.getLog(WeixinPayService.class);
     @Autowired
     private SystemService systemService;
+    @Autowired
+    private RechargeOrderRepository rechargeOrderRepository;
 
     @Override
     public ModelAndView paySuccess(HttpServletRequest request, PayableOrder payableOrder, PayOrder payOrder) {
@@ -43,11 +48,7 @@ public class WeixinPayService implements PayableSystemService {
             modelAndView.setViewName("/views/paying");
             modelAndView.addObject("payRequestParam", weixinPayOrder.getJavascriptToPay());
             modelAndView.addObject("successRedirectUrl", systemService.toMobileUrl(additionalParameters.get("successUri").toString()));
-            try {
-                modelAndView.addObject("failureRedirectUrl", URLEncoder.encode(systemService.toMobileUrl("/error?status=400&message=充值失败"), Constant.UTF8_ENCODIND));
-            } catch (UnsupportedEncodingException e) {
-                log.error("url encode error:", e);
-            }
+            modelAndView.addObject("failureRedirectUrl", systemService.toMobileUrl("/error?status=400&message=充值失败"));
             log.debug("js for pay:" + weixinPayOrder.getJavascriptToPay()
                     + ",successUri:" + modelAndView.getModelMap().get("successRedirectUrl")
                     + ",failureUri:" + modelAndView.getModelMap().get("failureRedirectUrl")
@@ -63,6 +64,18 @@ public class WeixinPayService implements PayableSystemService {
 
     @Override
     public PayableOrder getOrder(String id) {
-        return null;
+        Long orderId = payableOrderIdToId(id);
+        if (orderId != null) {
+            return rechargeOrderRepository.findOne(orderId);
+        }
+        throw new IllegalArgumentException("不支持的可支付ID:" + id);
+    }
+
+    public static Long payableOrderIdToId(String str) {
+        if (StringUtils.isEmpty(str))
+            return null;
+        if (!str.contains("-"))
+            return null;
+        return NumberUtils.parseNumber(str.substring(str.indexOf("-") + 1), Long.class);
     }
 }

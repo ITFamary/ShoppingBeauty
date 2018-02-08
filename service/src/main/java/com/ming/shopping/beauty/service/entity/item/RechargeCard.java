@@ -27,7 +27,7 @@ public class RechargeCard implements Cloneable {
      * 卡密，需要唯一
      * TODO 算法待定
      */
-    @Column(length = 20)
+    @Column(length = User.CARD_NO_LEN)
     private String code;
     /**
      * 是否已被兑换

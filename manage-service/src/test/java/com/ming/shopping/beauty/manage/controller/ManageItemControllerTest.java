@@ -9,6 +9,7 @@ import com.ming.shopping.beauty.service.model.request.NewItemBody;
 import com.ming.shopping.beauty.service.repository.ItemRepository;
 import lombok.Data;
 import org.junit.Test;
+import org.mockito.internal.matchers.GreaterOrEqual;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.MediaType;
@@ -326,7 +327,7 @@ public class ManageItemControllerTest extends ManageConfigTest {
                 .param("itemType"," ")
                 .param("merchantName"," "))
                 .andDo(print())
-                .andExpect(jsonPath("$.pagination.total").value(3));
+                .andExpect(jsonPath("$.pagination.total").value(new GreaterOrEqual(3)));
 
         //设置一个name条件
         mockMvc.perform(get("/item")
