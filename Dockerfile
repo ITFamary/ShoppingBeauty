@@ -13,4 +13,5 @@ RUN mv /deploy/web-*.war /deploy/ROOT.war
 RUN rm -rf ${CATALINA_HOME}/webapps/*
 VOLUME ["/data/resources"]
 
-HEALTHCHECK CMD curl -f http://localhost:8080/MP_verify_works.txt || exit 1
+#服务器启动时可能会消耗很长时间，所以允许10分钟的timeout
+HEALTHCHECK --timeout=600s CMD curl -f http://localhost:8080/MP_verify_works.txt || exit 1
