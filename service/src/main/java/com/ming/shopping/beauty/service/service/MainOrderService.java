@@ -82,7 +82,7 @@ public interface MainOrderService {
      * @param orderSearcher
      * @return
      */
-    Page findAll(OrderSearcherBody orderSearcher);
+    Page  findAll(OrderSearcherBody orderSearcher);
 
     /**
      * 查询订单字段及定义

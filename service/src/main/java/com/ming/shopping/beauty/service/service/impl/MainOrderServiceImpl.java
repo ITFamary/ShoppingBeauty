@@ -286,7 +286,7 @@ public class MainOrderServiceImpl implements MainOrderService {
                 , FieldBuilder.asName(MainOrder.class, "payer")
                         .addSelect(mainOrderRoot -> mainOrderRoot.join(MainOrder_.payer, JoinType.LEFT).get(User_.familyName))
                         .build()
-                , FieldBuilder.asName(MainOrder.class, "payerGender")
+                , FieldBuilder.asName(MainOrder.class, "payerAvatar")
                         .addSelect(mainOrderRoot -> mainOrderRoot.join(MainOrder_.payer, JoinType.LEFT).get(User_.gender))
                         .addFormat((data, type) -> data.toString())
                         .build()

@@ -20,6 +20,7 @@ import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
 import me.jiangcai.crud.row.supplier.SingleRowDramatizer;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -283,7 +284,9 @@ public class ManageStoreController extends AbstractCrudController<Store, Long, S
                 conditionList.add(cb.equal(root.join(Store_.merchant, JoinType.LEFT).get(Merchant_.id), Long.valueOf(queryData.get("merchantId").toString())));
             }
             if (queryData.get("username") != null) {
-                conditionList.add(cb.like(root.join(Store_.login).get(Login_.loginName), "%" + queryData.get("username") + "%"));
+                if(StringUtils.isNotBlank(queryData.get("username").toString())){
+                    conditionList.add(cb.like(root.join(Store_.login).get(Login_.loginName), "%" + queryData.get("username") + "%"));
+                }
             }
             return cb.and(conditionList.toArray(new Predicate[conditionList.size()]));
         };

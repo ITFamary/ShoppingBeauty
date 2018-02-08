@@ -17,6 +17,7 @@ import me.jiangcai.crud.row.RowDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -132,9 +133,13 @@ public class ManageStoreItemController extends AbstractCrudController<StoreItem,
             if (queryData.get("storeId") != null)
                 conditionList.add(cb.equal(root.join(StoreItem_.store).get(Store_.id), Long.parseLong(queryData.get("storeId").toString())));
             if (queryData.get("itemName") != null)
-                conditionList.add(cb.like(root.join(StoreItem_.item).get(Item_.name), "%" + queryData.get("itemName") + "%"));
+                if(StringUtils.isNotBlank(queryData.get("itemName").toString())){
+                    conditionList.add(cb.like(root.join(StoreItem_.item).get(Item_.name), "%" + queryData.get("itemName") + "%"));
+                }
             if (queryData.get("storeName") != null)
-                conditionList.add(cb.like(root.join(StoreItem_.store).get(Store_.name), "%" + queryData.get("storeName") + "%"));
+                if(StringUtils.isNotBlank(queryData.get("storeName").toString())){
+                    conditionList.add(cb.like(root.join(StoreItem_.store).get(Store_.name), "%" + queryData.get("storeName") + "%"));
+                }
             if (queryData.get("enabled") != null) {
                 if (BooleanUtils.toBoolean(queryData.get("enabled").toString()))
                     conditionList.add(cb.isTrue(root.get(StoreItem_.enable)));

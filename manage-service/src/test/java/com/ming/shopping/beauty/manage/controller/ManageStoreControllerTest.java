@@ -38,6 +38,27 @@ public class ManageStoreControllerTest extends ManageConfigTest {
     private static final String BASE_URL = "/store";
 
     @Test
+    public void goList() throws Exception {
+        Login root = mockRoot();
+        updateAllRunWith(root);
+        Merchant merchant = mockMerchant();
+        Merchant merchant2 = mockMerchant();
+        Store store = mockStore(merchant);
+        mockStore(merchant2);
+
+        int size = storeRepository.findAll().size();
+
+        mockMvc.perform(get("/store"))
+                .andDo(print())
+                .andExpect(jsonPath("$.pagination.total").value(size));
+
+        mockMvc.perform(get("/store")
+                .param("username",store.getLogin().getLoginName()))
+                .andDo(print())
+                .andExpect(jsonPath("$.pagination.total").value(1));
+
+    }
+    @Test
     public void storeList() throws Exception {
         //首先是不具有管理员权限的人访问,拒绝访问
         //随便来个人只要不是管理员
