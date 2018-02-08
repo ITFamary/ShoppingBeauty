@@ -35,7 +35,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
 
@@ -79,7 +78,7 @@ public class ManageItemController extends AbstractCrudController<Item, Long, Ite
     /**
      * 添加项目，只有root或者具备商户项目权限的人
      *
-     * @param item      项目
+     * @param item    项目
      * @param request 其他信息
      * @return 商户项目列表
      */
@@ -112,7 +111,7 @@ public class ManageItemController extends AbstractCrudController<Item, Long, Ite
     /**
      * 编辑项目
      *
-     * @param item      要编辑的项目信息
+     * @param item 要编辑的项目信息
      * @throws URISyntaxException
      */
     @PutMapping
@@ -143,31 +142,7 @@ public class ManageItemController extends AbstractCrudController<Item, Long, Ite
 
             @Override
             public List<FieldDefinition<Item>> fields() {
-                return Arrays.asList(
-                        FieldBuilder.asName(Item.class, "id")
-                                .build()
-                        , FieldBuilder.asName(Item.class, "name")
-                                .build()
-                        , FieldBuilder.asName(Item.class, "itemType")
-                                .build()
-                        , FieldBuilder.asName(Item.class, "mainImagePath")
-                                .addFormat(Utils.formatResourcePathToURL(resourceService))
-                                .build()
-                        , FieldBuilder.asName(Item.class, "merchantName")
-                                .addSelect(itemRoot -> itemRoot.join(Item_.merchant).get(Merchant_.name))
-                                .build()
-                        , FieldBuilder.asName(Item.class, "price")
-                                .build()
-                        , FieldBuilder.asName(Item.class, "salesPrice")
-                                .build()
-                        , FieldBuilder.asName(Item.class, "auditStatus")
-                                .addFormat((data, type) -> data == null ? null : ((AuditStatus) data).getMessage())
-                                .build()
-                        , FieldBuilder.asName(Item.class, "enabled")
-                                .build()
-                        , FieldBuilder.asName(Item.class, "recommended")
-                                .build()
-                );
+                return listFields();
             }
 
             @Override
@@ -224,7 +199,8 @@ public class ManageItemController extends AbstractCrudController<Item, Long, Ite
                         .build()
                 , FieldBuilder.asName(Item.class, "itemType")
                         .build()
-                , FieldBuilder.asName(Item.class, "mainImagePath")
+                , FieldBuilder.asName(Item.class, "thumbnailUrl")
+                        .addSelect(itemRoot -> itemRoot.get(Item_.mainImagePath))
                         .addFormat(Utils.formatResourcePathToURL(resourceService))
                         .build()
                 , FieldBuilder.asName(Item.class, "merchantName")
