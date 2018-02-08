@@ -69,7 +69,9 @@ public class RechargeCardServiceImpl implements RechargeCardService {
         rechargeCardRepository.save(cardList);
         rechargeCardRepository.flush();
         cardList.forEach(card -> {
-            card.setCode(UUID.randomUUID().toString().replace("-","").substring(0,20).toUpperCase());
+            //需要保证充值卡号为数字，且唯一
+            card.setCode(String.format("%" + User.CARD_NO_LEN + "d", card.getId()));
+//            card.setCode(UUID.randomUUID().toString().replace("-","").substring(0,20).toUpperCase());
         });
         return rechargeCardRepository.save(cardList);
     }
