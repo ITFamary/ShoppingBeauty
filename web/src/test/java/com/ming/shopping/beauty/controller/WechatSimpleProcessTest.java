@@ -1,11 +1,14 @@
 package com.ming.shopping.beauty.controller;
 
+import com.jayway.jsonpath.JsonPath;
 import com.ming.shopping.beauty.client.controller.ClientItemControllerTest;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.service.StagingService;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 /**
  * <ol>
@@ -39,6 +42,15 @@ public class WechatSimpleProcessTest extends TogetherTest {
                 .andExpect(ClientItemControllerTest.isItemsResponse())
         // 然后我需要确认此处生成的数据并不包含
         ;
+        // 第三
+        String orderId = JsonPath.read(mockMvc.perform(
+                get("/user/vipCard")
+                        .accept(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(jsonPath("$.orderId").isNumber())
+                .andExpect(jsonPath("$.qrCode").isString())
+                .andReturn().getResponse().getContentAsString(), "$.orderId");
+        // 第四
     }
 
 }
