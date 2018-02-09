@@ -11,9 +11,9 @@ import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.support.OrderStatus;
 import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
+import com.ming.shopping.beauty.service.model.request.ItemNum;
 import com.ming.shopping.beauty.service.model.request.NewOrderBody;
 import com.ming.shopping.beauty.service.model.request.OrderSearcherBody;
-import com.ming.shopping.beauty.service.model.request.StoreItemNum;
 import org.junit.Test;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
@@ -36,8 +36,9 @@ public class ClientMainOrderControllerTest extends ClientConfigTest {
             , Map<StoreItem, Integer> randomMap, long orderId) throws Exception {
         NewOrderBody orderBody = new NewOrderBody();
         orderBody.setOrderId(orderId);
-        StoreItemNum[] items = randomMap.keySet().stream().map(p -> new StoreItemNum(p.getId()
-                , randomMap.get(p))).toArray(StoreItemNum[]::new);
+        // 现实情况是 我们通过/items 响应出去的id 是Item的id 而非StoreItem的id 所以这里必须调整为这样
+        ItemNum[] items = randomMap.keySet().stream().map(p -> new ItemNum(p.getItem().getId()
+                , randomMap.get(p))).toArray(ItemNum[]::new);
         orderBody.setItems(items);
 
         MockHttpServletRequestBuilder post = MockMvcRequestBuilders.post("/order");

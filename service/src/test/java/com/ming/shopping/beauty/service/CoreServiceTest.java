@@ -322,7 +322,7 @@ public abstract class CoreServiceTest extends SpringWebTest {
     protected StoreItem mockStoreItem(Store store, Item item) {
         StoreItem storeItem = storeItemService.addStoreItem(store.getId(), item.getId(), null, random.nextBoolean());
         storeItemService.freezeOrEnable(true,storeItem.getId());
-        return storeItemService.findStoreItem(storeItem.getId());
+        return storeItemService.findStoreItem(item.getId(), store);
     }
 
     /**

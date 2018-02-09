@@ -4,8 +4,8 @@ import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import com.ming.shopping.beauty.service.entity.login.Represent;
 import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
+import com.ming.shopping.beauty.service.model.request.ItemNum;
 import com.ming.shopping.beauty.service.model.request.OrderSearcherBody;
-import com.ming.shopping.beauty.service.model.request.StoreItemNum;
 import me.jiangcai.crud.row.FieldDefinition;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +42,7 @@ public interface MainOrderService {
      * @param items     下单门店项目及数量
      * @return
      */
-    MainOrder supplementOrder(long orderId, Represent represent, StoreItemNum[] items);
+    MainOrder supplementOrder(long orderId, Represent represent, ItemNum[] items);
 
     /**
      * 生成订单

@@ -1,6 +1,7 @@
 package com.ming.shopping.beauty.service.service.impl;
 
 import com.ming.shopping.beauty.service.entity.item.Item;
+import com.ming.shopping.beauty.service.entity.item.Item_;
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import com.ming.shopping.beauty.service.entity.item.StoreItem_;
 import com.ming.shopping.beauty.service.entity.login.Store;
@@ -15,6 +16,7 @@ import com.ming.shopping.beauty.service.service.ItemService;
 import com.ming.shopping.beauty.service.service.StoreItemService;
 import com.ming.shopping.beauty.service.service.StoreService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -95,13 +97,17 @@ public class StoreItemServiceImpl implements StoreItemService {
 
 
     @Override
-    public StoreItem findStoreItem(long storeItemId) {
-        StoreItem storeItem = storeItemRepository.findOne((root, query, cb) ->
-                cb.equal(root.get(StoreItem_.id), storeItemId));
-        if (storeItem == null || storeItem.isDeleted()) {
+    public StoreItem findStoreItem(long itemId, Store store) {
+        List<StoreItem> storeItems = storeItemRepository.findAll((root, query, cb) ->
+                cb.and(
+                        cb.equal(root.get(StoreItem_.item).get(Item_.id), itemId)
+                        , cb.equal(root.get(StoreItem_.store), store)
+                        , cb.isFalse(root.get(StoreItem_.deleted))
+                ), new PageRequest(0, 1)).getContent();
+        if (storeItems.isEmpty()) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.ITEM_NOT_EXIST));
         }
-        return storeItem;
+        return storeItems.get(0);
     }
 
     @Override

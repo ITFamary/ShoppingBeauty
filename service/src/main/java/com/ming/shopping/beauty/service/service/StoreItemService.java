@@ -2,6 +2,7 @@ package com.ming.shopping.beauty.service.service;
 
 import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
+import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.model.request.ItemSearcherBody;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,13 +49,13 @@ public interface StoreItemService {
     StoreItem addStoreItem(long storeId, long itemId, StoreItem storeItem);
 
     /**
-     * 根据编号查找门店项目
-     * @param storeItemId
+     * 根据编号在门店中查找门店项目
+     * @param itemId 项目id
+     * @param store 特定门店
      * @return
      */
-
     @Transactional(readOnly = true)
-    StoreItem findStoreItem(long storeItemId);
+    StoreItem findStoreItem(long itemId, Store store);
 
     /**
      * 门店项目上架/下架
