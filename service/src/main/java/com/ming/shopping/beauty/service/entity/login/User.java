@@ -8,14 +8,21 @@ import me.jiangcai.wx.model.Gender;
 import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.util.StringUtils;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.From;
 import javax.persistence.criteria.JoinType;
 import java.math.BigDecimal;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * 用户
@@ -68,7 +75,7 @@ public class User {
     }
 
     public static Expression<BigDecimal> getCurrentBalanceExpr(From<?, User> from, CriteriaBuilder cb) {
-        return cb.sum(from.join("flows", JoinType.LEFT).get("changed"));
+        return cb.sum(cb.sum(from.join("flows", JoinType.LEFT).get("changed")), from.get(User_.currentAmount));
     }
 
     public static String makeCardNo() {

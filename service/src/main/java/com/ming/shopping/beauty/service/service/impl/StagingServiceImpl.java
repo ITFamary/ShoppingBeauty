@@ -13,7 +13,13 @@ import com.ming.shopping.beauty.service.repository.LoginRepository;
 import com.ming.shopping.beauty.service.repository.RechargeCardRepository;
 import com.ming.shopping.beauty.service.repository.StoreItemRepository;
 import com.ming.shopping.beauty.service.repository.UserRepository;
-import com.ming.shopping.beauty.service.service.*;
+import com.ming.shopping.beauty.service.service.ItemService;
+import com.ming.shopping.beauty.service.service.MerchantService;
+import com.ming.shopping.beauty.service.service.RechargeCardService;
+import com.ming.shopping.beauty.service.service.RepresentService;
+import com.ming.shopping.beauty.service.service.StagingService;
+import com.ming.shopping.beauty.service.service.StoreItemService;
+import com.ming.shopping.beauty.service.service.StoreService;
 import me.jiangcai.jpa.entity.support.Address;
 import me.jiangcai.lib.resource.service.ResourceService;
 import me.jiangcai.wx.model.Gender;
@@ -60,6 +66,10 @@ public class StagingServiceImpl implements StagingService {
     private RechargeCardService rechargeCardService;
 
     private Login createDemoUser() {
+        return createDemoUser(null);
+    }
+
+    private Login createDemoUser(BigDecimal balance) {
         // TODO 最好是走现有的service
         Login login = new Login();
         login.setLoginName(RandomStringUtils.randomNumeric(11));
@@ -68,6 +78,7 @@ public class StagingServiceImpl implements StagingService {
         login.setCreateTime(LocalDateTime.now());
         login = loginRepository.saveAndFlush(login);
         User user = new User();
+        user.setCurrentAmount(balance != null ? balance : BigDecimal.ZERO);
         user.setId(login.getId());
         user.setLogin(login);
         user.setFamilyName(RandomStringUtils.randomAlphabetic(1));
@@ -83,14 +94,14 @@ public class StagingServiceImpl implements StagingService {
         if (loginRepository.count() <= count) {
             // 在staging 中 建立足够多的测试帐号
             for (int i = 0; i < count; i++)
-                createDemoUser();
+                createDemoUser(new BigDecimal("4999.99"));
         }
         if (itemRepository.count() < 2) {
             generateStagingData();
         }
         if (rechargeCardRepository.count() < count) {
             //在 staging 中建立足够多的充值卡
-            rechargeCardService.newCard(count,null,null);
+            rechargeCardService.newCard(count, null, null);
         }
     }
 
@@ -152,7 +163,7 @@ public class StagingServiceImpl implements StagingService {
         if (store != null) {
             StoreItem storeItem = storeItemService.addStoreItem(store.getId(), item.getId(), null, false);
             storeItem.setEnable(storeEnabled);
-            storeItem = storeItemRepository.save(storeItem);
+            storeItemRepository.save(storeItem);
         }
         item.setAuditStatus(status);
         item = itemRepository.save(item);
