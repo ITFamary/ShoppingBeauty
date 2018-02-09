@@ -117,7 +117,7 @@ public class ManageStoreControllerTest extends ManageConfigTest {
 
         //找一个不存在的门店
         mockMvc.perform(get(BASE_URL)
-                .param("merchantId",String.valueOf(random.nextInt(100))))
+                .param("merchantId",String.valueOf(100000)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.pagination.total").value(0))
                 .andExpect(jsonPath("$.list").isEmpty());
