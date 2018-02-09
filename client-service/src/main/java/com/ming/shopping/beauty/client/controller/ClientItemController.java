@@ -105,7 +105,8 @@ public class ClientItemController {
 
             @Override
             public List<FieldDefinition<StoreItem>> fields() {
-                List<FieldDefinition<StoreItem>> fieldDefinitions = listField(false);
+                List<FieldDefinition<StoreItem>> fieldDefinitions = new ArrayList<>();
+                fieldDefinitions.addAll(listField(false));
                 fieldDefinitions.add(
                         FieldBuilder.asName(StoreItem.class, "details")
                                 .addSelect(root -> root.join(StoreItem_.item).get(Item_.richDescription))
