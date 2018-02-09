@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,10 +47,6 @@ public class InitService implements VersionUpgrade<Version> {
     private UserRepository userRepository;
     @Autowired
     private UpgradeService upgradeService;
-    @Autowired
-    private Environment environment;
-    @Autowired
-    private StagingService stagingService;
 
     @PostConstruct
     @Transactional(rollbackFor = RuntimeException.class)
@@ -79,9 +74,6 @@ public class InitService implements VersionUpgrade<Version> {
             user.setFamilyName("蒋");
             user.setGender(Gender.male);
             userRepository.save(user);
-        }
-        if (environment.acceptsProfiles("staging")) {
-            stagingService.initStagingEnv();
         }
 
     }

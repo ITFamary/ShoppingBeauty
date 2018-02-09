@@ -22,6 +22,7 @@ import me.jiangcai.lib.resource.service.ResourceService;
 import me.jiangcai.wx.model.Gender;
 import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
@@ -85,6 +86,16 @@ public class StagingServiceImpl implements StagingService {
         }
         if (itemRepository.count() < 2) {
             generateStagingData();
+        }
+    }
+
+    @Autowired
+    private Environment environment;
+
+    @Override
+    public void init() throws IOException {
+        if (environment.acceptsProfiles("staging")) {
+            initStagingEnv();
         }
     }
 

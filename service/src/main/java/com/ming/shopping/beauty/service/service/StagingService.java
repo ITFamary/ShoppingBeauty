@@ -1,7 +1,6 @@
 package com.ming.shopping.beauty.service.service;
 
-import org.springframework.transaction.annotation.Transactional;
-
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 
 /**
@@ -13,9 +12,10 @@ public interface StagingService {
      *
      * @throws IOException
      */
-    @Transactional
     void initStagingEnv() throws IOException;
 
+    @PostConstruct
+    void init() throws IOException;
 
     /**
      * 一个商户，一个门店，一个门店代表
