@@ -54,9 +54,11 @@ import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -391,6 +393,44 @@ public abstract class CoreServiceTest extends SpringWebTest {
     }
 
     /**
+     * @param model
+     * @return 生成一个Matcher 可以确认响应是一个数组，并且包含的对象符合model
+     * @see #matchModel(DefinitionModel)
+     */
+    protected static Matcher<?> matchModels(DefinitionModel<?> model) {
+        return new Matcher<Object>() {
+            @Override
+            public boolean matches(Object item) {
+                assertThat(item)
+                        .as("必须是一个数组")
+                        .isInstanceOf(Collection.class);
+                Collection collection = (Collection) item;
+                final Optional any = collection.stream().findAny();
+                if (!any.isPresent()) {
+                    throw new IllegalStateException("基于测试的目的，必须给我们一个size > 0 的响应数组");
+                }
+
+                return matchModel(model).matches(any.get());
+            }
+
+            @Override
+            public void describeMismatch(Object item, Description mismatchDescription) {
+                mismatchDescription.appendText("不满足" + model + "的定义");
+            }
+
+            @Override
+            public void _dont_implement_Matcher___instead_extend_BaseMatcher_() {
+
+            }
+
+            @Override
+            public void describeTo(Description description) {
+
+            }
+        };
+    }
+
+    /**
      * @param model 特定Model
      * @return 生成一个Matcher 可以比较响应跟Model约定的区别
      */
@@ -445,11 +485,11 @@ public abstract class CoreServiceTest extends SpringWebTest {
 
     private Address mockAddress(String other) {
         Address address = new Address();
-        String[] province = new String[]{"浙江省","湖北省","湖南省"};
+        String[] province = new String[]{"浙江省", "湖北省", "湖南省"};
         address.setProvince(province[random.nextInt(province.length)]);
-        String[] prefecture = new String[]{"绍兴市","杭州市","温州市"};
+        String[] prefecture = new String[]{"绍兴市", "杭州市", "温州市"};
         address.setPrefecture(prefecture[random.nextInt(prefecture.length)]);
-        String[] county = new String[]{"诸暨市","滨江区","余杭区"};
+        String[] county = new String[]{"诸暨市", "滨江区", "余杭区"};
         address.setCounty(county[random.nextInt(county.length)]);
         address.setOtherAddress(other);
         return address;

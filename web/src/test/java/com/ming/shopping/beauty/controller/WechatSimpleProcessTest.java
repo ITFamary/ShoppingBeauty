@@ -2,21 +2,24 @@ package com.ming.shopping.beauty.controller;
 
 import com.jayway.jsonpath.JsonPath;
 import com.ming.shopping.beauty.client.controller.ClientItemControllerTest;
-import com.ming.shopping.beauty.service.config.ServiceConfig;
 import com.ming.shopping.beauty.service.entity.item.Item;
+import com.ming.shopping.beauty.service.entity.item.RechargeCard;
 import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.model.request.DepositBody;
 import com.ming.shopping.beauty.service.service.StagingService;
 import me.jiangcai.lib.test.matcher.SimpleMatcher;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Collection;
 import java.util.stream.Stream;
 
+import static com.ming.shopping.beauty.client.controller.CapitalControllerTest.DEPOSIT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * <ol>
@@ -52,7 +55,8 @@ public class WechatSimpleProcessTest extends TogetherTest {
                 get("/items")
                         .accept(MediaType.APPLICATION_JSON)
         )
-                .andExpect(ClientItemControllerTest.isItemsResponse())
+                .andExpect(ClientItemControllerTest.resultMatcherForItems())
+//                .andExpect(jsonPath("$.list").value(ClientItemControllerTest.isItemsResponse()))
                 // item 是一个Collection 必须拥有第一个item 必须不可以拥有其他item
                 .andExpect(jsonPath("$.list[*].title").value(new SimpleMatcher<Collection<String>>(
                         names -> {
@@ -67,7 +71,9 @@ public class WechatSimpleProcessTest extends TogetherTest {
         // 然后我需要确认此处生成的数据并不包含
         ;
         // 第三
-        String orderId = JsonPath.read(mockMvc.perform(
+//        先充值
+        recharge();
+        Number orderId = JsonPath.read(mockMvc.perform(
                 get("/user/vipCard")
                         .accept(MediaType.APPLICATION_JSON)
         )
@@ -75,6 +81,16 @@ public class WechatSimpleProcessTest extends TogetherTest {
                 .andExpect(jsonPath("$.qrCode").isString())
                 .andReturn().getResponse().getContentAsString(), "$.orderId");
         // 第四
+    }
+
+    private void recharge() throws Exception {
+        RechargeCard rechargeCard = mockRechargeCard(null, null);
+        DepositBody postData = new DepositBody();
+        postData.setCdKey(rechargeCard.getCode());
+        mockMvc.perform(post(DEPOSIT)
+                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .param("cdKey", postData.getCdKey()))
+                .andExpect(status().isFound());
     }
 
 }
