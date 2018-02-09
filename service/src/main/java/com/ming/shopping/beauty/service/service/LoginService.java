@@ -4,12 +4,10 @@ import com.huotu.verification.VerificationType;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
-import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.utils.Constant;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import me.jiangcai.lib.notice.Content;
 import me.jiangcai.wx.model.Gender;
+import me.jiangcai.wx.standard.entity.StandardWeixinUser;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,8 +31,23 @@ public interface LoginService extends UserDetailsService {
      * @param guideUserId 引导者
      * @return
      */
+    @Transactional
     Login getLogin(String openId, String mobile, String verifyCode
             , String familyName, Gender gender, String cardNo, Long guideUserId);
+
+    /**
+     * @param mobile      手机号码
+     * @param familyName  姓
+     * @param gender      性别
+     * @param cardNo      可选激活卡号
+     * @param guideUserId 可选引导者
+     * @param login       可选的已存在login
+     * @param wechatUser  微信用户
+     * @return 创建用户若用户不存在
+     */
+    @Transactional
+    Login newUser(String mobile, String familyName, Gender gender, String cardNo, Long guideUserId, Login login
+            , StandardWeixinUser wechatUser);
 
     /**
      * 根据openId 查找角色

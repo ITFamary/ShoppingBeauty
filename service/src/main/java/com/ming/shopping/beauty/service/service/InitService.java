@@ -2,10 +2,8 @@ package com.ming.shopping.beauty.service.service;
 
 import com.ming.shopping.beauty.service.Version;
 import com.ming.shopping.beauty.service.entity.login.Login;
-import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.repository.LoginRepository;
-import com.ming.shopping.beauty.service.repository.UserRepository;
 import me.jiangcai.lib.jdbc.ConnectionProvider;
 import me.jiangcai.lib.jdbc.JdbcService;
 import me.jiangcai.lib.upgrade.VersionUpgrade;
@@ -27,7 +25,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.LocalDateTime;
 
 /**
  * @author helloztt
@@ -44,14 +41,14 @@ public class InitService implements VersionUpgrade<Version> {
     @Autowired
     private LoginRepository loginRepository;
     @Autowired
-    private UserRepository userRepository;
-    @Autowired
     private UpgradeService upgradeService;
+    @Autowired
+    private LoginService loginService;
 
     @PostConstruct
     @Transactional(rollbackFor = RuntimeException.class)
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    public void init() throws IOException, SQLException {
+    public void init() throws SQLException {
         database();
         upgradeService.systemUpgrade(this);
         initSuperManage();
@@ -62,20 +59,10 @@ public class InitService implements VersionUpgrade<Version> {
      */
     private void initSuperManage() {
         if (loginRepository.findByLoginName(cjMobile) == null) {
-            Login login = new Login();
-            login.setLoginName(cjMobile);
-            login.setGuidable(true);
-            login.addLevel(ManageLevel.root, ManageLevel.user);
-            login.setCreateTime(LocalDateTime.now());
-            login = loginRepository.saveAndFlush(login);
-            User user = new User();
-            user.setId(login.getId());
-            user.setLogin(login);
-            user.setFamilyName("蒋");
-            user.setGender(Gender.male);
-            user = userRepository.save(user);
-            login.setUser(user);
-            loginRepository.saveAndFlush(login);
+            Login login = loginService.newUser(cjMobile, "将", Gender.male, null, null
+                    , null, null);
+            login.addLevel(ManageLevel.root);
+            loginRepository.save(login);
         }
 
     }

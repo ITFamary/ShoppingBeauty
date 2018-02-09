@@ -4,15 +4,20 @@ import com.huotu.verification.IllegalVerificationCodeException;
 import com.huotu.verification.service.VerificationCodeService;
 import com.ming.shopping.beauty.service.aop.BusinessSafe;
 import com.ming.shopping.beauty.service.config.ServiceConfig;
-import com.ming.shopping.beauty.service.entity.login.*;
+import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.entity.login.Login_;
+import com.ming.shopping.beauty.service.entity.login.User;
+import com.ming.shopping.beauty.service.entity.login.User_;
 import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
-import com.ming.shopping.beauty.service.repository.*;
+import com.ming.shopping.beauty.service.repository.LoginRepository;
+import com.ming.shopping.beauty.service.repository.UserRepository;
 import com.ming.shopping.beauty.service.service.LoginService;
 import com.ming.shopping.beauty.service.service.RechargeCardService;
 import me.jiangcai.wx.model.Gender;
+import me.jiangcai.wx.standard.entity.StandardWeixinUser;
 import me.jiangcai.wx.standard.repository.StandardWeixinUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -47,14 +52,6 @@ public class LoginServiceImpl implements LoginService {
     private StandardWeixinUserRepository standardWeixinUserRepository;
     @Autowired
     private Environment env;
-    @Autowired
-    private RechargeCardRepository rechargeCardRepository;
-    @Autowired
-    private RechargeLogRepository rechargeLogRepository;
-    @Autowired
-    private MainOrderRepository mainOrderRepository;
-    @Autowired
-    private CapitalFlowRepository capitalFlowRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -70,7 +67,7 @@ public class LoginServiceImpl implements LoginService {
     @BusinessSafe
     public Login getLogin(String openId, String mobile, String verifyCode
             , String familyName, Gender gender, String cardNo, Long guideUserId) {
-        if (!env.acceptsProfiles(ServiceConfig.PROFILE_UNIT_TEST,"staging") && !StringUtils.isEmpty(verifyCode)) {
+        if (!env.acceptsProfiles(ServiceConfig.PROFILE_UNIT_TEST, "staging") && !StringUtils.isEmpty(verifyCode)) {
             try {
                 verificationCodeService.verify(mobile, verifyCode, loginVerificationType());
             } catch (IllegalVerificationCodeException ex) {
@@ -84,6 +81,7 @@ public class LoginServiceImpl implements LoginService {
         if (StringUtils.isEmpty(openId)) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.OPEN_ID_ERROR));
         }
+        // 完成必要性检查，现在开始决定登录或者注册
         Login login = asWechat(openId);
         if (login != null && !StringUtils.isEmpty(login.getUsername())) {
             if (login.getUsername().equals(mobile)) {
@@ -92,38 +90,55 @@ public class LoginServiceImpl implements LoginService {
                 throw new ApiResultException(ApiResult.withError(ResultCodeEnum.USERNAME_ERROR));
             }
         }
+        // 用户已存在但username为空
         //也许是初始化时未设置wechatUser的登录
-        login = loginRepository.findByLoginName(mobile);
-        if (login != null) {
+        Login loginByName = loginRepository.findByLoginName(mobile);
+        final StandardWeixinUser wechatUser = standardWeixinUserRepository.findByOpenId(openId);
+        if (loginByName != null) {
             // TODO: 2018/2/7 单元测试还需要完善
-            login.setWechatUser(standardWeixinUserRepository.findByOpenId(openId));
             loginRepository.removeEmptyLogin(openId);
-            return loginRepository.save(login);
+            loginByName.setWechatUser(wechatUser);
+            return loginRepository.save(loginByName);
         }
+        // login来自微信，
+        return newUser(mobile, familyName, gender, cardNo, guideUserId, login, wechatUser);
+    }
+
+    @Override
+    public Login newUser(String mobile, String familyName, Gender gender, String cardNo, Long guideUserId, Login login
+            , StandardWeixinUser wechatUser) {
         //注册前校验手机号是否存在
         mobileVerify(mobile);
+
         if (StringUtils.isEmpty(familyName) || gender == null) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.MESSAGE_NOT_FULL));
         }
+
         if (login == null) {
             login = new Login();
+        } else {
+            login = loginRepository.getOne(login.getId());
         }
         login.setLoginName(mobile);
-        login.setWechatUser(standardWeixinUserRepository.findByOpenId(openId));
+        login.setWechatUser(wechatUser);
         login.setCreateTime(LocalDateTime.now());
-        loginRepository.saveAndFlush(login);
-        User user = new User();
-        login.setUser(user);
+        login.addLevel(ManageLevel.user);
+        login = loginRepository.saveAndFlush(login);
+        User user;
+        if (login.getUser() == null) {
+            user = new User();
+            login.setUser(user);
+            user.setLogin(login);
+            if (guideUserId != null && guideUserId > 0) {
+                //这里就不判断推荐人存不存在，可不可用了
+                user.setGuideUser(loginRepository.findOne(guideUserId));
+            }
+        } else
+            user = login.getUser();
         user.setId(login.getId());
-        user.setLogin(login);
         user.setFamilyName(familyName);
         user.setGender(gender);
-        if (guideUserId != null && guideUserId > 0) {
-            //这里就不判断推荐人存不存在，可不可用了
-            user.setGuideUser(loginRepository.findOne(guideUserId));
-        }
-        login.addLevel(ManageLevel.user);
-        userRepository.saveAndFlush(user);
+        user = userRepository.saveAndFlush(user);
         if (!StringUtils.isEmpty(cardNo)) {
             //使用这张充值卡，如果不存在或者已经用过了，就抛出异常
             rechargeCardService.useCard(cardNo, login.getId());
@@ -220,22 +235,23 @@ public class LoginServiceImpl implements LoginService {
 
     @Autowired
     private EntityManager entityManager;
+
     @Override
     public BigDecimal findBalance(long userId) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<BigDecimal> cq = cb.createQuery(BigDecimal.class);
-        Root<User> root  = cq.from(User.class);
+        Root<User> root = cq.from(User.class);
         cq = cq
-                .select(User.getCurrentBalanceExpr(root,cb))
-                .where(cb.equal(root.get(User_.id),userId));
+                .select(User.getCurrentBalanceExpr(root, cb))
+                .where(cb.equal(root.get(User_.id), userId));
 
-        try{
+        try {
             BigDecimal rs = entityManager.createQuery(cq)
                     .getSingleResult();
             if (rs == null)
                 return BigDecimal.ZERO;
             return rs;
-        }catch (NoResultException ignored){
+        } catch (NoResultException ignored) {
             return BigDecimal.ZERO;
         }
     }

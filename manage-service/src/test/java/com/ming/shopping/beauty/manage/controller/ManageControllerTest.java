@@ -3,35 +3,27 @@ package com.ming.shopping.beauty.manage.controller;
 import com.jayway.jsonpath.JsonPath;
 import com.ming.shopping.beauty.manage.ManageConfigTest;
 import com.ming.shopping.beauty.service.entity.login.Login;
-import com.ming.shopping.beauty.service.entity.login.Merchant;
 import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import com.ming.shopping.beauty.service.model.definition.ManagerModel;
 import com.ming.shopping.beauty.service.model.request.LoginOrRegisterBody;
-import com.ming.shopping.beauty.service.repository.LoginRepository;
 import com.ming.shopping.beauty.service.service.InitService;
 import com.ming.shopping.beauty.service.service.SystemService;
-import me.jiangcai.wx.web.exception.NoWeixinClientException;
 import org.junit.Test;
-import org.mockito.internal.matchers.GreaterOrEqual;
 import org.mockito.internal.matchers.StartsWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.web.util.NestedServletException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * @author helloztt
@@ -47,21 +39,24 @@ public class ManageControllerTest extends ManageConfigTest {
         mockManager(ManageLevel.rootItemManager);
         updateAllRunWith(root);
 
-        //默认的一个. 我添加了两个 共3个
+        int total = JsonPath.read(mockMvc.perform(get("/manage"))
+                .andReturn().getResponse().getContentAsString(), "$.pagination.total");
+
+        // 增加了一个
+        mockRoot();
         mockMvc.perform(get("/manage"))
                 .andDo(print())
-                .andExpect(jsonPath("$.pagination.total").value(new GreaterOrEqual(3)));
+                .andExpect(jsonPath("$.pagination.total").value(total + 1));
 
         //默认的一个. 我添加了两个 共1个
         mockMvc.perform(get("/manage")
-                .param("username",root.getLoginName()))
+                .param("username", root.getLoginName()))
                 .andDo(print())
                 .andExpect(jsonPath("$.pagination.total").value(1));
 
     }
-    @Autowired
-    private LoginRepository loginRepository;
-//
+
+    //
 //    /**
 //     * 非微信环境无法工作
 //     */
@@ -231,8 +226,8 @@ public class ManageControllerTest extends ManageConfigTest {
         )
                 .andExpect(status().is2xxSuccessful());
         //因为我们知道mockLogin具有user权限,所以给他加上
-        ManageLevel[] containUserLevel = new ManageLevel[targetLevel.length+1];
-        System.arraycopy(targetLevel,0,containUserLevel,0,targetLevel.length);
+        ManageLevel[] containUserLevel = new ManageLevel[targetLevel.length + 1];
+        System.arraycopy(targetLevel, 0, containUserLevel, 0, targetLevel.length);
         containUserLevel[targetLevel.length] = ManageLevel.user;
 
         assertThat(loginService.findOne(one.getId()).getLevelSet())

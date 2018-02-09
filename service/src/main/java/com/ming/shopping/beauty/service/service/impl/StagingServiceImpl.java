@@ -6,7 +6,6 @@ import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Merchant;
 import com.ming.shopping.beauty.service.entity.login.Represent;
 import com.ming.shopping.beauty.service.entity.login.Store;
-import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.entity.support.AuditStatus;
 import com.ming.shopping.beauty.service.repository.ItemRepository;
 import com.ming.shopping.beauty.service.repository.LoginRepository;
@@ -14,6 +13,7 @@ import com.ming.shopping.beauty.service.repository.RechargeCardRepository;
 import com.ming.shopping.beauty.service.repository.StoreItemRepository;
 import com.ming.shopping.beauty.service.repository.UserRepository;
 import com.ming.shopping.beauty.service.service.ItemService;
+import com.ming.shopping.beauty.service.service.LoginService;
 import com.ming.shopping.beauty.service.service.MerchantService;
 import com.ming.shopping.beauty.service.service.RechargeCardService;
 import com.ming.shopping.beauty.service.service.RepresentService;
@@ -33,7 +33,6 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Random;
 import java.util.UUID;
 
@@ -65,28 +64,21 @@ public class StagingServiceImpl implements StagingService {
     private RechargeCardRepository rechargeCardRepository;
     @Autowired
     private RechargeCardService rechargeCardService;
+    @Autowired
+    private LoginService loginService;
 
     private Login createDemoUser() {
         return createDemoUser(null);
     }
 
     private Login createDemoUser(BigDecimal balance) {
-        // TODO 最好是走现有的service
-        Login login = new Login();
-        login.setLoginName(RandomStringUtils.randomNumeric(11));
-        login.setGuidable(new Random().nextBoolean());
-//        login.addLevel(ManageLevel.root, ManageLevel.user);
-        login.setCreateTime(LocalDateTime.now());
-        login = loginRepository.saveAndFlush(login);
-        User user = new User();
-        user.setCurrentAmount(balance != null ? balance : BigDecimal.ZERO);
-        user.setId(login.getId());
-        user.setLogin(login);
-        user.setFamilyName(RandomStringUtils.randomAlphabetic(1));
-        user.setGender(Gender.values()[new Random().nextInt(Gender.values().length)]);
-        user = userRepository.save(user);
-        login.setUser(user);
-        return loginRepository.save(login);
+        Login login = loginService.newUser(RandomStringUtils.randomNumeric(11)
+                , RandomStringUtils.randomAlphabetic(1)
+                , Gender.values()[new Random().nextInt(Gender.values().length)], null, null, null
+                , null);
+        login.getUser().setCurrentAmount(balance != null ? balance : BigDecimal.ZERO);
+        userRepository.save(login.getUser());
+        return login;
     }
 
 
