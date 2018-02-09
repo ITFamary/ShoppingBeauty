@@ -61,10 +61,9 @@ public class ClientItemController {
 
             @Override
             public Specification<StoreItem> specification() {
-
                 return (root, query, cb) -> {
                     List<Predicate> conditions = new ArrayList<>();
-                    conditions.add(cb.equal(root.get(StoreItem_.deleted), false));
+                    conditions.add(StoreItem.saleable(root, cb));
                     if (storeId != null) {
                         conditions.add(cb.equal(root.join(StoreItem_.store).get(Store_.id), storeId));
                     }

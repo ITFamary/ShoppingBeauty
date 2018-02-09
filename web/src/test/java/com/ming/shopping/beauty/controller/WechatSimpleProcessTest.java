@@ -2,12 +2,20 @@ package com.ming.shopping.beauty.controller;
 
 import com.jayway.jsonpath.JsonPath;
 import com.ming.shopping.beauty.client.controller.ClientItemControllerTest;
+import com.ming.shopping.beauty.service.config.ServiceConfig;
+import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.service.StagingService;
+import me.jiangcai.lib.test.matcher.SimpleMatcher;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 
+import java.util.Collection;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 /**
@@ -23,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * @author CJ
  */
+//@ActiveProfiles(ServiceConfig.PROFILE_MYSQL)
 public class WechatSimpleProcessTest extends TogetherTest {
 
     @Autowired
@@ -32,6 +41,10 @@ public class WechatSimpleProcessTest extends TogetherTest {
     public void flow() throws Exception {
         // 1
         Object[] generatingData = stagingService.generateStagingData();
+        Item[] items = (Item[]) generatingData[3];
+        Item okItem = items[0];
+        Item[] otherItems = new Item[items.length - 1];
+        System.arraycopy(items, 1, otherItems, 0, otherItems.length);
 
         Login user = mockLogin();
         updateAllRunWith(user);
@@ -40,6 +53,17 @@ public class WechatSimpleProcessTest extends TogetherTest {
                         .accept(MediaType.APPLICATION_JSON)
         )
                 .andExpect(ClientItemControllerTest.isItemsResponse())
+                // item 是一个Collection 必须拥有第一个item 必须不可以拥有其他item
+                .andExpect(jsonPath("$.list[*].title").value(new SimpleMatcher<Collection<String>>(
+                        names -> {
+                            assertThat(names)
+                                    .as("必须包含期待的")
+                                    .contains(okItem.getName())
+                                    .as("必须不包含不期待的")
+                                    .doesNotContain(Stream.of(otherItems).map(Item::getName).toArray(String[]::new));
+                            return true;
+                        }
+                )))
         // 然后我需要确认此处生成的数据并不包含
         ;
         // 第三

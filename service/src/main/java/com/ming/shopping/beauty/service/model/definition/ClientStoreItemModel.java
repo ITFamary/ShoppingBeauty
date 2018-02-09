@@ -16,6 +16,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
+ * 规格上跟API中的ItemProperties保持一致。
+ *
  * @author lxf
  */
 @Getter
@@ -41,14 +43,15 @@ public class ClientStoreItemModel implements DefinitionModel<StoreItem> {
                         .build()
                 , FieldBuilder.asName(StoreItem.class, "address")
                         .addSelect(root -> root.join(StoreItem_.store, JoinType.LEFT).get(Store_.address))
-                        .addFormat((data, type) -> ((Address)data).toString())
+                        .addFormat((data, type) -> ((Address) data).toString())
                         .build()
                 , FieldBuilder.asName(StoreItem.class, "type")
                         .addSelect(storeItemRoot -> storeItemRoot.join(StoreItem_.item).get(Item_.itemType))
                         .build()
                 //TODO 距离还有问题
-                        /*, FieldBuilder.asName(StoreItem.class, "distance")
-                                .build()*/
+                , FieldBuilder.asName(StoreItem.class, "distance")
+                        .addBiSelect((storeItemRoot, criteriaBuilder) -> criteriaBuilder.literal(0))
+                        .build()
                 , FieldBuilder.asName(StoreItem.class, "vipPrice")
                         .addSelect(root -> root.get(StoreItem_.salesPrice))
                         .build()

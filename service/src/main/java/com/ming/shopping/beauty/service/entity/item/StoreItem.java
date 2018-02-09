@@ -1,6 +1,7 @@
 package com.ming.shopping.beauty.service.entity.item;
 
 import com.ming.shopping.beauty.service.entity.login.Store;
+import com.ming.shopping.beauty.service.entity.login.Store_;
 import com.ming.shopping.beauty.service.utils.Constant;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,6 +13,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.From;
+import javax.persistence.criteria.Predicate;
 import java.math.BigDecimal;
 import java.util.Objects;
 
@@ -69,5 +73,17 @@ public class StoreItem implements CrudFriendly<Long> {
 
     public void fromRequest(StoreItem storeItem) {
         setSalesPrice((storeItem.salesPrice));
+    }
+
+    /**
+     * @return 一个谓语：确定这个门店项目是否可以发售
+     */
+    public static Predicate saleable(From<?, StoreItem> from, CriteriaBuilder cb) {
+        return cb.and(
+                cb.isFalse(from.get(StoreItem_.deleted))
+                , cb.isTrue(from.get(StoreItem_.enable))
+                , cb.isTrue(from.get(StoreItem_.store).get(Store_.enabled))
+                , Item.saleable(from.join(StoreItem_.item), cb)
+        );
     }
 }
