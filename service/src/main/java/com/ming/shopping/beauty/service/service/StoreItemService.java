@@ -1,5 +1,6 @@
 package com.ming.shopping.beauty.service.service;
 
+import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import com.ming.shopping.beauty.service.model.request.ItemSearcherBody;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,4 +81,10 @@ public interface StoreItemService {
      */
     @Transactional
     void updateStoreItem(long id, BigDecimal salesPrice);
+
+    /**
+     * @return 按项目查找门店项目
+     */
+    @Transactional(readOnly = true)
+    List<StoreItem> findByItem(Item item);
 }

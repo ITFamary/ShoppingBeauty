@@ -101,7 +101,7 @@ public abstract class CoreServiceTest extends SpringWebTest {
     protected static final String RESULT_CODE_PATH = "$.resultCode";
     protected static final String RESULT_MESSAGE_PATH = "$.resultMsg";
     protected static final String RESULT_DATA_PATH = "$.data";
-    protected final ObjectMapper objectMapper = new ObjectMapper();
+    public static final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * 可以覆盖该方法设定每次测试都将以该身份进行

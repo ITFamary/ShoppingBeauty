@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.ming.shopping.beauty.client.ClientConfigTest;
 import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
-import com.ming.shopping.beauty.service.entity.login.*;
+import com.ming.shopping.beauty.service.entity.login.Merchant;
+import com.ming.shopping.beauty.service.entity.login.Represent;
+import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.support.OrderStatus;
 import com.ming.shopping.beauty.service.model.HttpStatusCustom;
@@ -15,8 +17,11 @@ import com.ming.shopping.beauty.service.model.request.StoreItemNum;
 import org.junit.Test;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,16 +32,31 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author lxf
  */
 public class ClientMainOrderControllerTest extends ClientConfigTest {
+    public static ResultActions makeOrderFor(MockMvc mockMvc, MockHttpSession representSession
+            , Map<StoreItem, Integer> randomMap, long orderId) throws Exception {
+        NewOrderBody orderBody = new NewOrderBody();
+        orderBody.setOrderId(orderId);
+        StoreItemNum[] items = randomMap.keySet().stream().map(p -> new StoreItemNum(p.getId()
+                , randomMap.get(p))).toArray(StoreItemNum[]::new);
+        orderBody.setItems(items);
+
+        MockHttpServletRequestBuilder post = MockMvcRequestBuilders.post("/order");
+        if (representSession != null)
+            post = post.session(representSession);
+        return mockMvc.perform(post
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(orderBody)));
+    }
+
     @Test
     public void go() throws Exception {
         //先看看没数据的订单长啥样
         OrderSearcherBody searcherBody = new OrderSearcherBody();
         String response = mockMvc.perform(get("/orders")
-            .session(activeUserSession)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(searcherBody)))
-            .andDo(print())
-            .andExpect(status().isOk())
+                .session(activeUserSession)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(searcherBody)))
+                .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         int total = objectMapper.readTree(response).get("pagination").get("total").asInt();
 
@@ -63,25 +83,13 @@ public class ClientMainOrderControllerTest extends ClientConfigTest {
                     .andExpect(status().isOk())
                     .andReturn().getResponse().getContentAsString();
             long orderId = objectMapper.readTree(response).get("orderId").asLong();
-            NewOrderBody orderBody = new NewOrderBody();
-            orderBody.setOrderId(orderId);
-            Map<StoreItem, Integer> randomMap = randomOrderItemSet(mockStore.getId());
-            StoreItemNum[] items = randomMap.keySet().stream().map(p->new StoreItemNum(p.getId(),randomMap.get(p))).toArray(StoreItemNum[]::new);
-            orderBody.setItems(items);
-
-            mockMvc.perform(post("/order")
-                    .session(representSession)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsBytes(orderBody)))
+            makeOrderFor(mockMvc, representSession, randomOrderItemSet(mockStore.getId()), orderId)
                     .andExpect(status().isOk());
             MainOrder mainOrder = mainOrderService.findById(orderId);
             assertThat(mainOrder.getOrderStatus().toString()).isEqualTo(OrderStatus.forPay.toString());
             assertThat(mainOrder.getOrderItemList()).isNotEmpty();
             //再次下单会提示错误
-            mockMvc.perform(post("/order")
-                    .session(representSession)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsBytes(orderBody)))
+            makeOrderFor(mockMvc, representSession, randomOrderItemSet(mockStore.getId()), orderId)
                     .andExpect(status().is(HttpStatusCustom.SC_DATA_NOT_VALIDATE))
                     .andExpect(jsonPath(RESULT_CODE_PATH).value(ResultCodeEnum.ORDER_NOT_EMPTY.getCode()));
         }
@@ -99,12 +107,11 @@ public class ClientMainOrderControllerTest extends ClientConfigTest {
         assertThat(totalOrderNum).isEqualTo(total + randomOrderNum);
         //获取第一个订单编号
         JsonNode orderList = objectMapper.readTree(response).get("list");
-        for(JsonNode order:orderList){
+        for (JsonNode order : orderList) {
             long orderId = order.get("orderId").asLong();
             //根据这个订单编号查
             mockMvc.perform(get("/orders/" + orderId)
                     .session(activeUserSession))
-                    .andDo(print())
                     .andExpect(jsonPath("$.orderId").value(orderId));
         }
     }

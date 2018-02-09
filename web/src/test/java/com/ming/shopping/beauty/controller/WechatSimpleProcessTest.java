@@ -1,13 +1,17 @@
 package com.ming.shopping.beauty.controller;
 
 import com.jayway.jsonpath.JsonPath;
+import com.ming.shopping.beauty.client.controller.CapitalControllerTest;
 import com.ming.shopping.beauty.client.controller.ClientItemControllerTest;
+import com.ming.shopping.beauty.client.controller.ClientMainOrderControllerTest;
 import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.item.RechargeCard;
+import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Represent;
 import com.ming.shopping.beauty.service.model.request.DepositBody;
 import com.ming.shopping.beauty.service.service.StagingService;
+import com.ming.shopping.beauty.service.service.StoreItemService;
 import me.jiangcai.lib.test.matcher.SimpleMatcher;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +19,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static com.ming.shopping.beauty.client.controller.CapitalControllerTest.DEPOSIT;
@@ -40,6 +46,9 @@ public class WechatSimpleProcessTest extends TogetherTest {
 
     @Autowired
     private StagingService stagingService;
+
+    @Autowired
+    private StoreItemService storeItemService;
 
     @Test
     public void flow() throws Exception {
@@ -98,6 +107,40 @@ public class WechatSimpleProcessTest extends TogetherTest {
                         }
                 )))
         ;
+        // 第五 开始下单
+        // 我们得获取具体的StoreItem，基于维持测试代码稳定性的需求
+        Map<StoreItem, Integer> toBuy = new HashMap<>();
+        toBuy.put(fromItem(okItem), 1);
+        ClientMainOrderControllerTest.makeOrderFor(mockMvc, null, toBuy, orderId.longValue())
+                .andExpect(status().isOk());
+
+        // 第六 完成支付，确保完成支付，要是没钱那么就给他钱
+        updateAllRunWith(user);
+        CapitalControllerTest.payOrder(mockMvc, null, orderId.longValue(), true, () -> {
+            recharge();
+            return null;
+        })
+                .andExpect(status().is2xxSuccessful());
+
+        // 第七
+
+        updateAllRunWith(represent.getLogin());
+        mockMvc.perform(
+                get("/orders").param("orderType", "STORE")
+                        .accept(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(jsonPath("$.list[0].orderStatusCode").value(2));
+
+        updateAllRunWith(user);
+        mockMvc.perform(
+                get("/orders").param("orderType", "MEMBER")
+                        .accept(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(jsonPath("$.list[0].orderStatusCode").value(2));
+    }
+
+    private StoreItem fromItem(Item item) {
+        return storeItemService.findByItem(item).get(0);
     }
 
     private void recharge() throws Exception {

@@ -136,4 +136,9 @@ public class StoreItemServiceImpl implements StoreItemService {
             }
         }
     }
+
+    @Override
+    public List<StoreItem> findByItem(Item item) {
+        return storeItemRepository.findByItem(item);
+    }
 }

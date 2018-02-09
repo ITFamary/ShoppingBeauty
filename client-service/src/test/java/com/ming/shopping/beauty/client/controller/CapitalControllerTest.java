@@ -10,8 +10,13 @@ import org.mockito.internal.matchers.Contains;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.math.BigDecimal;
+import java.util.concurrent.Callable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -30,6 +35,31 @@ public class CapitalControllerTest extends ClientConfigTest {
     }
 
     /**
+     * @return 发起支付的结果
+     */
+    public static ResultActions payOrder(MockMvc mockMvc, MockHttpSession session, long orderId) throws Exception {
+        return payOrder(mockMvc, session, orderId, false, null);
+    }
+
+    /**
+     * @param force     确保人家可以完成支付；若钱不够就充值啦；哈哈
+     * @param recharger 负责充值的人
+     * @return 发起支付的结果
+     */
+    public static ResultActions payOrder(MockMvc mockMvc, MockHttpSession session, long orderId, boolean force
+            , Callable<?> recharger) throws Exception {
+        MockHttpServletRequestBuilder put = MockMvcRequestBuilders.put("/capital/payment/{orderId}", orderId);
+        if (session != null)
+            put = put.session(session);
+        ResultActions actions = mockMvc.perform(put.accept(MediaType.APPLICATION_JSON));
+        if (actions.andReturn().getResponse().getStatus() == 402 && force) {
+            recharger.call();
+            return payOrder(mockMvc, session, orderId, true, recharger);
+        }
+        return actions;
+    }
+
+    /**
      * 对未激活用户充值，期望：激活用户，余额增加，日志增加
      * 对激活用户充值，期望：余额增加，日志增加
      * 1、充值卡充值
@@ -45,43 +75,43 @@ public class CapitalControllerTest extends ClientConfigTest {
         //1、格式错误
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
-                .header(HttpHeaders.ACCEPT,MediaType.APPLICATION_FORM_URLENCODED_VALUE))
+                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_FORM_URLENCODED_VALUE))
                 .andExpect(status().isFound())
-                .andExpect(header().string("Location", new Contains("/error?status="+HttpStatusCustom.SC_DATA_NOT_VALIDATE
+                .andExpect(header().string("Location", new Contains("/error?status=" + HttpStatusCustom.SC_DATA_NOT_VALIDATE
                         + "&message=")));
         postData.setDepositSum(BigDecimal.ONE);
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
-                .header(HttpHeaders.ACCEPT,MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                .param("depositSum",postData.getDepositSum().toString()))
+                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .param("depositSum", postData.getDepositSum().toString()))
                 .andExpect(status().isFound())
-                .andExpect(header().string("Location", new Contains("/error?status="+HttpStatusCustom.SC_DATA_NOT_VALIDATE
+                .andExpect(header().string("Location", new Contains("/error?status=" + HttpStatusCustom.SC_DATA_NOT_VALIDATE
                         + "&message=")));
         postData.setDepositSum(null);
         postData.setCdKey("123");
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
-                .header(HttpHeaders.ACCEPT,MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                .param("cdKey",postData.getCdKey()))
+                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .param("cdKey", postData.getCdKey()))
                 .andExpect(status().isFound())
-                .andExpect(header().string("Location", new Contains("/error?status="+HttpStatusCustom.SC_DATA_NOT_VALIDATE
+                .andExpect(header().string("Location", new Contains("/error?status=" + HttpStatusCustom.SC_DATA_NOT_VALIDATE
                         + "&message=")));
         //2、错误的充值卡
         postData.setCdKey(String.format("%20d", 0));
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
-                .header(HttpHeaders.ACCEPT,MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                .param("cdKey",postData.getCdKey()))
+                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .param("cdKey", postData.getCdKey()))
                 .andExpect(status().isFound())
-                .andExpect(header().string("Location", new Contains("/error?status="+HttpStatusCustom.SC_DATA_NOT_VALIDATE
+                .andExpect(header().string("Location", new Contains("/error?status=" + HttpStatusCustom.SC_DATA_NOT_VALIDATE
                         + "&message=")));
         //3、正确的充值卡
         RechargeCard rechargeCard = mockRechargeCard(null, null);
         postData.setCdKey(rechargeCard.getCode());
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
-                .header(HttpHeaders.ACCEPT,MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                .param("cdKey",postData.getCdKey()))
+                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .param("cdKey", postData.getCdKey()))
                 .andExpect(status().isFound());
         mockLogin = loginService.findOne(mockLogin.getId());
         assertThat(mockLogin.getUser().isActive()).isTrue();
@@ -89,10 +119,10 @@ public class CapitalControllerTest extends ClientConfigTest {
         //4、已被使用的充值卡
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
-                .header(HttpHeaders.ACCEPT,MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                .param("cdKey",postData.getCdKey()))
+                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .param("cdKey", postData.getCdKey()))
                 .andExpect(status().isFound())
-                .andExpect(header().string("Location", new Contains("/error?status="+HttpStatusCustom.SC_DATA_NOT_VALIDATE
+                .andExpect(header().string("Location", new Contains("/error?status=" + HttpStatusCustom.SC_DATA_NOT_VALIDATE
                         + "&message=")));
         //5、查询流水
         mockMvc.perform(get(FLOW)
@@ -101,5 +131,4 @@ public class CapitalControllerTest extends ClientConfigTest {
                 .andExpect(jsonPath("$.pagination.total").value(1))
                 .andExpect(jsonPath("$.list[0].sum").value(rechargeCard.getAmount().doubleValue()));
     }
-
 }

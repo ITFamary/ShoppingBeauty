@@ -28,11 +28,17 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -114,7 +120,7 @@ public class CapitalController {
         }
         if (postData.getDepositSum() != null) {
             Double minAmount = systemStringService.getCustomSystemString("shopping.service.recharge.min.amount", null, true, Double.class
-                    ,env.acceptsProfiles("staging") ? 0D : 5000D );
+                    , env.acceptsProfiles("staging") ? 0D : 5000D);
             if (postData.getDepositSum().compareTo(BigDecimal.valueOf(minAmount)) == -1) {
                 throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.RECHARGE_MONEY_NOT_ENOUGH.getCode()
                         , MessageFormat.format(ResultCodeEnum.RECHARGE_MONEY_NOT_ENOUGH.getMessage(), minAmount.toString()), null));
@@ -122,9 +128,9 @@ public class CapitalController {
             //先新增一个支付订单
             RechargeOrder rechargeOrder = rechargeOrderService.newOrder(login.getUser(), postData.getDepositSum());
             //走支付流程
-            Map<String,Object> additionalParam = new HashMap<>(1);
-            additionalParam.put("redirectUrl",postData.getRedirectUrl());
-            additionalParam.put("openId",login.getWechatUser().getOpenId());
+            Map<String, Object> additionalParam = new HashMap<>(1);
+            additionalParam.put("redirectUrl", postData.getRedirectUrl());
+            additionalParam.put("openId", login.getWechatUser().getOpenId());
             return paymentService.startPay(request, rechargeOrder, weixinPaymentForm, additionalParam);
         } else if (!StringUtils.isEmpty(postData.getCdKey())) {
             //使用充值卡
@@ -139,35 +145,28 @@ public class CapitalController {
 
     /**
      * 支付订单
-     * @param orderId  支付的订单id
-     * @param amount  订单金额
+     *
+     * @param orderId 支付的订单id
      */
     @PutMapping("/payment/{orderId}")
-    @ResponseBody
-    public BigDecimal payOrder(@PathVariable(value = "orderId" ,required = true) Long orderId,
-                               @RequestBody BigDecimal amount, HttpServletResponse response){
+    public ResponseEntity payOrder(@PathVariable(value = "orderId") long orderId) {
         //获取待支付的这个订单
         MainOrder mainOrder = mainOrderService.findById(orderId);
+        BigDecimal amount = mainOrder.getFinalAmount();
         //查看用户的余额
         BigDecimal balance = loginService.findBalance(mainOrder.getPayer().getId());
         ///判断余额是否足够支付订单不够返回差额
-        if(balance.compareTo(amount) < 0){
+        if (balance.compareTo(amount) < 0) {
             //差值
-            response.setStatus(HttpStatus.PAYMENT_REQUIRED.value());
-            BigDecimal subtract = amount.subtract(balance);
-            Integer provision = systemStringService.getCustomSystemString("shopping.service.recharge.min.amount", null, true, Integer.class, 5000);
-            BigDecimal bProvision = new BigDecimal(provision);
-            if(subtract.compareTo(bProvision)<0){
-                //需要充值的金额小于系统默认的设定值,则返回设定值
-                return bProvision;
-            }
-            return subtract;
-        }else {
+            return ResponseEntity
+                    .status(402)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(amount.subtract(balance));
+        } else {
             //支付成功
             mainOrderService.payOrder(orderId);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).build();
         }
-        response.setStatus(HttpStatus.ACCEPTED.value());
-        return null;
     }
 
     private List<FieldDefinition<CapitalFlow>> listFields() {
