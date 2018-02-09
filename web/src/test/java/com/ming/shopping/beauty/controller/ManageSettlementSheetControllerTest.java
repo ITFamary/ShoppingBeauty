@@ -14,6 +14,7 @@ import com.ming.shopping.beauty.service.model.request.SheetReviewBody;
 import com.ming.shopping.beauty.service.repository.MainOrderRepository;
 import com.ming.shopping.beauty.service.repository.RechargeCardRepository;
 import com.ming.shopping.beauty.service.repository.settlementSheet.SettlementSheetRepository;
+import com.ming.shopping.beauty.service.service.LoginService;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -31,6 +32,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class ManageSettlementSheetControllerTest extends TogetherTest {
 
+    @Autowired
+    private LoginService loginService;
     @Autowired
     private MainOrderRepository mainOrderRepository;
     @Autowired
@@ -101,6 +104,10 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
+
+        System.out.println(balanceString + "==========================================================================");
+        Thread.sleep(500);
+        //loginService.findBalance(login.getUser().getId())
         //充值卡是5000 余额应该是5000
         assertThat(new BigDecimal(balanceString)).isEqualTo(new BigDecimal("5000"));
 
