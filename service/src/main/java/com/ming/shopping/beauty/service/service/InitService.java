@@ -60,7 +60,7 @@ public class InitService implements VersionUpgrade<Version> {
     /**
      * 定义一些超级管理员
      */
-    private void initSuperManage() throws IOException {
+    private void initSuperManage() {
         if (loginRepository.findByLoginName(cjMobile) == null) {
             Login login = new Login();
             login.setLoginName(cjMobile);
@@ -73,7 +73,9 @@ public class InitService implements VersionUpgrade<Version> {
             user.setLogin(login);
             user.setFamilyName("蒋");
             user.setGender(Gender.male);
-            userRepository.save(user);
+            user = userRepository.save(user);
+            login.setUser(user);
+            loginRepository.saveAndFlush(login);
         }
 
     }

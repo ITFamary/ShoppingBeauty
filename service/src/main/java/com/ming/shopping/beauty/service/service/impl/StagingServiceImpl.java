@@ -84,8 +84,9 @@ public class StagingServiceImpl implements StagingService {
         user.setLogin(login);
         user.setFamilyName(RandomStringUtils.randomAlphabetic(1));
         user.setGender(Gender.values()[new Random().nextInt(Gender.values().length)]);
-        userRepository.save(user);
-        return login;
+        user = userRepository.save(user);
+        login.setUser(user);
+        return loginRepository.save(login);
     }
 
 
