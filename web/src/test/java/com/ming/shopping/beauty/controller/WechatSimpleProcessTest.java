@@ -5,6 +5,7 @@ import com.ming.shopping.beauty.client.controller.ClientItemControllerTest;
 import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.item.RechargeCard;
 import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.entity.login.Represent;
 import com.ming.shopping.beauty.service.model.request.DepositBody;
 import com.ming.shopping.beauty.service.service.StagingService;
 import me.jiangcai.lib.test.matcher.SimpleMatcher;
@@ -26,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * <li>构建商户，门店，项目以及门店项目；还有门店代表 应该在main代码中，因为staging也需要自己完成这么一份数据</li>
  * <li>用户访问/items 可以获得门店项目；而不是项目，应该校验结果是否仅仅在项目中或者未被激活 还有格式检测</li>
  * <li>用户访问/users/vipCard 可以获得订单号；以及被扫码的地址</li>
- * <li>门店代表 可以根据自己的storeId 访问/items 获取他们自己的门店项目</li>
+ * <li>门店代表 可以根据自己的 storeId 访问/items 获取他们自己的门店项目</li>
  * <li>门店代表 可以通过post /order 完成下单</li>
  * <li>用户 可以通过 PUT /capital/payment/{orderId} 完成支付</li>
  * <li>门店代表 可以通过 get /orders 获得该用户已支付的信息</li>
@@ -44,6 +45,7 @@ public class WechatSimpleProcessTest extends TogetherTest {
     public void flow() throws Exception {
         // 1
         Object[] generatingData = stagingService.generateStagingData();
+        Represent represent = (Represent) generatingData[2];
         Item[] items = (Item[]) generatingData[3];
         Item okItem = items[0];
         Item[] otherItems = new Item[items.length - 1];
@@ -56,7 +58,6 @@ public class WechatSimpleProcessTest extends TogetherTest {
                         .accept(MediaType.APPLICATION_JSON)
         )
                 .andExpect(ClientItemControllerTest.resultMatcherForItems())
-//                .andExpect(jsonPath("$.list").value(ClientItemControllerTest.isItemsResponse()))
                 // item 是一个Collection 必须拥有第一个item 必须不可以拥有其他item
                 .andExpect(jsonPath("$.list[*].title").value(new SimpleMatcher<Collection<String>>(
                         names -> {
@@ -68,7 +69,6 @@ public class WechatSimpleProcessTest extends TogetherTest {
                             return true;
                         }
                 )))
-        // 然后我需要确认此处生成的数据并不包含
         ;
         // 第三
 //        先充值
@@ -81,6 +81,23 @@ public class WechatSimpleProcessTest extends TogetherTest {
                 .andExpect(jsonPath("$.qrCode").isString())
                 .andReturn().getResponse().getContentAsString(), "$.orderId");
         // 第四
+        updateAllRunWith(represent.getLogin());
+        mockMvc.perform(
+                get("/items")
+                        .param("storeId", represent.getStore().getId().toString())
+                        .accept(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(ClientItemControllerTest.resultMatcherForItems())
+                // item 是一个Collection 必须拥有第一个item 必须不可以拥有其他item
+                .andExpect(jsonPath("$.list[*].title").value(new SimpleMatcher<Collection<String>>(
+                        names -> {
+                            assertThat(names)
+                                    .as("只包含特定门店的")
+                                    .containsOnly(okItem.getName());
+                            return true;
+                        }
+                )))
+        ;
     }
 
     private void recharge() throws Exception {
