@@ -96,7 +96,7 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
 
         updateAllRunWith(merchant.getLogin());
         //看看他的余额
-        String balanceString = mockMvc.perform(get("/login/{id}/balance", login.getId()))
+        String balanceString = mockMvc.perform(get("/login/{id}/balance", login.getUser().getId()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
