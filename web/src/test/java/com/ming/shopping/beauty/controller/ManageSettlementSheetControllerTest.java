@@ -19,13 +19,10 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MvcResult;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -80,57 +77,39 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
-        List<RechargeCard> listCard = rechargeCardRepository.findAll();
-        RechargeCard rechargeCard = null;
-        for (RechargeCard r : listCard) {
-            if(!r.isUsed()){
-                rechargeCard = r;
-            }
-        }
-        if(rechargeCard == null){
-            throw new IllegalArgumentException("rechargeCard是null生成充值卡失败");
-        }
+        final RechargeCard rechargeCard = rechargeCardRepository.findAll().stream()
+                .filter(c -> !c.isUsed())
+                .findAny()
+                .orElseThrow(() -> new IllegalArgumentException("rechargeCard是null生成充值卡失败"));
         //充值卡充值
         //以充值人运行
-        updateAllRunWith(login);
+        BigDecimal balance = getCurrentBalance(merchant.getLogin(), login);
 
+        updateAllRunWith(login);
         DepositBody depositBody = new DepositBody();
         depositBody.setCdKey(rechargeCard.getCode());
         mockMvc.perform(post("/capital/deposit")
                 .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                 .param("cdKey", depositBody.getCdKey()))
-                .andDo(print())
                 .andExpect(status().isFound());
 
+        final BigDecimal currentBalance2 = getCurrentBalance(merchant.getLogin(), login);
+        assertThat(currentBalance2)
+                .as("充值成功 不给加钱；你丫找死么。")
+                .isGreaterThan(balance);
 
-        updateAllRunWith(merchant.getLogin());
-        //看看他的余额
-        String balanceString = mockMvc.perform(get("/login/{id}/balance", login.getUser().getId()))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
-
-
-        //充值卡是5000 余额应该是5000
-        assertThat(new BigDecimal(balanceString)).isEqualTo(new BigDecimal("5000"));
+//        updateAllRunWith(merchant.getLogin());
 
         //重新支付订单ok了
-        String contentAsString1 = mockMvc.perform(put("/capital/payment/{orderId}", mainOrder.getOrderId())
+        mockMvc.perform(put("/capital/payment/{orderId}", mainOrder.getOrderId())
                 .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().is2xxSuccessful())
-                .andReturn().getResponse().getContentAsString();
-
-        updateAllRunWith(merchant.getLogin());
+                .andExpect(status().is2xxSuccessful());
 
         //看看他的余额
-        String newBalanceString = mockMvc.perform(get("/login/{id}/balance", login.getId()))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
-
         //总金额5000, 支付金额 mainOrder.getFinalAmount()
-        assertThat(new BigDecimal(newBalanceString)).isEqualTo(new BigDecimal("5000").subtract(mainOrder.getFinalAmount()));
+        assertThat(getCurrentBalance(merchant.getLogin(), login))
+                .as("花钱就是牙签")
+                .isEqualTo(currentBalance2.subtract(mainOrder.getFinalAmount()));
 
         //作弊将这个订单完成时间换成一周之前.好生成结算单
         MainOrder newMainOrder = mainOrderRepository.findOne(mainOrder.getOrderId());
@@ -253,5 +232,12 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
 
         one = settlementSheetRepository.findOne(settlementSheet.getId());
         assertThat(one.getSettlementStatus()).isEqualTo(SettlementStatus.COMPLETE);
+    }
+
+    private BigDecimal getCurrentBalance(Login watcher, Login login) throws Exception {
+        updateAllRunWith(watcher);
+        return new BigDecimal(mockMvc.perform(get("/login/{id}/balance", login.getUser().getId()))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString());
     }
 }
