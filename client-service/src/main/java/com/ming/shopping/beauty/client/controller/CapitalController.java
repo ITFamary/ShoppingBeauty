@@ -14,6 +14,7 @@ import com.ming.shopping.beauty.service.service.LoginService;
 import com.ming.shopping.beauty.service.service.MainOrderService;
 import com.ming.shopping.beauty.service.service.RechargeCardService;
 import com.ming.shopping.beauty.service.service.RechargeOrderService;
+import com.ming.shopping.beauty.service.service.SystemService;
 import me.jiangcai.crud.row.FieldDefinition;
 import me.jiangcai.crud.row.RowCustom;
 import me.jiangcai.crud.row.RowDefinition;
@@ -45,7 +46,6 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
@@ -108,20 +108,26 @@ public class CapitalController {
         };
     }
 
-    @PostMapping(value = "/deposit", produces = "application/x-www-form-urlencoded;charset=UTF-8")
+    @Autowired
+    private SystemService systemService;
+
+    @PostMapping(value = "/deposit", produces = "text/html")
     public ModelAndView deposit(@AuthenticationPrincipal Login login, @Valid DepositBody postData
-            , BindingResult bindingResult, HttpServletRequest request, HttpServletResponse response) throws SystemMaintainException {
+            , BindingResult bindingResult, HttpServletRequest request) throws SystemMaintainException {
         if (bindingResult.hasErrors()) {
             throw new ApiResultException(
                     //提示 XXX格式错误
                     ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
-                            , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), bindingResult.getAllErrors().get(0).getDefaultMessage())
+                            , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage()
+                                    , bindingResult.getAllErrors().get(0).getDefaultMessage())
                             , null));
         }
+
         if (postData.getDepositSum() != null) {
-            Double minAmount = systemStringService.getCustomSystemString("shopping.service.recharge.min.amount", null, true, Double.class
+            Double minAmount = systemStringService.getCustomSystemString("shopping.service.recharge.min.amount"
+                    , null, true, Double.class
                     , env.acceptsProfiles("staging") ? 0D : 5000D);
-            if (postData.getDepositSum().compareTo(BigDecimal.valueOf(minAmount)) == -1) {
+            if (postData.getDepositSum().compareTo(BigDecimal.valueOf(minAmount)) < 0) {
                 throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.RECHARGE_MONEY_NOT_ENOUGH.getCode()
                         , MessageFormat.format(ResultCodeEnum.RECHARGE_MONEY_NOT_ENOUGH.getMessage(), minAmount.toString()), null));
             }
@@ -135,11 +141,29 @@ public class CapitalController {
         } else if (!StringUtils.isEmpty(postData.getCdKey())) {
             //使用充值卡
             rechargeCardService.useCard(postData.getCdKey(), login.getId());
+            return toResult(postData);
         } else {
             throw new ApiResultException((ApiResult.withError(ResultCodeEnum.NO_MONEY_CARD)));
         }
+    }
+
+    private ModelAndView toResult(DepositBody postData) {
         ModelAndView model = new ModelAndView();
-        model.setViewName("redirect:" + postData.getRedirectUrl());
+        final String s = "paySuccess=true";
+        if (postData.getRedirectUrl() == null) {
+            model.setViewName("redirect:" + systemService.toMobileHomeUrl() + "?" + s);
+            return model;
+        }
+        final String redirectUrl = postData.getRedirectUrl();
+        if (StringUtils.isEmpty(s)) {
+            model.setViewName("redirect:" + redirectUrl);
+        } else {
+            if (redirectUrl.contains("?"))
+                model.setViewName("redirect:" + redirectUrl + "&" + s);
+            else
+                model.setViewName("redirect:" + redirectUrl + "?" + s);
+        }
+
         return model;
     }
 

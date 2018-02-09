@@ -5,6 +5,7 @@ import com.ming.shopping.beauty.service.entity.item.RechargeCard;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import com.ming.shopping.beauty.service.model.request.DepositBody;
+import org.assertj.core.data.Offset;
 import org.junit.Test;
 import org.mockito.internal.matchers.Contains;
 import org.springframework.http.HttpHeaders;
@@ -75,14 +76,14 @@ public class CapitalControllerTest extends ClientConfigTest {
         //1、格式错误
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
-                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_FORM_URLENCODED_VALUE))
+                .header(HttpHeaders.ACCEPT, MediaType.TEXT_HTML))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", new Contains("/error?status=" + HttpStatusCustom.SC_DATA_NOT_VALIDATE
                         + "&message=")));
         postData.setDepositSum(BigDecimal.ONE);
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
-                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .header(HttpHeaders.ACCEPT, MediaType.TEXT_HTML)
                 .param("depositSum", postData.getDepositSum().toString()))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", new Contains("/error?status=" + HttpStatusCustom.SC_DATA_NOT_VALIDATE
@@ -91,7 +92,7 @@ public class CapitalControllerTest extends ClientConfigTest {
         postData.setCdKey("123");
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
-                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .header(HttpHeaders.ACCEPT, MediaType.TEXT_HTML)
                 .param("cdKey", postData.getCdKey()))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", new Contains("/error?status=" + HttpStatusCustom.SC_DATA_NOT_VALIDATE
@@ -100,26 +101,29 @@ public class CapitalControllerTest extends ClientConfigTest {
         postData.setCdKey(String.format("%20d", 0));
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
-                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .header(HttpHeaders.ACCEPT, MediaType.TEXT_HTML)
                 .param("cdKey", postData.getCdKey()))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", new Contains("/error?status=" + HttpStatusCustom.SC_DATA_NOT_VALIDATE
                         + "&message=")));
         //3、正确的充值卡
+        BigDecimal current = loginService.findBalance(mockLogin.getUser().getId());
         RechargeCard rechargeCard = mockRechargeCard(null, null);
         postData.setCdKey(rechargeCard.getCode());
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
-                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .header(HttpHeaders.ACCEPT, MediaType.TEXT_HTML)
                 .param("cdKey", postData.getCdKey()))
                 .andExpect(status().isFound());
         mockLogin = loginService.findOne(mockLogin.getId());
         assertThat(mockLogin.getUser().isActive()).isTrue();
-        assertThat(mockLogin.getUser().getCurrentAmount().compareTo(rechargeCard.getAmount())).isEqualTo(0);
+        assertThat(loginService.findBalance(mockLogin.getUser().getId()).subtract(current))
+                .as("充入准确的金额")
+                .isCloseTo(rechargeCard.getAmount(), Offset.offset(new BigDecimal("0.000001")));
         //4、已被使用的充值卡
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
-                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .header(HttpHeaders.ACCEPT, MediaType.TEXT_HTML)
                 .param("cdKey", postData.getCdKey()))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", new Contains("/error?status=" + HttpStatusCustom.SC_DATA_NOT_VALIDATE

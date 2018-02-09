@@ -1,8 +1,6 @@
 package com.ming.shopping.beauty.service.service;
 
 import com.ming.shopping.beauty.service.entity.item.RechargeCard;
-import com.ming.shopping.beauty.service.entity.login.Login;
-import com.ming.shopping.beauty.service.entity.login.User;
 
 import java.util.List;
 

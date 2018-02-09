@@ -91,6 +91,7 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
         mockMvc.perform(post("/capital/deposit")
                 .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                 .param("cdKey", depositBody.getCdKey()))
+                .andDo(print())
                 .andExpect(status().isFound());
 
         final BigDecimal currentBalance2 = getCurrentBalance(merchant.getLogin(), login);
@@ -121,7 +122,6 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
         mockMvc.perform(put("/capital/payment/{orderId}", mainOrderTwo.getOrderId())
                 .content(objectMapper.writeValueAsString(mainOrderTwo.getFinalAmount()))
                 .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isAccepted());
         
         MainOrder newMainOrderTwo = mainOrderRepository.findOne(mainOrderTwo.getOrderId());
@@ -130,7 +130,6 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
         
         //生成结算单
         mockMvc.perform(post("/settlementSheet/{merchantId}",merchant.getId()))
-                .andDo(print())
                 .andExpect(status().isCreated()).andReturn().getResponse();
 
         //应该只有一个结算单
@@ -141,7 +140,6 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
         updateAllRunWith(root);
         //查看结算单列表
         String contentAsString2 = mockMvc.perform(get("/settlementSheet"))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
@@ -160,7 +158,6 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
         mockMvc.perform(put("/settlementSheet/{id}/statusMerchant",settlementSheet.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(srb)))
-                .andDo(print())
                 .andExpect(status().isNoContent());
 
         SettlementSheet one = settlementSheetRepository.findOne(settlementSheet.getId());
@@ -175,7 +172,6 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
         mockMvc.perform(put("/settlementSheet/{id}/statusManage",settlementSheet.getId())
                 .content(objectMapper.writeValueAsString(srb))
                 .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isNoContent());
 
         one = settlementSheetRepository.findOne(settlementSheet.getId());
@@ -190,7 +186,6 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
         mockMvc.perform(put("/settlementSheet/{id}/statusMerchant",settlementSheet.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(srb)))
-                .andDo(print())
                 .andExpect(status().isNoContent());
 
         //同意申请  "同意申请"
@@ -200,7 +195,6 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
         mockMvc.perform(put("/settlementSheet/{id}/statusManage",settlementSheet.getId())
                 .content(objectMapper.writeValueAsString(srb))
                 .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isNoContent());
 
         one = settlementSheetRepository.findOne(settlementSheet.getId());
@@ -214,7 +208,6 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
         mockMvc.perform(put("/settlementSheet/{id}/statusManage",settlementSheet.getId())
                 .content(objectMapper.writeValueAsString(srb))
                 .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isNoContent());
 
         one = settlementSheetRepository.findOne(settlementSheet.getId());
@@ -227,7 +220,6 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
         mockMvc.perform(put("/settlementSheet/{id}/statusMerchant",settlementSheet.getId())
                 .content(objectMapper.writeValueAsString(srb))
                 .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isNoContent());
 
         one = settlementSheetRepository.findOne(settlementSheet.getId());
