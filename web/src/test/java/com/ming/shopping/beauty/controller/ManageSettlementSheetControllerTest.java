@@ -96,6 +96,7 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
                 .andDo(print())
                 .andExpect(status().isFound());
 
+        Thread.sleep(500);
 
         updateAllRunWith(merchant.getLogin());
         //看看他的余额
@@ -105,8 +106,7 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
                 .andReturn().getResponse().getContentAsString();
 
 
-        System.out.println(balanceString + "==========================================================================");
-        Thread.sleep(500);
+        System.out.println(balanceString + "=========================================================================="+ loginService.findBalance(login.getUser().getId()));
         //loginService.findBalance(login.getUser().getId())
         //充值卡是5000 余额应该是5000
         assertThat(new BigDecimal(balanceString)).isEqualTo(new BigDecimal("5000"));
