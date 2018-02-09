@@ -59,6 +59,7 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
         MainOrder mainOrder = mockMainOrder(login.getUser(), mockRepresent);
 
         //支付订单
+//        /payment/{orderId}
 
         //余额是0的情况下
         mockMvc.perform(put("/capital/payment/{orderId}", mainOrder.getOrderId())
@@ -66,15 +67,6 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().is4xxClientError());
-
-        //随便写了个充值金额,这里大于设定的默认值 5000
-        String contentAsString = mockMvc.perform(put("/capital/payment/{orderId}", mainOrder.getOrderId())
-                .content(objectMapper.writeValueAsString(BigDecimal.valueOf(10000)))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().is4xxClientError())
-                .andReturn().getResponse().getContentAsString();
-        assertThat(new BigDecimal(contentAsString)).isEqualTo(new BigDecimal("10000"));
 
         //root运行
         Login root = mockRoot();
@@ -95,12 +87,12 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
 
         DepositBody depositBody = new DepositBody();
         depositBody.setCdKey(rechargeCard.getCode());
-
         mockMvc.perform(post("/capital/deposit")
                 .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                 .param("cdKey", depositBody.getCdKey()))
                 .andDo(print())
                 .andExpect(status().isFound());
+
 
         updateAllRunWith(merchant.getLogin());
         //看看他的余额
@@ -109,39 +101,15 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        //充值卡是500 余额应该是500
-        assertThat(new BigDecimal(balanceString)).isEqualTo(new BigDecimal("500"));
+        //充值卡是5000 余额应该是5000
+        assertThat(new BigDecimal(balanceString)).isEqualTo(new BigDecimal("5000"));
 
-        //重新支付订单
+        //重新支付订单ok了
         String contentAsString1 = mockMvc.perform(put("/capital/payment/{orderId}", mainOrder.getOrderId())
-                .content(objectMapper.writeValueAsString(BigDecimal.valueOf(10000)))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().is4xxClientError())
+                .andExpect(status().is2xxSuccessful())
                 .andReturn().getResponse().getContentAsString();
-        //余额500 支付10000 应该差9500
-        assertThat(new BigDecimal(contentAsString1)).isEqualTo(new BigDecimal("9500"));
-
-        //手动给他充10000
-        updateAllRunWith(root);
-
-        Map<String, Object> postData = new HashMap<>();
-        postData.put("mobile",login.getLoginName());
-        BigDecimal b10000 = new BigDecimal("10000.00");
-        postData.put("amount",b10000);
-        mockMvc.perform(post("/manage/manualRecharge")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(postData)))
-                .andDo(print())
-                .andExpect(status().isOk());
-
-        updateAllRunWith(login);
-        //再支付订单就ok了
-        mockMvc.perform(put("/capital/payment/{orderId}", mainOrder.getOrderId())
-                .content(objectMapper.writeValueAsString(mainOrder.getFinalAmount()))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isAccepted());
 
         updateAllRunWith(merchant.getLogin());
 
@@ -151,8 +119,8 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        //总金额10500, 支付金额 mainOrder.getFinalAmount()
-        assertThat(new BigDecimal(newBalanceString)).isEqualTo(new BigDecimal("10500").subtract(mainOrder.getFinalAmount()));
+        //总金额5000, 支付金额 mainOrder.getFinalAmount()
+        assertThat(new BigDecimal(newBalanceString)).isEqualTo(new BigDecimal("5000").subtract(mainOrder.getFinalAmount()));
 
         //作弊将这个订单完成时间换成一周之前.好生成结算单
         MainOrder newMainOrder = mainOrderRepository.findOne(mainOrder.getOrderId());
