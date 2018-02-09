@@ -35,7 +35,7 @@ public class ClientMainOrderControllerTest extends ClientConfigTest {
             .session(activeUserSession)
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(searcherBody)))
-//            .andDo(print())
+            .andDo(print())
             .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         int total = objectMapper.readTree(response).get("pagination").get("total").asInt();
@@ -74,7 +74,7 @@ public class ClientMainOrderControllerTest extends ClientConfigTest {
                     .content(objectMapper.writeValueAsBytes(orderBody)))
                     .andExpect(status().isOk());
             MainOrder mainOrder = mainOrderService.findById(orderId);
-            assertThat(mainOrder.getOrderStatus()).isEqualTo(OrderStatus.forPay);
+            assertThat(mainOrder.getOrderStatus().toString()).isEqualTo(OrderStatus.forPay.toString());
             assertThat(mainOrder.getOrderItemList()).isNotEmpty();
             //再次下单会提示错误
             mockMvc.perform(post("/order")
@@ -91,7 +91,7 @@ public class ClientMainOrderControllerTest extends ClientConfigTest {
                 .session(activeUserSession)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(searcherBody)))
-//                .andDo(print())
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         int totalOrderNum = objectMapper.readTree(response).get("pagination").get("total").asInt();
@@ -103,7 +103,7 @@ public class ClientMainOrderControllerTest extends ClientConfigTest {
             //根据这个订单编号查
             mockMvc.perform(get("/orders/" + orderId)
                     .session(activeUserSession))
-//                    .andDo(print())
+                    .andDo(print())
                     .andExpect(jsonPath("$.orderId").value(orderId));
         }
     }
