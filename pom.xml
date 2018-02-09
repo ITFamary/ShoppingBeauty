@@ -32,7 +32,7 @@
         <httpclient.version>4.5.2</httpclient.version>
         <fastjson.version>1.2.8</fastjson.version>
         <vc.version>1.4.1</vc.version>
-        <jiangcai.notice.version>3.1</jiangcai.notice.version>
+        <jiangcai.notice.version>3.2</jiangcai.notice.version>
         <wx.version>2.2.0-SNAPSHOT</wx.version>
     </properties>
 

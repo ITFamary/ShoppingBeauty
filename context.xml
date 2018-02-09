@@ -35,10 +35,12 @@
     <!--创蓝？ 可以通过com.huotu.notice.supplier 调整为阿里云-->
     <Parameter name="com.huotu.sms.cl.account" value="N8310514"/>
     <Parameter name="com.huotu.sms.cl.password" value="Htlm888888"/>
-    <!--<Parameter name="com.huotu.notice.supplier" value="me.jiangcai.lib.notice.ZjyNoticeSupplier"/>-->
+    <Parameter name="com.huotu.notice.supplier" value="me.jiangcai.lib.notice.ZjyNoticeSupplier"/>
     <!--<Parameter name="com.aliyun.ram.accessKeyId" value="LTAI3YcKgcFkwvfZ"/>-->
     <!--<Parameter name="com.aliyun.ram.accessKeySecret" value="T6dJBnXELAWPNs8eto8pAtgxmJwqqP"/>-->
-    <!--<Parameter name="me.jiangcai.zjy.username" value="lmjyzm"/>-->
-    <!--<Parameter name="me.jiangcai.zjy.password" value="lmjyzm4809"/>-->
+    <Parameter name="me.jiangcai.zjy.username" value="meiyueyzm"/>
+    <Parameter name="me.jiangcai.zjy.password" value="meiyue6629"/>
+    <Parameter name="me.jiangcai.zyj.cid" value="445"/>
+    <Parameter name="me.jiangcai.zyj.key" value="d7f3cb7dcd0e4c9ab58075619eaa2689"/>
 
 </Context>
