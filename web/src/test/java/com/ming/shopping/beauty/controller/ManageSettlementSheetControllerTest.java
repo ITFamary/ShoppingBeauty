@@ -89,7 +89,7 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
         DepositBody depositBody = new DepositBody();
         depositBody.setCdKey(rechargeCard.getCode());
         mockMvc.perform(post("/capital/deposit")
-                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .header(HttpHeaders.ACCEPT, MediaType.TEXT_HTML)
                 .param("cdKey", depositBody.getCdKey()))
                 .andDo(print())
                 .andExpect(status().isFound());

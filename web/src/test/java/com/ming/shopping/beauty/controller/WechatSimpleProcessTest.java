@@ -1,31 +1,28 @@
 package com.ming.shopping.beauty.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jayway.jsonpath.JsonPath;
 import com.ming.shopping.beauty.client.controller.CapitalControllerTest;
 import com.ming.shopping.beauty.client.controller.ClientItemControllerTest;
 import com.ming.shopping.beauty.client.controller.ClientMainOrderControllerTest;
-import com.ming.shopping.beauty.service.entity.item.RechargeCard;
 import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.item.RechargeCard;
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.entity.login.Represent;
 import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
-import com.ming.shopping.beauty.service.model.request.LoginOrRegisterBody;
-import com.ming.shopping.beauty.service.entity.login.Represent;
 import com.ming.shopping.beauty.service.model.request.DepositBody;
+import com.ming.shopping.beauty.service.model.request.LoginOrRegisterBody;
 import com.ming.shopping.beauty.service.service.StagingService;
 import com.ming.shopping.beauty.service.service.StoreItemService;
 import com.ming.shopping.beauty.service.service.SystemService;
-import me.jiangcai.wx.model.Gender;
 import me.jiangcai.lib.test.matcher.SimpleMatcher;
+import me.jiangcai.wx.model.Gender;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
-
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -34,9 +31,7 @@ import java.util.stream.Stream;
 
 import static com.ming.shopping.beauty.client.controller.CapitalControllerTest.DEPOSIT;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * <ol>
@@ -158,7 +153,7 @@ public class WechatSimpleProcessTest extends TogetherTest {
         DepositBody postData = new DepositBody();
         postData.setCdKey(rechargeCard.getCode());
         mockMvc.perform(post(DEPOSIT)
-                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .header(HttpHeaders.ACCEPT, MediaType.TEXT_HTML)
                 .param("cdKey", postData.getCdKey()))
                 .andExpect(status().isFound());
     }
