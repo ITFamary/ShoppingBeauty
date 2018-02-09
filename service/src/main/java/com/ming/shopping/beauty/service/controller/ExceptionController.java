@@ -115,7 +115,7 @@ public class ExceptionController {
 
     @ExceptionHandler(Exception.class)
     public void forPrintException(Exception e) throws Exception {
-        log.error(e);
+        log.error("NO_HANDLED_EX", e);
         throw e;
     }
 

@@ -12,12 +12,12 @@ import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
 import me.jiangcai.crud.row.supplier.SingleRowDramatizer;
 import me.jiangcai.lib.resource.service.ResourceService;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -46,7 +46,8 @@ public class ClientItemController {
      */
     @GetMapping("/items")
     @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
-    public RowDefinition<StoreItem> itemList(Long storeId, String itemType, Integer lat, Integer lon) {
+    public RowDefinition<StoreItem> itemList(Long storeId, @RequestParam(required = false) String itemType
+            , Integer lat, Integer lon) {
         return new RowDefinition<StoreItem>() {
             @Override
             public CriteriaQuery<StoreItem> dataGroup(CriteriaBuilder cb, CriteriaQuery<StoreItem> query, Root<StoreItem> root) {
@@ -74,9 +75,9 @@ public class ClientItemController {
                     if (storeId != null) {
                         conditions.add(cb.equal(root.join(StoreItem_.store).get(Store_.id), storeId));
                     }
-                    if (StringUtils.isNotBlank(itemType)) {
-                        conditions.add(cb.like(root.join(StoreItem_.item).get(Item_.itemType), "%" + itemType + "%"));
-                    }
+//                    if (StringUtils.isNotBlank(itemType)) {
+//                        conditions.add(cb.like(root.join(StoreItem_.item).get(Item_.itemType), "%" + itemType + "%"));
+//                    }
                     return cb.and(conditions.toArray(new Predicate[conditions.size()]));
                 };
             }
