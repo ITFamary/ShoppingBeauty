@@ -29,6 +29,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -109,6 +110,7 @@ public class StagingServiceImpl implements StagingService {
     private Environment environment;
 
     @Override
+    @PostConstruct
     public void init() throws IOException {
         if (environment.acceptsProfiles("staging")) {
             initStagingEnv();
