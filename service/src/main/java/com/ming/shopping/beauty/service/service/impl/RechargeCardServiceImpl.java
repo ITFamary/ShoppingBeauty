@@ -104,8 +104,6 @@ public class RechargeCardServiceImpl implements RechargeCardService {
         rechargeCard.setUser(user);
         rechargeCard.setUsedTime(LocalDateTime.now());
 
-
-        user.setCurrentAmount(user.getCurrentAmount().add(rechargeCard.getAmount()));
         if (!user.isActive()) {
             user.setCardNo(cardNo);
         }

@@ -81,9 +81,15 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
                 .andDo(print())
                 .andExpect(status().isOk());
         List<RechargeCard> listCard = rechargeCardRepository.findAll();
-        RechargeCard rechargeCard = listCard.get(0);
-
-
+        RechargeCard rechargeCard = null;
+        for (RechargeCard r : listCard) {
+            if(!r.isUsed()){
+                rechargeCard = r;
+            }
+        }
+        if(rechargeCard == null){
+            throw new IllegalArgumentException("rechargeCard是null生成充值卡失败");
+        }
         //充值卡充值
         //以充值人运行
         updateAllRunWith(login);
@@ -96,7 +102,6 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
                 .andDo(print())
                 .andExpect(status().isFound());
 
-        Thread.sleep(500);
 
         updateAllRunWith(merchant.getLogin());
         //看看他的余额
@@ -106,8 +111,6 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
                 .andReturn().getResponse().getContentAsString();
 
 
-        System.out.println(balanceString + "=========================================================================="+ loginService.findBalance(login.getUser().getId()));
-        //loginService.findBalance(login.getUser().getId())
         //充值卡是5000 余额应该是5000
         assertThat(new BigDecimal(balanceString)).isEqualTo(new BigDecimal("5000"));
 
