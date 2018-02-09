@@ -8,6 +8,7 @@ import com.ming.shopping.beauty.service.utils.Utils;
 import lombok.Getter;
 import me.jiangcai.crud.row.FieldDefinition;
 import me.jiangcai.crud.row.field.FieldBuilder;
+import me.jiangcai.jpa.entity.support.Address;
 import me.jiangcai.lib.resource.service.ResourceService;
 
 import javax.persistence.criteria.JoinType;
@@ -40,13 +41,13 @@ public class ClientStoreItemModel implements DefinitionModel<StoreItem> {
                         .build()
                 , FieldBuilder.asName(StoreItem.class, "address")
                         .addSelect(root -> root.join(StoreItem_.store, JoinType.LEFT).get(Store_.address))
-                        .addFormat((data, type) -> data.toString())
+                        .addFormat((data, type) -> ((Address)data).toString())
                         .build()
                 , FieldBuilder.asName(StoreItem.class, "type")
                         .addSelect(storeItemRoot -> storeItemRoot.join(StoreItem_.item).get(Item_.itemType))
                         .build()
                 //TODO 距离还有问题
-                        /*, FieldBuilder.asName(Item.class, "distance")
+                        /*, FieldBuilder.asName(StoreItem.class, "distance")
                                 .build()*/
                 , FieldBuilder.asName(StoreItem.class, "vipPrice")
                         .addSelect(root -> root.get(StoreItem_.salesPrice))

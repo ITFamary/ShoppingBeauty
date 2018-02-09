@@ -29,6 +29,7 @@ import com.ming.shopping.beauty.service.service.SystemService;
 import com.ming.shopping.beauty.service.utils.Constant;
 import com.ming.shopping.beauty.service.utils.LoginAuthentication;
 import me.jiangcai.crud.row.IndefiniteFieldDefinition;
+import me.jiangcai.jpa.entity.support.Address;
 import me.jiangcai.lib.resource.service.ResourceService;
 import me.jiangcai.lib.test.SpringWebTest;
 import me.jiangcai.wx.model.Gender;
@@ -278,7 +279,7 @@ public abstract class CoreServiceTest extends SpringWebTest {
     protected Store mockStore(Merchant merchant) throws Exception {
         Login login = mockLogin();
         return storeService.addStore(login.getId(), merchant.getId()
-                , randomString(), randomMobile(), randomString(), null);
+                , randomString(), randomMobile(), randomString(), mockAddress("模拟生成门店的地址"));
     }
 
     protected Represent mockRepresent(Store store) throws Exception {
@@ -393,7 +394,7 @@ public abstract class CoreServiceTest extends SpringWebTest {
      * @param model 特定Model
      * @return 生成一个Matcher 可以比较响应跟Model约定的区别
      */
-    protected Matcher<?> matchModel(DefinitionModel<?> model) {
+    protected static Matcher<?> matchModel(DefinitionModel<?> model) {
         return new Matcher<Object>() {
             @Override
             public boolean matches(Object item) {
@@ -440,5 +441,17 @@ public abstract class CoreServiceTest extends SpringWebTest {
         String path = "tmp/" + UUID.randomUUID().toString() + ".png";
         resourceService.uploadResource(path, new ClassPathResource("/image.png").getInputStream());
         return path;
+    }
+
+    private Address mockAddress(String other) {
+        Address address = new Address();
+        String[] province = new String[]{"浙江省","湖北省","湖南省"};
+        address.setProvince(province[random.nextInt(province.length)]);
+        String[] prefecture = new String[]{"绍兴市","杭州市","温州市"};
+        address.setPrefecture(prefecture[random.nextInt(prefecture.length)]);
+        String[] county = new String[]{"诸暨市","滨江区","余杭区"};
+        address.setCounty(county[random.nextInt(county.length)]);
+        address.setOtherAddress(other);
+        return address;
     }
 }
