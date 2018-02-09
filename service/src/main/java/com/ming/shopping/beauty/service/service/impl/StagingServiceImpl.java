@@ -10,6 +10,7 @@ import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.entity.support.AuditStatus;
 import com.ming.shopping.beauty.service.repository.ItemRepository;
 import com.ming.shopping.beauty.service.repository.LoginRepository;
+import com.ming.shopping.beauty.service.repository.StoreItemRepository;
 import com.ming.shopping.beauty.service.repository.UserRepository;
 import com.ming.shopping.beauty.service.service.ItemService;
 import com.ming.shopping.beauty.service.service.MerchantService;
@@ -129,6 +130,9 @@ public class StagingServiceImpl implements StagingService {
         };
     }
 
+    @Autowired
+    private StoreItemRepository storeItemRepository;
+
     private Item createItem(Merchant merchant, String name, BigDecimal cost, AuditStatus status, boolean enabled
             , Store store, boolean storeEnabled) throws IOException {
         String path = "tmp/" + UUID.randomUUID().toString().replaceAll("-", "") + ".jpg";
@@ -144,6 +148,7 @@ public class StagingServiceImpl implements StagingService {
         if (store != null) {
             StoreItem storeItem = storeItemService.addStoreItem(store.getId(), item.getId(), null, false);
             storeItem.setEnable(storeEnabled);
+            storeItem = storeItemRepository.save(storeItem);
         }
         item.setAuditStatus(status);
         item = itemRepository.save(item);

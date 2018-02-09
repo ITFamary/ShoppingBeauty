@@ -14,6 +14,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.From;
+import javax.persistence.criteria.Predicate;
 import java.math.BigDecimal;
 import java.util.Objects;
 
@@ -118,5 +121,16 @@ public class Item implements CrudFriendly<Long> {
         setCostPrice(item.getCostPrice());
         setDescription(item.getDescription());
         setRichDescription(item.getRichDescription());
+    }
+
+    /**
+     * @return 谓语确认这个项目是否可以发售
+     */
+    public static Predicate saleable(From<?, Item> from, CriteriaBuilder cb) {
+        return cb.and(
+                cb.isFalse(from.get(Item_.deleted))
+                , cb.isTrue(from.get(Item_.enabled))
+                , cb.equal(from.get(Item_.auditStatus), AuditStatus.AUDIT_PASS)
+        );
     }
 }

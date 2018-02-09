@@ -5,7 +5,6 @@ import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import com.ming.shopping.beauty.service.entity.item.StoreItem_;
 import com.ming.shopping.beauty.service.entity.login.Store_;
 import com.ming.shopping.beauty.service.model.definition.ClientStoreItemModel;
-import com.ming.shopping.beauty.service.utils.Utils;
 import me.jiangcai.crud.row.FieldDefinition;
 import me.jiangcai.crud.row.RowCustom;
 import me.jiangcai.crud.row.RowDefinition;
@@ -20,10 +19,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -48,6 +48,10 @@ public class ClientItemController {
     @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
     public RowDefinition<StoreItem> itemList(Long storeId, String itemType, Integer lat, Integer lon) {
         return new RowDefinition<StoreItem>() {
+            @Override
+            public CriteriaQuery<StoreItem> dataGroup(CriteriaBuilder cb, CriteriaQuery<StoreItem> query, Root<StoreItem> root) {
+                return query.groupBy(root.get(StoreItem_.item));
+            }
 
             @Override
             public Class<StoreItem> entityClass() {
@@ -61,10 +65,9 @@ public class ClientItemController {
 
             @Override
             public Specification<StoreItem> specification() {
-
                 return (root, query, cb) -> {
                     List<Predicate> conditions = new ArrayList<>();
-                    conditions.add(cb.equal(root.get(StoreItem_.deleted), false));
+                    conditions.add(StoreItem.saleable(root, cb));
                     if (storeId != null) {
                         conditions.add(cb.equal(root.join(StoreItem_.store).get(Store_.id), storeId));
                     }
@@ -88,6 +91,11 @@ public class ClientItemController {
     public RowDefinition<StoreItem> itemDetail(@PathVariable("itemId") long itemId) {
         return new RowDefinition<StoreItem>() {
             @Override
+            public CriteriaQuery<StoreItem> dataGroup(CriteriaBuilder cb, CriteriaQuery<StoreItem> query, Root<StoreItem> root) {
+                return query.groupBy(root.get(StoreItem_.item));
+            }
+
+            @Override
             public Class<StoreItem> entityClass() {
                 return StoreItem.class;
             }
@@ -106,7 +114,7 @@ public class ClientItemController {
             @Override
             public Specification<StoreItem> specification() {
                 return (root, cq, cb) ->
-                        cb.equal(root.get(StoreItem_.id), itemId);
+                        cb.equal(root.get(StoreItem_.item).get(Item_.id), itemId);
             }
         };
     }
