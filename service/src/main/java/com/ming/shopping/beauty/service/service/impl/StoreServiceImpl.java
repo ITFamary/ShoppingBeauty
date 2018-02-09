@@ -60,7 +60,6 @@ public class StoreServiceImpl implements StoreService {
     @Transactional(rollbackFor = RuntimeException.class)
     public void freezeOrEnable(long id, boolean enable) {
         Store store = findOne(id);
-        System.out.println(store.getId());
         if (store == null) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.STORE_NOT_EXIST));
         }
@@ -89,7 +88,6 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     public Store findByLogin(Login login) throws ApiResultException {
-        Store store = storeRepository.findOne(((root, query, cb) -> cb.and(cb.equal(root.get(Store_.login),login))));
-        return store;
+        return storeRepository.findOne(((root, query, cb) -> cb.and(cb.equal(root.get(Store_.login), login))));
     }
 }

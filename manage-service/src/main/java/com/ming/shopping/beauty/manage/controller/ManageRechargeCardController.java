@@ -6,8 +6,9 @@ import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.service.LoginService;
 import com.ming.shopping.beauty.service.service.RechargeCardService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -25,6 +26,7 @@ import java.text.MessageFormat;
 @PreAuthorize("hasAnyRole('ROOT')")
 public class ManageRechargeCardController {
 
+    private static final Log log = LogFactory.getLog(ManageRechargeCardController.class);
     @Autowired
     private LoginService loginService;
     @Autowired
@@ -39,21 +41,21 @@ public class ManageRechargeCardController {
      */
     @PostMapping("/recharge/{guideId}")
     @ResponseBody
-    public ApiResult massProduction(@AuthenticationPrincipal Login login, @PathVariable("guideId") long guideUserId, @RequestBody Integer num) {
+    public ApiResult massProduction(@AuthenticationPrincipal Login login, @PathVariable("guideId") long guideUserId
+            , @RequestBody Integer num) {
         final Login one = loginService.findOne(guideUserId);
-        //生成失败的数量
-        int count = 0;
         if (one != null) {
             //生成卡
             try {
                 rechargeCardService.newCard(num, guideUserId, login.getId());
-            }catch (Exception e){
-                count ++;
+            } catch (Exception e) {
+                log.warn("on newCard", e);
+                return ApiResult.withOk("生成失败");
             }
         } else
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), guideUserId), null));
-        return ApiResult.withOk("总数:" + num + ",成功数:" + (num - count) + ",失败数:" + count);
+        return ApiResult.withOk("总数:" + num);
     }
 
 

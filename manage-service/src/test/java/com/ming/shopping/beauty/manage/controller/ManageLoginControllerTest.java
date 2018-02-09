@@ -22,7 +22,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * @author helloztt
  */
-//@ActiveProfiles(ServiceConfig.PROFILE_MYSQL)
 public class ManageLoginControllerTest extends ManageConfigTest {
     public static final String BASE_URL = "/login";
 
