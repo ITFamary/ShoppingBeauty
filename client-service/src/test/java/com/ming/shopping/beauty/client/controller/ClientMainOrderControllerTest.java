@@ -11,6 +11,7 @@ import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.support.OrderStatus;
 import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
+import com.ming.shopping.beauty.service.model.definition.MainOrderModel;
 import com.ming.shopping.beauty.service.model.request.ItemNum;
 import com.ming.shopping.beauty.service.model.request.NewOrderBody;
 import com.ming.shopping.beauty.service.model.request.OrderSearcherBody;
@@ -101,8 +102,8 @@ public class ClientMainOrderControllerTest extends ClientConfigTest {
                 .session(activeUserSession)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(searcherBody)))
-                .andDo(print())
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.list").value(matchModels(new MainOrderModel(mainOrderService))))
                 .andReturn().getResponse().getContentAsString();
         int totalOrderNum = objectMapper.readTree(response).get("pagination").get("total").asInt();
         assertThat(totalOrderNum).isEqualTo(total + randomOrderNum);
