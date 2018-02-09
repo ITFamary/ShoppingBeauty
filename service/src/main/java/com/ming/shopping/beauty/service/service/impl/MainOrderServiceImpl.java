@@ -91,6 +91,7 @@ public class MainOrderServiceImpl implements MainOrderService {
         //先看看这个用户有没有空的订单
         MainOrder mainOrder = mainOrderRepository.findEmptyOrderByPayer(user.getId());
         if (mainOrder != null) {
+            mainOrder.setCreateTime(LocalDateTime.now());
             return mainOrder;
         }
         mainOrder = new MainOrder();
@@ -98,7 +99,7 @@ public class MainOrderServiceImpl implements MainOrderService {
         mainOrder.setCreateTime(LocalDateTime.now());
         //空的订单
         mainOrder.setOrderStatus(OrderStatus.EMPTY);
-        return mainOrderRepository.save(mainOrder);
+        return mainOrderRepository.saveAndFlush(mainOrder);
     }
 
     @Override

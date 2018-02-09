@@ -62,7 +62,7 @@ public class UserController {
      * @return
      */
     @GetMapping("/vipCard")
-    @Transactional(readOnly = true)
+    @Transactional
     @ResponseBody
     public Object vipCard(@AuthenticationPrincipal Login input) {
         //未激活的用户没有二维码
