@@ -16,6 +16,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -57,13 +58,15 @@ public class UserController {
     /**
      * 用来给门店代表扫码的用户二维码
      *
-     * @param login
+     * @param input
      * @return
      */
     @GetMapping("/vipCard")
+    @Transactional(readOnly = true)
     @ResponseBody
-    public Object vipCard(@AuthenticationPrincipal Login login) {
+    public Object vipCard(@AuthenticationPrincipal Login input) {
         //未激活的用户没有二维码
+        Login login = loginService.findOne(input.getId());
         if (!login.getUser().isActive()) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.USER_NOT_ACTIVE));
         }
