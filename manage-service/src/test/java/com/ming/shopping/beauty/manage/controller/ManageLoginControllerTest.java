@@ -139,11 +139,9 @@ public class ManageLoginControllerTest extends ManageConfigTest {
         updateAllRunWith(root);
 
         //现在查询他的余额应该是0
-        String contentAsString = mockMvc.perform(get("/login/{id}/balance", login.getId()))
-                .andDo(print())
-                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-
-        assertThat(new BigDecimal(contentAsString).equals(BigDecimal.ZERO)).isTrue();
+        assertThat(getBalance(login))
+                .isCloseTo(BigDecimal.ZERO, Offset.offset(new BigDecimal("0.000001")));
+        BigDecimal currentAmount = loginRepository.getOne(login.getId()).getUser().getCurrentAmount();
 
         //通过管理员后台给他充值
         Map<String, Object> postData = new HashMap<>();
@@ -153,22 +151,14 @@ public class ManageLoginControllerTest extends ManageConfigTest {
         mockMvc.perform(post("/manage/manualRecharge")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(postData)))
-                .andDo(print())
                 .andExpect(status().isOk());
 
         //查询login的余额
-        String amount = mockMvc.perform(get("/login/{id}/balance", login.getId()))
-                .andDo(print())
-                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-
-
-        BigDecimal bAmount = new BigDecimal(amount);
-
-        assertThat(bAmount.equals(b5000)).isTrue();
-        Login one = loginRepository.getOne(login.getId());
-        //保证他的余额一直是0
-        assertThat(loginService.findBalance(one.getUser().getId()))
-                .isCloseTo(BigDecimal.ZERO, Offset.offset(new BigDecimal("0.00001")));
+        assertThat(getBalance(login))
+                .isCloseTo(b5000, Offset.offset(new BigDecimal("0.000001")));
+        //保证他的结算余额一致
+        assertThat(loginRepository.getOne(login.getId()).getUser().getCurrentAmount())
+                .isCloseTo(currentAmount, Offset.offset(new BigDecimal("0.00001")));
 
         //通过管理员扣款
 
@@ -177,42 +167,35 @@ public class ManageLoginControllerTest extends ManageConfigTest {
         mockMvc.perform(post("/manage/deduction")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(postData)))
-                .andDo(print())
                 .andExpect(status().isOk());
 
         //查询他的余额
-        String amountSub = mockMvc.perform(get("/login/{id}/balance", login.getId()))
-                .andDo(print())
-                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-
-        BigDecimal bSub = new BigDecimal(amountSub);
-        assertThat(bSub.equals(b5000.subtract(b2000))).isTrue();
-
-        one = loginRepository.getOne(login.getId());
-        //保证他的余额一直是0
-        assertThat(loginService.findBalance(one.getUser().getId()))
-                .isCloseTo(BigDecimal.ZERO, Offset.offset(new BigDecimal("0.00001")));
+        assertThat(getBalance(login))
+                .isCloseTo(b5000.subtract(b2000), Offset.offset(new BigDecimal("0.000001")));
+        //保证他的结算余额一致
+        assertThat(loginRepository.getOne(login.getId()).getUser().getCurrentAmount())
+                .isCloseTo(currentAmount, Offset.offset(new BigDecimal("0.00001")));
 
         //清空余额
         postData.put("amount", null);
         mockMvc.perform(post("/manage/deduction")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(postData)))
-                .andDo(print())
                 .andExpect(status().isOk());
         //再次查询应该是0了
+        assertThat(getBalance(login))
+                .isCloseTo(BigDecimal.ZERO, Offset.offset(new BigDecimal("0.000001")));
 
-        String zero = mockMvc.perform(get("/login/{id}/balance", login.getId()))
-                .andDo(print())
+        //保证他的结算余额一致
+        assertThat(loginRepository.getOne(login.getId()).getUser().getCurrentAmount())
+                .isCloseTo(currentAmount, Offset.offset(new BigDecimal("0.00001")));
+    }
+
+    private BigDecimal getBalance(Login login) throws Exception {
+        String contentAsString = mockMvc.perform(get("/login/{id}/balance", login.getId()))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
-        BigDecimal bZero = new BigDecimal(zero);
-        assertThat(bZero.equals(new BigDecimal("0.00"))).isTrue();
-
-        one = loginRepository.getOne(login.getId());
-        //保证他的余额一直是0
-        assertThat(loginService.findBalance(one.getUser().getId()))
-                .isCloseTo(BigDecimal.ZERO, Offset.offset(new BigDecimal("0.00001")));
+        return new BigDecimal(contentAsString);
     }
 
 }
