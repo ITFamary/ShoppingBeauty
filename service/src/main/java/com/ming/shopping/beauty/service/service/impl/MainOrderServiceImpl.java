@@ -3,7 +3,12 @@ package com.ming.shopping.beauty.service.service.impl;
 import com.ming.shopping.beauty.service.aop.BusinessSafe;
 import com.ming.shopping.beauty.service.entity.item.Item_;
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
-import com.ming.shopping.beauty.service.entity.login.*;
+import com.ming.shopping.beauty.service.entity.login.Login_;
+import com.ming.shopping.beauty.service.entity.login.Represent;
+import com.ming.shopping.beauty.service.entity.login.Represent_;
+import com.ming.shopping.beauty.service.entity.login.Store_;
+import com.ming.shopping.beauty.service.entity.login.User;
+import com.ming.shopping.beauty.service.entity.login.User_;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.order.MainOrder_;
 import com.ming.shopping.beauty.service.entity.order.OrderItem;
@@ -12,15 +17,18 @@ import com.ming.shopping.beauty.service.entity.support.OrderStatus;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
+import com.ming.shopping.beauty.service.model.request.ItemNum;
 import com.ming.shopping.beauty.service.model.request.OrderSearcherBody;
-import com.ming.shopping.beauty.service.model.request.StoreItemNum;
 import com.ming.shopping.beauty.service.repository.MainOrderRepository;
 import com.ming.shopping.beauty.service.repository.OrderItemRepository;
 import com.ming.shopping.beauty.service.service.ItemService;
 import com.ming.shopping.beauty.service.service.MainOrderService;
 import com.ming.shopping.beauty.service.service.StoreItemService;
 import com.ming.shopping.beauty.service.utils.Utils;
-import me.jiangcai.crud.row.*;
+import me.jiangcai.crud.row.FieldDefinition;
+import me.jiangcai.crud.row.IndefiniteFieldDefinition;
+import me.jiangcai.crud.row.RowDefinition;
+import me.jiangcai.crud.row.RowService;
 import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.lib.resource.service.ResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,11 +40,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Order;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -87,10 +104,10 @@ public class MainOrderServiceImpl implements MainOrderService {
     @Override
     @BusinessSafe
     @Transactional(rollbackFor = RuntimeException.class)
-    public MainOrder supplementOrder(long orderId, Represent represent, StoreItemNum[] items) {
+    public MainOrder supplementOrder(long orderId, Represent represent, ItemNum[] items) {
         Map<StoreItem, Integer> amounts = new HashMap<>(items.length);
-        for (StoreItemNum storeItemNum : items) {
-            StoreItem item = storeItemService.findStoreItem(storeItemNum.getStoreItemId());
+        for (ItemNum storeItemNum : items) {
+            StoreItem item = storeItemService.findStoreItem(storeItemNum.getStoreItemId(), represent.getStore());
             if (!amounts.containsKey(item)) {
                 amounts.put(item, storeItemNum.getNum());
             }
