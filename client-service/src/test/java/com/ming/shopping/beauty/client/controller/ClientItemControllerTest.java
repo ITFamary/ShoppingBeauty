@@ -15,7 +15,6 @@ import me.jiangcai.lib.resource.service.ResourceService;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -37,12 +36,7 @@ public class ClientItemControllerTest extends ClientConfigTest {
      * @return 校验器可以校验响应为 api 所规定的Items
      */
     public static ResultMatcher isItemsResponse() {
-        return new ResultMatcher() {
-            @Override
-            public void match(MvcResult result) throws Exception {
-                jsonPath("$").value(matchModel(new ClientStoreItemModel(resourceService, false)));
-            }
-        };
+        return jsonPath("$").value(matchModel(new ClientStoreItemModel(resourceService, false)));
     }
 
 
