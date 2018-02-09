@@ -50,6 +50,9 @@ public class ClientItemController {
         return new RowDefinition<StoreItem>() {
             @Override
             public CriteriaQuery<StoreItem> dataGroup(CriteriaBuilder cb, CriteriaQuery<StoreItem> query, Root<StoreItem> root) {
+                if (storeId != null) {
+                    return query;
+                }
                 return query.groupBy(root.get(StoreItem_.item));
             }
 
@@ -60,7 +63,7 @@ public class ClientItemController {
 
             @Override
             public List<FieldDefinition<StoreItem>> fields() {
-                return listField();
+                return listField(storeId != null);
             }
 
             @Override
@@ -102,7 +105,7 @@ public class ClientItemController {
 
             @Override
             public List<FieldDefinition<StoreItem>> fields() {
-                List<FieldDefinition<StoreItem>> fieldDefinitions = listField();
+                List<FieldDefinition<StoreItem>> fieldDefinitions = listField(false);
                 fieldDefinitions.add(
                         FieldBuilder.asName(StoreItem.class, "details")
                                 .addSelect(root -> root.join(StoreItem_.item).get(Item_.richDescription))
@@ -120,7 +123,7 @@ public class ClientItemController {
     }
 
 
-    private List<FieldDefinition<StoreItem>> listField() {
-        return new ClientStoreItemModel(resourceService).getDefinitions();
+    private List<FieldDefinition<StoreItem>> listField(boolean singleStore) {
+        return new ClientStoreItemModel(resourceService, singleStore).getDefinitions();
     }
 }

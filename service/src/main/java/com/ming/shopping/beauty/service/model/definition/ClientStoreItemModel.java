@@ -29,7 +29,11 @@ public class ClientStoreItemModel implements DefinitionModel<StoreItem> {
     private Join<Item, Merchant> merchantJoin;
     private Join<StoreItem, Item> itemJoin;
 
-    public ClientStoreItemModel(ResourceService resourceService) {
+    /**
+     * @param resourceService 资源服务
+     * @param singleStore     单店模式，在这个模式下 就没必要聚合了，因为我们将直接显示这个门店所有的门店项目。
+     */
+    public ClientStoreItemModel(ResourceService resourceService, boolean singleStore) {
         super();
         definitions = Arrays.asList(
                 FieldBuilder.asName(StoreItem.class, "itemId")
