@@ -46,9 +46,9 @@ public class RechargeOrderServiceImpl implements RechargeOrderService {
                 payer.setCardNo(User.makeCardNo());
                 payer.getLogin().addLevel(ManageLevel.user);
             }
-            payOrder.getPayer().setCurrentAmount(
-                    payOrder.getPayer().getCurrentAmount()
-                            .add(payOrder.getAmount()));
+//            payOrder.getPayer().setCurrentAmount(
+//                    payOrder.getPayer().getCurrentAmount()
+//                            .add(payOrder.getAmount())); 别乱来！！
             userRepository.save(payOrder.getPayer());
         }
     }

@@ -52,7 +52,7 @@ public class User {
      */
     private Gender gender;
     /**
-     * 当前余额
+     * 清算余额！！ 不是余额！！！
      */
     @Column(scale = Constant.FLOAT_COLUMN_SCALE, precision = Constant.FLOAT_COLUMN_PRECISION)
     private BigDecimal currentAmount = BigDecimal.ZERO;

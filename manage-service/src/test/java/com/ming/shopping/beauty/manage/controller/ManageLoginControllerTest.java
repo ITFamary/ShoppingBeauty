@@ -4,6 +4,7 @@ import com.ming.shopping.beauty.manage.ManageConfigTest;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.repository.LoginRepository;
 import com.ming.shopping.beauty.service.service.InitService;
+import org.assertj.core.data.Offset;
 import org.hamcrest.core.StringStartsWith;
 import org.junit.Test;
 import org.mockito.internal.matchers.GreaterOrEqual;
@@ -167,7 +168,8 @@ public class ManageLoginControllerTest extends ManageConfigTest {
         assertThat(bAmount.equals(b5000)).isTrue();
         Login one = loginRepository.getOne(login.getId());
         //保证他的余额一直是0
-        assertThat(one.getUser().getCurrentAmount().equals(BigDecimal.ZERO)).isTrue();
+        assertThat(loginService.findBalance(one.getUser().getId()))
+                .isCloseTo(BigDecimal.ZERO, Offset.offset(new BigDecimal("0.00001")));
 
         //通过管理员扣款
 
@@ -189,7 +191,8 @@ public class ManageLoginControllerTest extends ManageConfigTest {
 
         one = loginRepository.getOne(login.getId());
         //保证他的余额一直是0
-        assertThat(one.getUser().getCurrentAmount().equals(BigDecimal.ZERO)).isTrue();
+        assertThat(loginService.findBalance(one.getUser().getId()))
+                .isCloseTo(BigDecimal.ZERO, Offset.offset(new BigDecimal("0.00001")));
 
         //清空余额
         postData.put("amount", null);
@@ -209,7 +212,8 @@ public class ManageLoginControllerTest extends ManageConfigTest {
 
         one = loginRepository.getOne(login.getId());
         //保证他的余额一直是0
-        assertThat(one.getUser().getCurrentAmount().equals(BigDecimal.ZERO)).isTrue();
+        assertThat(loginService.findBalance(one.getUser().getId()))
+                .isCloseTo(BigDecimal.ZERO, Offset.offset(new BigDecimal("0.00001")));
     }
 
 }
