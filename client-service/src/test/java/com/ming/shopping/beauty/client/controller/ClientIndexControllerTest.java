@@ -144,7 +144,7 @@ public class ClientIndexControllerTest extends ClientConfigTest {
         //再次请求 /user，期望返回没有权限
         mockMvc.perform(makeWechat(get("/user").session(mockSession)))
                 .andDo(print())
-                .andExpect(status().is(HttpStatusCustom.SC_LOGIN_NOT_EXIST));
+                .andExpect(status().is(HttpStatusCustom.SC_NO_USER));
 
     }
 }

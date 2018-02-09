@@ -115,7 +115,7 @@ public class IndexController {
         } else {
             Login login = loginService.asWechat(openId);
             if (login == null || StringUtils.isEmpty(login.getLoginName())) {
-                response.sendError(HttpStatusCustom.SC_NO_LOGIN);
+                response.sendError(HttpStatusCustom.SC_NO_USER);
             } else {
                 //注册或登录成功了，加到 security 中
                 loginToSecurity(login, request, response);

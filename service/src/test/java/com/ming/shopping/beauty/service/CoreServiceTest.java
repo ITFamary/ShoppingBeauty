@@ -233,6 +233,7 @@ public abstract class CoreServiceTest extends SpringWebTest {
         merchant.setName(randomChinese(5));
         merchant.setContact(randomChinese(3));
         merchant.setTelephone(randomMobile());
+        merchant.setAddress(mockAddress("模拟商户的地址"));
         return merchantService.addMerchant(login.getId(), merchant);
     }
 
@@ -273,15 +274,17 @@ public abstract class CoreServiceTest extends SpringWebTest {
     }
 
     /**
-     * 生成一个门店
+     * 生成一个已经上架门店
      *
      * @param merchant
      * @return
      */
     protected Store mockStore(Merchant merchant) throws Exception {
         Login login = mockLogin();
-        return storeService.addStore(login.getId(), merchant.getId()
+        Store store = storeService.addStore(login.getId(), merchant.getId()
                 , randomString(), randomMobile(), randomString(), mockAddress("模拟生成门店的地址"));
+        storeService.freezeOrEnable(store.getId(),true);
+        return storeService.findStore(store.getId());
     }
 
     protected Represent mockRepresent(Store store) throws Exception {
@@ -291,7 +294,7 @@ public abstract class CoreServiceTest extends SpringWebTest {
 
 
     /**
-     * 在商户下生成一个审核过的项目
+     * 在商户下生成一个审核过的已上架的项目
      *
      * @param merchant
      * @return
@@ -305,18 +308,21 @@ public abstract class CoreServiceTest extends SpringWebTest {
         Item item = itemService.addItem(merchant, randomTmpImagePath(), randomString(), randomString()
                 , price, salesPrice, costPrice, randomString(), randomString(), random.nextBoolean());
         itemService.auditItem(item.getId(), AuditStatus.AUDIT_PASS, null);
+        itemService.freezeOrEnable(item.getId(),true);
         return itemService.findOne(item.getId());
     }
 
     /**
-     * 在门店下生成一个项目
+     * 在门店下生成一个已上架的商品项目
      *
      * @param store
      * @param item
      * @return
      */
     protected StoreItem mockStoreItem(Store store, Item item) {
-        return storeItemService.addStoreItem(store.getId(), item.getId(), null, random.nextBoolean());
+        StoreItem storeItem = storeItemService.addStoreItem(store.getId(), item.getId(), null, random.nextBoolean());
+        storeItemService.freezeOrEnable(true,storeItem.getId());
+        return storeItemService.findStoreItem(storeItem.getId());
     }
 
     /**

@@ -28,7 +28,7 @@ public class ManageRechargeCardControllerTest extends ManageConfigTest{
     private final String BASE_URI = "/recharge";
     @Test
     public void go()throws Exception{
-        Integer defaultAmount = systemStringService.getCustomSystemString("shopping.service.card.amount", null, true, Integer.class, 500);
+        Integer defaultAmount = systemStringService.getCustomSystemString("shopping.service.card.amount", null, true, Integer.class, 5000);
 
         Login manage = mockRoot();
         updateAllRunWith(manage);

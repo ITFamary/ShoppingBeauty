@@ -109,7 +109,7 @@ public class ExceptionController {
     public void needLogin(@AuthenticationPrincipal Login login, AccessDeniedException exception
             , HttpServletResponse response) throws IOException {
         if (!login.getLevelSet().contains(ManageLevel.user)) {
-            response.sendError(HttpStatusCustom.SC_LOGIN_NOT_EXIST);
+            response.sendError(HttpStatusCustom.SC_NO_USER);
         }
     }
 

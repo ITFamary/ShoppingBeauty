@@ -10,14 +10,10 @@ import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.entity.support.AuditStatus;
 import com.ming.shopping.beauty.service.repository.ItemRepository;
 import com.ming.shopping.beauty.service.repository.LoginRepository;
+import com.ming.shopping.beauty.service.repository.RechargeCardRepository;
 import com.ming.shopping.beauty.service.repository.StoreItemRepository;
 import com.ming.shopping.beauty.service.repository.UserRepository;
-import com.ming.shopping.beauty.service.service.ItemService;
-import com.ming.shopping.beauty.service.service.MerchantService;
-import com.ming.shopping.beauty.service.service.RepresentService;
-import com.ming.shopping.beauty.service.service.StagingService;
-import com.ming.shopping.beauty.service.service.StoreItemService;
-import com.ming.shopping.beauty.service.service.StoreService;
+import com.ming.shopping.beauty.service.service.*;
 import me.jiangcai.jpa.entity.support.Address;
 import me.jiangcai.lib.resource.service.ResourceService;
 import me.jiangcai.wx.model.Gender;
@@ -56,6 +52,12 @@ public class StagingServiceImpl implements StagingService {
     private ItemRepository itemRepository;
     @Autowired
     private ResourceService resourceService;
+    @Autowired
+    private StoreItemService storeItemService;
+    @Autowired
+    private RechargeCardRepository rechargeCardRepository;
+    @Autowired
+    private RechargeCardService rechargeCardService;
 
     private Login createDemoUser() {
         // TODO 最好是走现有的service
@@ -74,19 +76,21 @@ public class StagingServiceImpl implements StagingService {
         return login;
     }
 
-    @Autowired
-    private StoreItemService storeItemService;
 
     @Override
     public void initStagingEnv() throws IOException {
         int count = 20;
         if (loginRepository.count() <= count) {
             // 在staging 中 建立足够多的测试帐号
-            while (count-- > 0)
+            for (int i = 0; i < count; i++)
                 createDemoUser();
         }
         if (itemRepository.count() < 2) {
             generateStagingData();
+        }
+        if (rechargeCardRepository.count() < count) {
+            //在 staging 中建立足够多的充值卡
+            rechargeCardService.newCard(count,null,null);
         }
     }
 
