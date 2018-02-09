@@ -1,10 +1,11 @@
 package com.ming.shopping.beauty.controller;
 
+import com.ming.shopping.beauty.client.controller.ClientItemControllerTest;
+import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.service.StagingService;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.io.IOException;
+import org.springframework.http.MediaType;
 
 /**
  * <ol>
@@ -25,10 +26,19 @@ public class WechatSimpleProcessTest extends TogetherTest {
     private StagingService stagingService;
 
     @Test
-    public void flow() throws IOException {
+    public void flow() throws Exception {
         // 1
         Object[] generatingData = stagingService.generateStagingData();
 
+        Login user = mockLogin();
+        updateAllRunWith(user);
+        mockMvc.perform(
+                get("/items")
+                        .accept(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(ClientItemControllerTest.isItemsResponse())
+        // 然后我需要确认此处生成的数据并不包含
+        ;
     }
 
 }
