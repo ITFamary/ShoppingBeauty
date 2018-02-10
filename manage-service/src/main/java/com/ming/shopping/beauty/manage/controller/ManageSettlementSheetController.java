@@ -130,14 +130,14 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
             switch (putData.getStatus()) {
                 case "APPROVAL":
                     //同意申请
-                    if (StringUtils.isNotBlank(putData.getComment()))
+                    if (StringUtils.isBlank(putData.getComment()))
                         throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                                 , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "comment"), null));
                     settlementSheetService.approvalSheet(sheet, putData.getComment());
                     break;
                 case "REJECT":
                     //打回申请
-                    if (StringUtils.isNotBlank(putData.getComment()))
+                    if (StringUtils.isBlank(putData.getComment()))
                         throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                                 , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "comment"), null));
                     settlementSheetService.rejectSheet(sheet, putData.getComment());
@@ -176,7 +176,7 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
             switch (putData.getStatus()) {
                 case "TO_AUDIT":
                     //提交审核
-                    if (StringUtils.isNotBlank(putData.getComment()))
+                    if (StringUtils.isBlank(putData.getComment()))
                         throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                                 , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "comment"), null));
                     settlementSheetService.submitSheet(sheet, putData.getComment());
