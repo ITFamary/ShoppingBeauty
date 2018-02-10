@@ -3,6 +3,7 @@ package com.ming.shopping.beauty.service.service;
 import com.ming.shopping.beauty.service.entity.item.RechargeCard;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.List;
 
@@ -15,9 +16,10 @@ public interface StagingService {
      *
      * @throws IOException
      */
-    @Transactional(rollbackFor = RuntimeException.class)
     void initStagingEnv() throws IOException;
 
+    @PostConstruct
+    void init() throws IOException;
 
     /**
      * 一个商户，一个门店，一个门店代表

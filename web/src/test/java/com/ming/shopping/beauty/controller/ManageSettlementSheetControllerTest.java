@@ -59,7 +59,6 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
         MainOrder mainOrder = mockMainOrder(login.getUser(), mockRepresent);
 
         //支付订单
-//        /payment/{orderId}
 
         //余额是0的情况下
         mockMvc.perform(put("/capital/payment/{orderId}", mainOrder.getOrderId())

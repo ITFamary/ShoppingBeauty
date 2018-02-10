@@ -11,6 +11,7 @@ import com.ming.shopping.beauty.service.entity.support.AuditStatus;
 import com.ming.shopping.beauty.service.repository.ItemRepository;
 import com.ming.shopping.beauty.service.repository.LoginRepository;
 import com.ming.shopping.beauty.service.repository.RechargeCardRepository;
+import com.ming.shopping.beauty.service.repository.StoreItemRepository;
 import com.ming.shopping.beauty.service.repository.UserRepository;
 import com.ming.shopping.beauty.service.service.*;
 import me.jiangcai.jpa.entity.support.Address;
@@ -18,6 +19,7 @@ import me.jiangcai.lib.resource.service.ResourceService;
 import me.jiangcai.wx.model.Gender;
 import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
@@ -78,7 +80,7 @@ public class StagingServiceImpl implements StagingService {
     @Override
     public void initStagingEnv() throws IOException {
         int count = 20;
-        if (loginRepository.count() < count) {
+        if (loginRepository.count() <= count) {
             // 在staging 中 建立足够多的测试帐号
             for (int i = 0; i < count; i++)
                 createDemoUser();
@@ -89,6 +91,16 @@ public class StagingServiceImpl implements StagingService {
         if (rechargeCardRepository.count() < count) {
             //在 staging 中建立足够多的充值卡
             rechargeCardService.newCard(count,null,null);
+        }
+    }
+
+    @Autowired
+    private Environment environment;
+
+    @Override
+    public void init() throws IOException {
+        if (environment.acceptsProfiles("staging")) {
+            initStagingEnv();
         }
     }
 
@@ -122,6 +134,9 @@ public class StagingServiceImpl implements StagingService {
         };
     }
 
+    @Autowired
+    private StoreItemRepository storeItemRepository;
+
     private Item createItem(Merchant merchant, String name, BigDecimal cost, AuditStatus status, boolean enabled
             , Store store, boolean storeEnabled) throws IOException {
         String path = "tmp/" + UUID.randomUUID().toString().replaceAll("-", "") + ".jpg";
@@ -137,6 +152,7 @@ public class StagingServiceImpl implements StagingService {
         if (store != null) {
             StoreItem storeItem = storeItemService.addStoreItem(store.getId(), item.getId(), null, false);
             storeItem.setEnable(storeEnabled);
+            storeItem = storeItemRepository.save(storeItem);
         }
         item.setAuditStatus(status);
         item = itemRepository.save(item);

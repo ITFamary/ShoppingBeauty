@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 public class CapitalControllerTest extends ClientConfigTest {
     private static final String BASE_URL = "/capital";
-    private static final String DEPOSIT = BASE_URL + "/deposit";
+    public static final String DEPOSIT = BASE_URL + "/deposit";
     private static final String FLOW = BASE_URL + "/flow";
 
     @Test
