@@ -13,7 +13,8 @@ public interface RechargeCardService {
 
     /**
      * 新增卡密
-     * @param guideId 推荐人
+     *
+     * @param guideId  推荐人
      * @param manageId 操作员
      * @return
      */
@@ -22,7 +23,7 @@ public interface RechargeCardService {
     /**
      * 批量新增卡密
      *
-     * @param num    数量
+     * @param num      数量
      * @param guideId  推荐人
      * @param manageId 操作员
      * @return
@@ -33,6 +34,7 @@ public interface RechargeCardService {
      * 校验卡密
      *
      * @param cardNo
+     * @return
      */
     RechargeCard verify(String cardNo);
 

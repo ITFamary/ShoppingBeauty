@@ -61,7 +61,7 @@ public class RechargeCardServiceImpl implements RechargeCardService {
             rechargeCard.setManager(loginRepository.findOne(manageId));
         }
         rechargeCard.setCreateTime(LocalDateTime.now());
-        Integer defaultAmount = systemStringService.getCustomSystemString("shopping.service.card.amount", null, true, Integer.class, 500);
+        Integer defaultAmount = systemStringService.getCustomSystemString("shopping.service.card.amount", null, true, Integer.class, 5000);
         rechargeCard.setAmount(BigDecimal.valueOf(defaultAmount));
         for (int i = 0; i < num; i++) {
             cardList.add((RechargeCard) rechargeCard.clone());

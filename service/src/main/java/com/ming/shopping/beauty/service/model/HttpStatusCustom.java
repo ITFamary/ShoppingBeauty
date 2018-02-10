@@ -12,7 +12,7 @@ import org.apache.http.HttpStatus;
  * <p>未登录：返回{@link HttpStatusCustom#SC_UNAUTHORIZED} 401</p>
  * <p>SESSION过期：返回{@link HttpStatusCustom#SC_SESSION_TIMEOUT} 430</p>
  * <p>未授权：返回{@link HttpStatusCustom#SC_NO_OPENID} 431</p>
- * <p>未注册：返回{@link HttpStatusCustom#SC_NO_LOGIN} 432</p>
+ * <p>未注册：返回{@link HttpStatusCustom#SC_NO_USER} 432</p>
  * <p>不允许操作：返回{@link HttpStatusCustom#SC_FORBIDDEN} 403</p>
  * <p>用户不存在：返回{@link HttpStatusCustom#SC_LOGIN_NOT_EXIST}  433</p>
  * <p>系统正在维护：返回{@link HttpStatusCustom#SC_SERVICE_UNAVAILABLE} 503</p>
@@ -38,10 +38,11 @@ public interface HttpStatusCustom extends HttpStatus {
     /**
      * {@code 432 未注册}
      */
-    int SC_NO_LOGIN = 432;
+    int SC_NO_USER = 432;
     /**
-     * 用户不存在
+     * 用户不存在(先在不会有没有Login的情况了）
      */
+    @Deprecated
     int SC_LOGIN_NOT_EXIST = 433;
 
     /**
