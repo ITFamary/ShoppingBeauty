@@ -1,6 +1,7 @@
 package com.ming.shopping.beauty.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.jayway.jsonpath.JsonPath;
 import com.ming.shopping.beauty.client.controller.ClientItemControllerTest;
 import com.ming.shopping.beauty.service.entity.item.RechargeCard;
 import com.ming.shopping.beauty.service.entity.item.Item;
@@ -21,15 +22,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Collection;
 import java.util.stream.Stream;
 
 import static com.ming.shopping.beauty.client.controller.CapitalControllerTest.DEPOSIT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -145,12 +144,12 @@ public class WechatSimpleProcessTest extends TogetherTest {
                 .andReturn().getRequest().getSession();
 
         //授权去,随便搞个跳转地址
-        final String userUrl = "/user",vipUrl = "/user/vipCard";
+        final String userUrl = "/user", vipUrl = "/user/vipCard";
         mockMvc.perform(wechatGet(SystemService.AUTH)
-                .param("redirectUrl",userUrl)
+                .param("redirectUrl", userUrl)
                 .session(session))
                 .andExpect(status().isFound())
-                .andExpect(header().string("Location",userUrl));
+                .andExpect(header().string("Location", userUrl));
 
         mockMvc.perform(wechatGet(userUrl)
                 .session(session))
@@ -163,7 +162,7 @@ public class WechatSimpleProcessTest extends TogetherTest {
         registerBody.setSurname(randomChinese(1));
         registerBody.setGender(randomEnum(Gender.class));
 
-        register(registerBody,session);
+        register(registerBody, session);
 
         mockMvc.perform(wechatGet(userUrl)
                 .session(session))
@@ -177,14 +176,13 @@ public class WechatSimpleProcessTest extends TogetherTest {
 
     }
 
-    private void register(LoginOrRegisterBody registerBody,MockHttpSession session) throws Exception {
+    private void register(LoginOrRegisterBody registerBody, MockHttpSession session) throws Exception {
         mockMvc.perform(wechatPost(SystemService.LOGIN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerBody))
                 .session(session))
                 .andExpect(status().isOk());
     }
-
 
 
 }
