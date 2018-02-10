@@ -315,7 +315,7 @@ public class MainOrderServiceImpl implements MainOrderService {
                                 .join(User_.login, JoinType.LEFT).get(Login_.loginName))
                         .build()
                 , FieldBuilder.asName(MainOrder.class, "items")
-                        .addSelect(mainOrderRoot -> mainOrderRoot.get(MainOrder_.orderId))
+                        .addBiSelect((root,cb)->cb.nullLiteral(List.class))
                         .addFormat((list, type) -> {
                             //返回数据List 格式化
                             if (list == null) {
