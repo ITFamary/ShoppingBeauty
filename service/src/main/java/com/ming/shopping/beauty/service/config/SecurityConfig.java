@@ -1,6 +1,7 @@
 package com.ming.shopping.beauty.service.config;
 
 import com.ming.shopping.beauty.service.config.security.UnauthorizedEntryPoint;
+import com.ming.shopping.beauty.service.controller.QRController;
 import com.ming.shopping.beauty.service.service.LoginService;
 import com.ming.shopping.beauty.service.service.SystemService;
 import me.jiangcai.wx.pay.model.WeixinPayUrl;
@@ -72,6 +73,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         // TODO: 2018/1/8 一下地址都需要与接口核对
         registry
+                .antMatchers(QRController.QR_URL).permitAll()
                 //扫码登录
                 .antMatchers("/managerLogin/**").permitAll()
                 //登录前的校验
