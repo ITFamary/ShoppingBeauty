@@ -59,7 +59,8 @@ public class StoreServiceImpl implements StoreService {
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
     public void freezeOrEnable(long id, boolean enable) {
-        Store store = storeRepository.findOne(id);
+        Store store = findOne(id);
+        System.out.println(store.getId());
         if (store == null) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.STORE_NOT_EXIST));
         }
