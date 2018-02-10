@@ -77,7 +77,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 //扫码登录
                 .antMatchers("/managerLogin/**").permitAll()
                 //登录前的校验
-                .antMatchers("/isExist", "/isRegister/**", "/sendAuthCode/**", SystemService.LOGIN, SystemService.TO_LOGIN, SystemService.AUTH).permitAll()
+                .antMatchers("/init", "/isExist", "/isRegister/**", "/sendAuthCode/**", SystemService.LOGIN, SystemService.TO_LOGIN, SystemService.AUTH).permitAll()
                 //管理后台登录
                 .antMatchers("/currentManager", "/managerLoginRequest", "/managerLogin/**", "/manageLoginResult/**").permitAll()
                 // 登录跳转页面

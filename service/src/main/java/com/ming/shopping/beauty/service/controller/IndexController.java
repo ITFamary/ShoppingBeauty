@@ -73,6 +73,7 @@ public class IndexController {
     @Autowired
     private ConversionService conversionService;
 
+
     /**
      * 微信授权
      *
