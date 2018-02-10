@@ -74,20 +74,6 @@ public class SettlementSheet implements CrudFriendly<Long> {
     /**
      * 在为true的情况下,不在列表里面显示.
      */
-    private boolean detect ;
+    private boolean detect;
 
-    @Override
-    public String toString() {
-        return "SettlementSheet{" +
-                "id=" + id +
-                ", merchant=" + merchant +
-                ", mainOrderSet=" + mainOrderSet +
-                ", variableAmount=" + variableAmount +
-                ", actualAmount=" + actualAmount +
-                ", settlementStatus=" + settlementStatus +
-                ", comment='" + comment + '\'' +
-                ", createTime=" + createTime +
-                ", transferTime=" + transferTime +
-                '}';
-    }
 }

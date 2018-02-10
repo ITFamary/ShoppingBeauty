@@ -158,6 +158,7 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
         mockMvc.perform(put("/settlementSheet/{id}/statusMerchant",settlementSheet.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(srb)))
+                .andDo(print())
                 .andExpect(status().isNoContent());
 
         SettlementSheet one = settlementSheetRepository.findOne(settlementSheet.getId());

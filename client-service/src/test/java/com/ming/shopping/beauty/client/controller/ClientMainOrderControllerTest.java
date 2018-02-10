@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.ming.shopping.beauty.client.ClientConfigTest;
 import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
+import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Merchant;
 import com.ming.shopping.beauty.service.entity.login.Represent;
 import com.ming.shopping.beauty.service.entity.login.Store;
@@ -23,6 +24,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -116,6 +118,32 @@ public class ClientMainOrderControllerTest extends ClientConfigTest {
                     .session(activeUserSession))
                     .andExpect(jsonPath("$.orderId").value(orderId));
         }
+    }
+
+    @Test
+    public void mainOrderDetailTest() throws Exception {
+        Login login = mockLogin();
+        Login root = mockRoot();
+        updateAllRunWith(root);
+
+        Merchant merchant = mockMerchant();
+        Store store = mockStore(merchant);
+        Represent represent = mockRepresent(store);
+        Item item = mockItem(merchant);
+        StoreItem storeItem = mockStoreItem(store, item);
+
+        Map<StoreItem,Integer> requestItem = new HashMap<>();
+        requestItem.put(storeItem,3);
+        MainOrder mainOrder = mockMainOrder(login.getUser(), represent, requestItem);
+
+        //查看详情
+
+        mockMvc.perform(get("/orders/{orderId}",mainOrder.getOrderId()))
+                .andDo(print())
+                .andExpect(jsonPath("$").value(matchModel(new MainOrderModel(mainOrderService))))
+                .andExpect(status().isOk());
+
+
     }
 }
 

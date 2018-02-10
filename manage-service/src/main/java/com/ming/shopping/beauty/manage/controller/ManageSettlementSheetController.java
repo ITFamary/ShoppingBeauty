@@ -22,6 +22,7 @@ import me.jiangcai.crud.row.field.FieldBuilder;
 import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
 import me.jiangcai.crud.utils.MapUtils;
 import me.jiangcai.lib.sys.SystemStringConfig;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -129,18 +130,16 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
             switch (putData.getStatus()) {
                 case "APPROVAL":
                     //同意申请
-                    if (putData.getComment() == null) {
+                    if (StringUtils.isBlank(putData.getComment()))
                         throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                                 , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "comment"), null));
-                    }
                     settlementSheetService.approvalSheet(sheet, putData.getComment());
                     break;
                 case "REJECT":
                     //打回申请
-                    if (putData.getComment() == null) {
+                    if (StringUtils.isBlank(putData.getComment()))
                         throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                                 , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "comment"), null));
-                    }
                     settlementSheetService.rejectSheet(sheet, putData.getComment());
                     break;
                 case "ALREADY_PAID":
@@ -152,6 +151,8 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
                     settlementSheetService.alreadyPaid(sheet, putData.getAmount());
                     break;
                 default:
+                    throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                            , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "status"), null));
             }
         } else {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
@@ -168,19 +169,16 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "结算单id"), null));
         }
         if (putData != null) {
-            if (putData.getStatus() == null) {
+            if (putData.getStatus() == null)
                 throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                         , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "status"), null));
-            }
-
             SettlementSheet sheet = settlementSheetService.findSheet(id);
             switch (putData.getStatus()) {
                 case "TO_AUDIT":
                     //提交审核
-                    if (putData.getComment() == null) {
+                    if (StringUtils.isBlank(putData.getComment()))
                         throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                                 , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "comment"), null));
-                    }
                     settlementSheetService.submitSheet(sheet, putData.getComment());
                     break;
                 case "COMPLETE":
@@ -192,12 +190,15 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
                     settlementSheetService.revokeSheet(sheet);
                     break;
                 default:
+                    throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                            , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "status"), null));
             }
         } else {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "putData"), null));
         }
     }
+
 
     /**
      * 结算单是否在列表中展示出来
