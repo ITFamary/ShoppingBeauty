@@ -10,6 +10,7 @@ import com.ming.shopping.beauty.service.entity.item.RechargeCard;
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Represent;
+import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.model.request.DepositBody;
 import com.ming.shopping.beauty.service.service.StagingService;
 import com.ming.shopping.beauty.service.service.StoreItemService;
@@ -40,6 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * <li>用户 可以通过 PUT /capital/payment/{orderId} 完成支付</li>
  * <li>门店代表 可以通过 get /orders 获得该用户已支付的信息</li>
  * </ol>
+ * 门店代表可以完成的工作，店主也可以完成！
  *
  * @author CJ
  */
@@ -54,6 +56,7 @@ public class WechatOrderCase extends TogetherTest {
     public void flow() throws Exception {
         // 1
         Object[] generatingData = stagingService.generateStagingData();
+        Store store = (Store) generatingData[1];
         Represent represent = (Represent) generatingData[2];
         Item[] items = (Item[]) generatingData[3];
         Item okItem = items[0];
@@ -79,6 +82,21 @@ public class WechatOrderCase extends TogetherTest {
                         }
                 )))
         ;
+        // 从第三到最后，门店代表和店主都可以走
+        fromThreeToEnd(okItem, user, represent.getLogin(), represent.getStore().getId());
+        fromThreeToEnd(okItem, user, store.getLogin(), store.getId());
+    }
+
+    /**
+     * 从第三步到最后
+     *
+     * @param okItem          准备购买的项目
+     * @param user            用户
+     * @param storeAboutLogin 门店相关登录
+     * @param storeId         门店id
+     * @throws Exception
+     */
+    private void fromThreeToEnd(Item okItem, Login user, Login storeAboutLogin, Long storeId) throws Exception {
         // 第三
 //        先充值
         recharge();
@@ -89,11 +107,14 @@ public class WechatOrderCase extends TogetherTest {
                 .andExpect(jsonPath("$.orderId").isNumber())
                 .andExpect(jsonPath("$.qrCode").isString())
                 .andReturn().getResponse().getContentAsString(), "$.orderId");
+
         // 第四
-        updateAllRunWith(represent.getLogin());
+
+        updateAllRunWith(storeAboutLogin);
+
         mockMvc.perform(
                 get("/items")
-                        .param("storeId", represent.getStore().getId().toString())
+                        .param("storeId", storeId.toString())
                         .accept(MediaType.APPLICATION_JSON)
         )
                 .andExpect(ClientItemControllerTest.resultMatcherForItems())
@@ -124,7 +145,7 @@ public class WechatOrderCase extends TogetherTest {
 
         // 第七
 
-        updateAllRunWith(represent.getLogin());
+        updateAllRunWith(storeAboutLogin);
         mockMvc.perform(
                 get("/orders").param("orderType", "STORE")
                         .accept(MediaType.APPLICATION_JSON)
