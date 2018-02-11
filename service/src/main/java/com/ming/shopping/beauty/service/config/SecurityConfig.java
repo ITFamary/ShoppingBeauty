@@ -73,6 +73,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         // TODO: 2018/1/8 一下地址都需要与接口核对
         registry
+                //模拟登录
+                .antMatchers("/loginAs/**").permitAll()
                 .antMatchers(QRController.QR_URL).permitAll()
                 //扫码登录
                 .antMatchers("/managerLogin/**").permitAll()
