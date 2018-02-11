@@ -228,9 +228,10 @@ public class MainOrderServiceImpl implements MainOrderService {
                 return (root, cq, cb) -> {
                     List<Predicate> conditions = new ArrayList<>();
                     // 无论如何都不会把根本没下过的订单给发出去
-                    conditions.add(cb.notEqual(root.get(MainOrder_.orderStatus), OrderStatus.EMPTY));
                     if (orderSearcher.getOrderId() != null && orderSearcher.getOrderId() > 0L) {
                         conditions.add(cb.equal(root.get(MainOrder_.orderId), orderSearcher.getOrderId()));
+                    } else {
+                        conditions.add(cb.notEqual(root.get(MainOrder_.orderStatus), OrderStatus.EMPTY));
                     }
                     if (orderSearcher.getUserId() != null && orderSearcher.getUserId() > 0L) {
                         conditions.add(cb.equal(root.join(MainOrder_.payer, JoinType.LEFT)
@@ -316,7 +317,7 @@ public class MainOrderServiceImpl implements MainOrderService {
                                 .join(User_.login, JoinType.LEFT).get(Login_.loginName))
                         .build()
                 , FieldBuilder.asName(MainOrder.class, "items")
-                        .addBiSelect((root,cb)->cb.nullLiteral(List.class))
+                        .addBiSelect((root, cb) -> cb.nullLiteral(List.class))
                         .addFormat((list, type) -> {
                             //返回数据List 格式化
                             if (list == null) {
