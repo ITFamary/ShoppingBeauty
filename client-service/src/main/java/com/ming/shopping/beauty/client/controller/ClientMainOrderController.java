@@ -1,6 +1,7 @@
 package com.ming.shopping.beauty.client.controller;
 
 import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import com.ming.shopping.beauty.service.model.request.NewOrderBody;
@@ -44,11 +45,12 @@ public class ClientMainOrderController {
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAnyRole('" + Login.ROLE_STORE_REPRESENT + "')")
     public void newOrder(@AuthenticationPrincipal Login login, @RequestBody NewOrderBody postData) {
-        mainOrderService.supplementOrder(postData.getOrderId(), login.getRepresent(), postData.getItems());
+        mainOrderService.supplementOrder(postData.getOrderId(), login, postData.getItems());
     }
 
     /**
      * MainOrder列表
+     *
      * @param login
      * @return 查询结果
      */
@@ -57,10 +59,12 @@ public class ClientMainOrderController {
     public void orderList(@AuthenticationPrincipal Login login
             , OrderSearcherBody postData, NativeWebRequest webRequest) throws IOException {
         if ("store".equalsIgnoreCase(postData.getOrderType())) {
-            if (login.getRepresent() == null) {
+            if (login.getStore() != null && login.getLevelSet().contains(ManageLevel.storeRoot)) {
+                postData.setStoreId(login.getRepresent().getStore().getId());
+            } else if (login.getRepresent() != null) {
+                postData.setStoreId(login.getRepresent().getStore().getId());
+            } else
                 throw new ApiResultException(HttpStatusCustom.SC_FORBIDDEN);
-            }
-            postData.setStoreId(login.getRepresent().getStore().getId());
         } else {
             postData.setUserId(login.getId());
         }
@@ -77,6 +81,6 @@ public class ClientMainOrderController {
         search.setOrderId(orderId);
         Page orderList = mainOrderService.findAll(search);
         RowDramatizer dramatizer = new SingleRowDramatizer();
-        dramatizer.writeResponse(orderList.getContent(),mainOrderService.orderListField(), webRequest);
+        dramatizer.writeResponse(orderList.getContent(), mainOrderService.orderListField(), webRequest);
     }
 }

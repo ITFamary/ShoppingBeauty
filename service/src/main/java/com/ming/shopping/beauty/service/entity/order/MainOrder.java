@@ -1,6 +1,6 @@
 package com.ming.shopping.beauty.service.entity.order;
 
-import com.ming.shopping.beauty.service.entity.login.Represent;
+import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.entity.settlement.SettlementSheet;
@@ -48,7 +48,7 @@ public class MainOrder {
      * 下单门店代表
      */
     @ManyToOne
-    private Represent represent;
+    private Login login;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "mainOrder")
     private List<OrderItem> orderItemList;

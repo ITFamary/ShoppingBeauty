@@ -336,12 +336,12 @@ public abstract class CoreServiceTest extends SpringWebTest {
      */
     protected MainOrder mockMainOrder(User user, Represent represent, StoreItem storeItem, Integer amount) {
         MainOrder emptyOrder = mainOrderService.newEmptyOrder(user);
-        return mainOrderService.supplementOrder(emptyOrder.getOrderId(), represent, storeItem, amount);
+        return mainOrderService.supplementOrder(emptyOrder.getOrderId(), represent.getLogin(), storeItem, amount);
     }
 
     protected MainOrder mockMainOrder(User user, Represent represent, Map<StoreItem, Integer> amounts) {
         MainOrder emptyOrder = mainOrderService.newEmptyOrder(user);
-        return mainOrderService.supplementOrder(emptyOrder.getOrderId(), represent, amounts);
+        return mainOrderService.supplementOrder(emptyOrder.getOrderId(), represent.getLogin(), amounts);
     }
 
     protected MainOrder mockMainOrder(User user, Represent represent) {

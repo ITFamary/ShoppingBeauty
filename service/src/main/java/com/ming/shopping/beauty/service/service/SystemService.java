@@ -16,7 +16,7 @@ public interface SystemService {
      * 一些请求地址
      */
     String LOGIN = "/auth";
-    String LOGINOUT = "/logout";
+    String LOGIN_OUT = "/logout";
     String TO_LOGIN = "/toLogin";
     String AUTH = "/auth";
 
@@ -81,9 +81,7 @@ public interface SystemService {
         if(code != null){
             sb.append("code=").append(code).append("&");
         }
-        if(errorMsg != null){
-            sb.append("msg=").append(URLEncoder.encode(errorMsg, Constant.UTF8_ENCODIND));
-        }
+        sb.append("msg=").append(URLEncoder.encode(errorMsg, Constant.UTF8_ENCODIND));
         return toMobileUrl(sb.toString());
     }
 }

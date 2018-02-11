@@ -278,7 +278,7 @@ public class IndexController {
         }
     }
 
-    @GetMapping(SystemService.LOGINOUT)
+    @GetMapping(SystemService.LOGIN_OUT)
     @ResponseStatus(HttpStatus.OK)
     public void logout(@AuthenticationPrincipal Object principal, HttpServletRequest request) {
         // TODO: 2018/1/31 单元测试
