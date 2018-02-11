@@ -4,7 +4,6 @@ import com.ming.shopping.beauty.manage.ManageConfigTest;
 import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Merchant;
-import com.ming.shopping.beauty.service.entity.support.AuditStatus;
 import com.ming.shopping.beauty.service.model.request.NewItemBody;
 import com.ming.shopping.beauty.service.repository.ItemRepository;
 import lombok.Data;
@@ -36,9 +35,9 @@ public class ManageItemControllerTest extends ManageConfigTest {
     public void itemList() throws Exception {
         //首先是不具有管理员权限的人访问,拒绝访问
         //随便来个人只要不是管理员
-        Login fackManage = mockLogin();
+        Login fakeManager = mockLogin();
         //身份运行
-        updateAllRunWith(fackManage);
+        updateAllRunWith(fakeManager);
         mockMvc.perform(get("/item"))
                 .andDo(print())
                 .andExpect(status().isForbidden());

@@ -6,7 +6,6 @@ import com.ming.shopping.beauty.client.controller.ClientItemControllerTest;
 import com.ming.shopping.beauty.client.controller.ClientMainOrderControllerTest;
 import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.item.RechargeCard;
-import com.ming.shopping.beauty.service.entity.item.RechargeCard_;
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Represent;
@@ -14,7 +13,6 @@ import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.model.request.DepositBody;
 import com.ming.shopping.beauty.service.model.request.LoginOrRegisterBody;
-import com.ming.shopping.beauty.service.repository.RechargeCardRepository;
 import com.ming.shopping.beauty.service.service.StagingService;
 import com.ming.shopping.beauty.service.service.StoreItemService;
 import com.ming.shopping.beauty.service.service.SystemService;
@@ -46,8 +44,6 @@ public class WechatSimpleProcessTest extends TogetherTest {
     private StagingService stagingService;
     @Autowired
     private StoreItemService storeItemService;
-    @Autowired
-    private RechargeCardRepository rechargeCardRepository;
 
     /**
      * @author CJ
