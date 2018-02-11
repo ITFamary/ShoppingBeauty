@@ -59,8 +59,7 @@ public class SettlementSheetServiceImpl implements SettlementSheetService {
         );
         //创建新的结算单
         SettlementSheet settlementSheet = new SettlementSheet();
-        Set<MainOrder> mainOrderSet = new HashSet<>();
-        mainOrderSet.addAll(okList);
+        Set<MainOrder> mainOrderSet = new HashSet<>(okList);
         for (MainOrder mainOrder : mainOrderSet) {
             mainOrder.setSettlementSheet(settlementSheet);
             //mainOrderRepository.save(mainOrder);

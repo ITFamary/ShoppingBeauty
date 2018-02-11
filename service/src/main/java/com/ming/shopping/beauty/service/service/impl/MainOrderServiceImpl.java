@@ -227,6 +227,8 @@ public class MainOrderServiceImpl implements MainOrderService {
             public Specification<MainOrder> specification() {
                 return (root, cq, cb) -> {
                     List<Predicate> conditions = new ArrayList<>();
+                    // 无论如何都不会把根本没下过的订单给发出去
+                    conditions.add(cb.notEqual(root.get(MainOrder_.orderStatus), OrderStatus.EMPTY));
                     if (orderSearcher.getOrderId() != null && orderSearcher.getOrderId() > 0L) {
                         conditions.add(cb.equal(root.get(MainOrder_.orderId), orderSearcher.getOrderId()));
                     }
