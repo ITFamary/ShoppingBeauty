@@ -11,7 +11,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.CollectionUtils;
 
-import javax.jws.soap.SOAPBinding;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -22,7 +21,12 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.From;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Predicate;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -126,13 +130,13 @@ public class Login implements UserDetails, CrudFriendly<Long> {
      */
     private boolean guidable;
     /**
-     * 可能是个商户或商户管理员
+     * 关联商户
      */
     @OneToOne
     @JsonIgnore
     private Merchant merchant;
     /**
-     * 可能是个门店或门店管理员
+     * 关联门店
      */
     @OneToOne
     @JsonIgnore

@@ -1,7 +1,6 @@
 package com.ming.shopping.beauty.service.service.impl;
 
 import com.ming.shopping.beauty.service.entity.login.Login;
-import com.ming.shopping.beauty.service.entity.login.Merchant;
 import com.ming.shopping.beauty.service.entity.login.Represent;
 import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.support.ManageLevel;
@@ -9,10 +8,8 @@ import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.repository.LoginRepository;
-import com.ming.shopping.beauty.service.repository.MerchantRepository;
 import com.ming.shopping.beauty.service.repository.RepresentRepository;
 import com.ming.shopping.beauty.service.service.LoginService;
-import com.ming.shopping.beauty.service.service.MerchantService;
 import com.ming.shopping.beauty.service.service.RepresentService;
 import com.ming.shopping.beauty.service.service.StoreService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +47,7 @@ public class RepresentServiceImpl implements RepresentService {
         represent.setStore(store);
         represent.setCreateTime(LocalDateTime.now());
         login.setRepresent(represent);
+        login.setStore(store);
         login.addLevel(ManageLevel.represent);
         return representRepository.save(represent);
     }

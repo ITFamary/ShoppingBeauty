@@ -14,8 +14,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 
-import java.math.BigDecimal;
-
 /**
  * @author lxf
  */
@@ -44,7 +42,7 @@ public class MainOrderServiceTest extends CoreServiceTest {
         Represent represent = mockRepresent(store);
         Login login = mockLogin();
         MainOrder order = mainOrderService.newEmptyOrder(login.getUser());
-        mainOrderService.supplementOrder(order.getOrderId(),represent,storeItem,random.nextInt(5));
+        mainOrderService.supplementOrder(order.getOrderId(), represent.getLogin(), represent.getStore(), storeItem, random.nextInt(5));
         Page orderList = mainOrderService.findAll(new OrderSearcherBody());
 
     }

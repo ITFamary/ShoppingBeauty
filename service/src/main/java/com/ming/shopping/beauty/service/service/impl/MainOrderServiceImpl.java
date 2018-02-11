@@ -5,6 +5,7 @@ import com.ming.shopping.beauty.service.entity.item.Item_;
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Login_;
+import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.login.Store_;
 import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.entity.login.User_;
@@ -102,7 +103,7 @@ public class MainOrderServiceImpl implements MainOrderService {
     @Override
     @BusinessSafe
     @Transactional(rollbackFor = RuntimeException.class)
-    public MainOrder supplementOrder(long orderId, Login login, ItemNum[] items) {
+    public MainOrder supplementOrder(long orderId, Login login, Store store, ItemNum[] items) {
         Map<StoreItem, Integer> amounts = new HashMap<>(items.length);
         for (ItemNum storeItemNum : items) {
             StoreItem item = storeItemService.findStoreItem(storeItemNum.getStoreItemId(), login.getStore());
@@ -110,13 +111,13 @@ public class MainOrderServiceImpl implements MainOrderService {
                 amounts.put(item, storeItemNum.getNum());
             }
         }
-        return supplementOrder(orderId, login, amounts);
+        return supplementOrder(orderId, login, store, amounts);
     }
 
     @Override
     @BusinessSafe
     @Transactional(rollbackFor = RuntimeException.class)
-    public MainOrder supplementOrder(long orderId, Login login, Map<StoreItem, Integer> amounts) {
+    public MainOrder supplementOrder(long orderId, Login login, Store store, Map<StoreItem, Integer> amounts) {
         //门店代表扫码后，把List<OrderItem>塞到了这个订单里，并修改MainOrder
         MainOrder mainOrder = mainOrderRepository.getOne(orderId);
         //判断订单是不是空的
@@ -124,7 +125,7 @@ public class MainOrderServiceImpl implements MainOrderService {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.ORDER_NOT_EMPTY));
         }
         mainOrder.setLogin(login);
-        mainOrder.setStore(login.getStore());
+        mainOrder.setStore(store);
 
         BigDecimal costPrice = BigDecimal.ZERO;
         BigDecimal finalPrice = BigDecimal.ZERO;
@@ -162,10 +163,10 @@ public class MainOrderServiceImpl implements MainOrderService {
     @Override
     @BusinessSafe
     @Transactional(rollbackFor = RuntimeException.class)
-    public MainOrder supplementOrder(long orderId, Login login, StoreItem storeItem, int amount) {
+    public MainOrder supplementOrder(long orderId, Login login, Store store, StoreItem storeItem, int amount) {
         Map<StoreItem, Integer> amounts = new HashMap<>(1);
         amounts.put(storeItem, amount);
-        return supplementOrder(orderId, login, amounts);
+        return supplementOrder(orderId, login, store, amounts);
     }
 
     @Override

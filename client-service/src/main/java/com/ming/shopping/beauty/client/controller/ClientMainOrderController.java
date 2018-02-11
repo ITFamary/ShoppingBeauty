@@ -1,6 +1,7 @@
 package com.ming.shopping.beauty.client.controller;
 
 import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.HttpStatusCustom;
@@ -43,9 +44,9 @@ public class ClientMainOrderController {
     @PostMapping("/order")
     @ResponseBody
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("hasAnyRole('" + Login.ROLE_STORE_REPRESENT + "')")
+    @PreAuthorize("hasAnyRole('" + Login.ROLE_STORE_REPRESENT + "','" + Login.ROLE_STORE_ROOT + "')")
     public void newOrder(@AuthenticationPrincipal Login login, @RequestBody NewOrderBody postData) {
-        mainOrderService.supplementOrder(postData.getOrderId(), login, postData.getItems());
+        mainOrderService.supplementOrder(postData.getOrderId(), login, storeFromLogin(login), postData.getItems());
     }
 
     /**
@@ -59,18 +60,23 @@ public class ClientMainOrderController {
     public void orderList(@AuthenticationPrincipal Login login
             , OrderSearcherBody postData, NativeWebRequest webRequest) throws IOException {
         if ("store".equalsIgnoreCase(postData.getOrderType())) {
-            if (login.getStore() != null && login.getLevelSet().contains(ManageLevel.storeRoot)) {
-                postData.setStoreId(login.getRepresent().getStore().getId());
-            } else if (login.getRepresent() != null) {
-                postData.setStoreId(login.getRepresent().getStore().getId());
-            } else
-                throw new ApiResultException(HttpStatusCustom.SC_FORBIDDEN);
+            Store store = storeFromLogin(login);
+            postData.setStoreId(store.getId());
         } else {
             postData.setUserId(login.getId());
         }
         Page orderList = mainOrderService.findAll(postData);
         RowDramatizer dramatizer = new AntDesignPaginationDramatizer();
         dramatizer.writeResponse(orderList, mainOrderService.orderListField(), webRequest);
+    }
+
+    private Store storeFromLogin(Login login) {
+        if (login.getStore() != null && login.getLevelSet().contains(ManageLevel.storeRoot)) {
+            return login.getStore();
+        } else if (login.getRepresent() != null) {
+            return login.getRepresent().getStore();
+        } else
+            throw new ApiResultException(HttpStatusCustom.SC_FORBIDDEN);
     }
 
     @GetMapping("/orders/{orderId}")
