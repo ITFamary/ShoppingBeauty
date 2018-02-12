@@ -72,10 +72,18 @@ public interface SystemService {
      * @return 错误页面
      * @throws UnsupportedEncodingException
      */
-    default String toErrorUrl(String errorMsg) throws UnsupportedEncodingException {
+    default String toErrorUrl(Integer code, String errorMsg) throws UnsupportedEncodingException {
         if (StringUtils.isEmpty(errorMsg)) {
             errorMsg = "请求错误";
         }
-        return URLEncoder.encode(toMobileUrl("/#/result?msg=" + errorMsg), Constant.UTF8_ENCODIND);
+        StringBuilder sb = new StringBuilder("/#/result?");
+        //前端用不到这个code ,仅为了方便单元测试
+        if(code != null){
+            sb.append("code=").append(code).append("&");
+        }
+        if(errorMsg != null){
+            sb.append("msg=").append(URLEncoder.encode(errorMsg, Constant.UTF8_ENCODIND));
+        }
+        return toMobileUrl(sb.toString());
     }
 }
