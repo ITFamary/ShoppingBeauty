@@ -20,7 +20,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Created by helloztt on 2018/1/4.
@@ -66,8 +65,7 @@ public class RechargeCardServiceImpl implements RechargeCardService {
         rechargeCardRepository.flush();
         cardList.forEach(card -> {
             //需要保证充值卡号为数字，且唯一
-//            card.setCode(String.format("%" + User.CARD_NO_LEN + "d", card.getId()));
-            card.setCode(UUID.randomUUID().toString().replace("-", "").substring(0, User.CARD_NO_LEN).toUpperCase());
+            card.setCode(User.makeCardNo());
         });
         return rechargeCardRepository.save(cardList);
     }

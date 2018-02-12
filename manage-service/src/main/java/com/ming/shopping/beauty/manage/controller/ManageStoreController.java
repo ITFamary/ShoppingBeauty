@@ -1,13 +1,7 @@
 package com.ming.shopping.beauty.manage.controller;
 
 import com.ming.shopping.beauty.manage.modal.StoreCreation;
-import com.ming.shopping.beauty.service.entity.login.Login;
-import com.ming.shopping.beauty.service.entity.login.Login_;
-import com.ming.shopping.beauty.service.entity.login.Merchant_;
-import com.ming.shopping.beauty.service.entity.login.Represent;
-import com.ming.shopping.beauty.service.entity.login.Represent_;
-import com.ming.shopping.beauty.service.entity.login.Store;
-import com.ming.shopping.beauty.service.entity.login.Store_;
+import com.ming.shopping.beauty.service.entity.login.*;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.ApiResult;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
@@ -22,32 +16,20 @@ import me.jiangcai.crud.row.supplier.AntDesignPaginationDramatizer;
 import me.jiangcai.crud.row.supplier.SingleRowDramatizer;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -64,6 +46,8 @@ public class ManageStoreController extends AbstractCrudController<Store, Long, S
     private StoreService storeService;
     @Autowired
     private RepresentService representService;
+    @Autowired
+    private ConversionService conversionService;
 
     /**
      * 门店列表
@@ -268,9 +252,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long, S
                 , FieldBuilder.asName(Store.class, "enabled")
                         .build()
                 , FieldBuilder.asName(Store.class, "createTime")
-                        .addFormat((data, type) -> {
-                            return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(((LocalDateTime) data));
-                        })
+                        .addFormat((data, type) -> conversionService.convert(data, String.class))
                         .build()
 
         );
@@ -284,7 +266,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long, S
                 conditionList.add(cb.equal(root.join(Store_.merchant, JoinType.LEFT).get(Merchant_.id), Long.valueOf(queryData.get("merchantId").toString())));
             }
             if (queryData.get("username") != null) {
-                if(StringUtils.isNotBlank(queryData.get("username").toString())){
+                if (StringUtils.isNotBlank(queryData.get("username").toString())) {
                     conditionList.add(cb.like(root.join(Store_.login).get(Login_.loginName), "%" + queryData.get("username") + "%"));
                 }
             }
@@ -314,9 +296,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long, S
                         .addSelect(representRoot -> representRoot.join(Represent_.login, JoinType.LEFT).get(Login_.loginName))
                         .build()
                 , FieldBuilder.asName(Represent.class, "createTime")
-                        .addFormat((data, type) -> {
-                            return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(((LocalDateTime) data));
-                        })
+                        .addFormat((data, type) -> conversionService.convert(data, String.class))
                         .build()
                 //TODO 应该还有一个业绩相关的.
         );

@@ -3,12 +3,15 @@ package com.ming.shopping.beauty.service.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ming.shopping.beauty.service.entity.support.AuditStatus;
 import com.ming.shopping.beauty.service.entity.support.ManageLevel;
+import com.ming.shopping.beauty.service.utils.Constant;
 import com.ming.shopping.beauty.service.utils.ImageResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.format.FormatterRegistry;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.converter.AbstractHttpMessageConverter;
@@ -33,6 +36,8 @@ import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -45,6 +50,8 @@ import java.util.List;
 public class MvcConfig extends WebMvcConfigurerAdapter {
 
     private final ObjectMapper mapper = new ObjectMapper();
+    @Autowired
+    private ThymeleafViewResolver thymeleafViewResolver;
 
     @Override
     public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
@@ -102,6 +109,23 @@ public class MvcConfig extends WebMvcConfigurerAdapter {
         });
     }
 
+    @Override
+    public void addFormatters(FormatterRegistry registry) {
+        super.addFormatters(registry);
+        registry.addConverter(new Converter<LocalDateTime, String>() {
+            @Override
+            public String convert(LocalDateTime source) {
+                return source.format(Constant.dateTimeFormatter);
+            }
+        });
+        registry.addConverter(new Converter<LocalDate, String>() {
+            @Override
+            public String convert(LocalDate source) {
+                return source.format(Constant.dateFormatter);
+            }
+        });
+    }
+
     /**
      * 文件上传
      */
@@ -110,14 +134,10 @@ public class MvcConfig extends WebMvcConfigurerAdapter {
         return new CommonsMultipartResolver();
     }
 
-
     @Override
     public void addReturnValueHandlers(List<HandlerMethodReturnValueHandler> returnValueHandlers) {
         returnValueHandlers.add(0, new ImageResolver());
     }
-
-    @Autowired
-    private ThymeleafViewResolver thymeleafViewResolver;
 
     @Override
     public void configureViewResolvers(ViewResolverRegistry registry) {

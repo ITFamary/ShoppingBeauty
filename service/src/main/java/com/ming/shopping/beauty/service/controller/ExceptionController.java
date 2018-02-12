@@ -64,7 +64,7 @@ public class ExceptionController {
                     .body(objectMapper.writeValueAsString(exception.getApiResult()))
                     ;
         } else {
-            String errorUrl = systemService.toMobileUrl("/error?status=" + exception.getHttpStatus() + "&message=" + errorMsg);
+            String errorUrl = systemService.toErrorUrl(errorMsg);
             //替换域名为请求时的域名
             if (request.getHeader("X-Forwarded-Host") != null) {
                 errorUrl = errorUrl.replaceFirst("[a-zA-Z.0-9]+", request.getHeader("X-Forwarded-Host"));
@@ -126,10 +126,8 @@ public class ExceptionController {
      */
     private boolean isAjaxRequestOrBackJson(HttpServletRequest request) {
         String accept = request.getHeader("accept");
-        if (!StringUtils.isEmpty(accept) && (
+        return !(!StringUtils.isEmpty(accept) && (
                 accept.toLowerCase().contains(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                        || accept.toLowerCase().contains(MediaType.TEXT_HTML_VALUE)))
-            return false;
-        return true;
+                        || accept.toLowerCase().contains(MediaType.TEXT_HTML_VALUE)));
     }
 }
