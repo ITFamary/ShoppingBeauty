@@ -6,6 +6,7 @@ import com.ming.shopping.beauty.client.controller.ClientItemControllerTest;
 import com.ming.shopping.beauty.client.controller.ClientMainOrderControllerTest;
 import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.item.RechargeCard;
+import com.ming.shopping.beauty.service.entity.item.RechargeCard_;
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Represent;
@@ -13,6 +14,7 @@ import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.model.request.DepositBody;
 import com.ming.shopping.beauty.service.model.request.LoginOrRegisterBody;
+import com.ming.shopping.beauty.service.repository.RechargeCardRepository;
 import com.ming.shopping.beauty.service.service.StagingService;
 import com.ming.shopping.beauty.service.service.StoreItemService;
 import com.ming.shopping.beauty.service.service.SystemService;
@@ -26,6 +28,7 @@ import org.springframework.mock.web.MockHttpSession;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -41,9 +44,10 @@ public class WechatSimpleProcessTest extends TogetherTest {
 
     @Autowired
     private StagingService stagingService;
-
     @Autowired
     private StoreItemService storeItemService;
+    @Autowired
+    private RechargeCardRepository rechargeCardRepository;
 
     /**
      * @author CJ
@@ -164,10 +168,15 @@ public class WechatSimpleProcessTest extends TogetherTest {
      * <li>请求 GET /user/vipCard: 返回{@link com.ming.shopping.beauty.service.model.HttpStatusCustom#SC_DATA_NOT_VALIDATE}210，resultCode={@link com.ming.shopping.beauty.service.model.ResultCodeEnum#USER_NOT_ACTIVE} {@code 2005}</li>
      * <li>请求 POST /capital/deposit: 充值成功，跳转到目标页面</li>
      * <li>请求 GET /user/vipCard：返回200</li>
+     * <li>新的session</li>
+     * <li>请求 GET /user: 返回 {@link com.ming.shopping.beauty.service.model.HttpStatusCustom#SC_NO_OPENID} {@code 431}</li>
+     * <li>请求 GET /auth 进行授权</li>
+     * <li>请求 GET /user: 返回200</li>
      * </ol>
      */
     @Test
     public void register() throws Exception {
+        Object[] registerData = stagingService.registerStagingData();
         //来一个新的微信用户
         nextCurrentWechatAccount();
         MockHttpSession session = (MockHttpSession) mockMvc.perform(wechatGet("/user"))
@@ -175,7 +184,7 @@ public class WechatSimpleProcessTest extends TogetherTest {
                 .andReturn().getRequest().getSession();
 
         //授权去,随便搞个跳转地址
-        final String userUrl = "/user", vipUrl = "/user/vipCard";
+        final String userUrl = "/user", vipUrl = "/user/vipCard", deposit = "/capital/deposit";
         mockMvc.perform(wechatGet(SystemService.AUTH)
                 .param("redirectUrl", userUrl)
                 .session(session))
@@ -203,8 +212,33 @@ public class WechatSimpleProcessTest extends TogetherTest {
                 .session(session))
                 .andExpect(status().is(HttpStatusCustom.SC_DATA_NOT_VALIDATE))
                 .andExpect(jsonPath(RESULT_CODE_PATH).value(ResultCodeEnum.USER_NOT_ACTIVE.getCode()));
-        // TODO: 2018-02-10 充值卡测试
 
+        //充值卡充值
+        //找一张没用的充值卡
+        List<RechargeCard> rechargeCard = (List<RechargeCard>) registerData[0];
+        String cdKey = rechargeCard.stream().findAny().get().getCode();
+        mockMvc.perform(wechatPost(deposit).session(session)
+                .header(HttpHeaders.ACCEPT, MediaType.TEXT_HTML)
+                .param("cdKey", cdKey)).andDo(print())
+                .andExpect(status().isFound());
+        //这个时候个人中心有数据了
+        mockMvc.perform(wechatGet(vipUrl)
+                .session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.vipCard").value(cdKey));
+
+        //新的session
+        session = (MockHttpSession) mockMvc.perform(wechatGet("/user"))
+                .andExpect(status().is(HttpStatusCustom.SC_NO_OPENID))
+                .andReturn().getRequest().getSession();
+        mockMvc.perform(wechatGet(SystemService.AUTH)
+                .param("redirectUrl", userUrl)
+                .session(session))
+                .andExpect(status().isFound())
+                .andExpect(header().string("Location", userUrl));
+        mockMvc.perform(wechatGet(userUrl)
+                .session(session))
+                .andExpect(status().isOk());
     }
 
     private void register(LoginOrRegisterBody registerBody, MockHttpSession session) throws Exception {

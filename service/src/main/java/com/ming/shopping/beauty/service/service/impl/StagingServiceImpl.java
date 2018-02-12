@@ -1,6 +1,7 @@
 package com.ming.shopping.beauty.service.service.impl;
 
 import com.ming.shopping.beauty.service.entity.item.Item;
+import com.ming.shopping.beauty.service.entity.item.RechargeCard;
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Merchant;
@@ -33,6 +34,7 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
@@ -95,7 +97,7 @@ public class StagingServiceImpl implements StagingService {
         }
         if (rechargeCardRepository.count() < count) {
             //在 staging 中建立足够多的充值卡
-            rechargeCardService.newCard(count, null, null);
+            registerStagingData();
         }
     }
 
@@ -138,6 +140,12 @@ public class StagingServiceImpl implements StagingService {
         return new Object[]{
                 merchant, store, represent, items
         };
+    }
+
+    @Override
+    public Object[] registerStagingData() throws IOException {
+        List<RechargeCard> rechargeCardList = rechargeCardService.newCard(20, null, null);
+        return new Object[]{rechargeCardList};
     }
 
     @Autowired

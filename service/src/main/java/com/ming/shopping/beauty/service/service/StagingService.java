@@ -34,4 +34,12 @@ public interface StagingService {
      * @throws IOException
      */
     Object[] generateStagingData() throws IOException;
+
+    /**
+     * 注册登录流程需要的数据
+     * 20张充值卡
+     * @return
+     * @throws IOException
+     */
+    Object[] registerStagingData() throws IOException;
 }
