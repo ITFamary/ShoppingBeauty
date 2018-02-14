@@ -14,7 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
-import java.util.List;
+import java.util.Collection;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -83,7 +83,7 @@ public class WechatJoinCase extends TogetherTest {
 
         //充值卡充值
         //找一张没用的充值卡
-        List<RechargeCard> rechargeCard = (List<RechargeCard>) registerData[0];
+        Collection<RechargeCard> rechargeCard = (Collection<RechargeCard>) registerData[0];
         String cdKey = rechargeCard.stream().findAny().get().getCode();
         mockMvc.perform(wechatPost(deposit).session(session)
                 .header(HttpHeaders.ACCEPT, MediaType.TEXT_HTML)

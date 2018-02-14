@@ -1,8 +1,9 @@
 package com.ming.shopping.beauty.service.service;
 
+import com.ming.shopping.beauty.service.entity.business.RechargeCardBatch;
 import com.ming.shopping.beauty.service.entity.item.RechargeCard;
-
-import java.util.List;
+import com.ming.shopping.beauty.service.entity.login.Login;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author helloztt
@@ -10,23 +11,14 @@ import java.util.List;
 public interface RechargeCardService {
 
     /**
-     * 新增卡密
-     *
-     * @param guideId  推荐人
-     * @param manageId 操作员
-     * @return
+     * @param operator     操作者；可以为null
+     * @param guideId      发展者
+     * @param emailAddress 发展者的email地址；它可以接收到卡密信息
+     * @param num          数量
+     * @return 批次
      */
-    RechargeCard newCard(Long guideId, Long manageId);
-
-    /**
-     * 批量新增卡密
-     *
-     * @param num      数量
-     * @param guideId  推荐人
-     * @param manageId 操作员
-     * @return
-     */
-    List<RechargeCard> newCard(int num, Long guideId, Long manageId);
+    @Transactional
+    RechargeCardBatch newBatch(Login operator, long guideId, String emailAddress, int num);
 
     /**
      * 校验卡密

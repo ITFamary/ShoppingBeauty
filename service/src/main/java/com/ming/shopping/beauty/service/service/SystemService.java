@@ -21,6 +21,11 @@ public interface SystemService {
     String AUTH = "/auth";
 
     /**
+     * @return 当前充值卡面额
+     */
+    Integer currentCardAmount();
+
+    /**
      * @param uri 传入uri通常/开头
      * @return 完整路径
      * @deprecated 应该准确地说明用户场景，比如桌面版或者移动版
@@ -78,7 +83,7 @@ public interface SystemService {
         }
         StringBuilder sb = new StringBuilder("/#/result?");
         //前端用不到这个code ,仅为了方便单元测试
-        if(code != null){
+        if (code != null) {
             sb.append("code=").append(code).append("&");
         }
         sb.append("msg=").append(URLEncoder.encode(errorMsg, Constant.UTF8_ENCODIND));

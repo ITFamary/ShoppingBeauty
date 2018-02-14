@@ -1,7 +1,7 @@
 package com.ming.shopping.beauty.service.service.impl;
 
+import com.ming.shopping.beauty.service.entity.business.RechargeCardBatch;
 import com.ming.shopping.beauty.service.entity.item.Item;
-import com.ming.shopping.beauty.service.entity.item.RechargeCard;
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Merchant;
@@ -13,6 +13,7 @@ import com.ming.shopping.beauty.service.repository.LoginRepository;
 import com.ming.shopping.beauty.service.repository.RechargeCardRepository;
 import com.ming.shopping.beauty.service.repository.StoreItemRepository;
 import com.ming.shopping.beauty.service.repository.UserRepository;
+import com.ming.shopping.beauty.service.service.InitService;
 import com.ming.shopping.beauty.service.service.ItemService;
 import com.ming.shopping.beauty.service.service.LoginService;
 import com.ming.shopping.beauty.service.service.MerchantService;
@@ -34,7 +35,6 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
@@ -144,8 +144,19 @@ public class StagingServiceImpl implements StagingService {
 
     @Override
     public Object[] registerStagingData() throws IOException {
-        List<RechargeCard> rechargeCardList = rechargeCardService.newCard(20, null, null);
-        return new Object[]{rechargeCardList};
+        // 默认直接给蒋才，不过嘛 若是尚未存在一个这么个用户，那么就随便找一个用户 并且切换为可推荐的
+        Login target = loginRepository.findByLoginName(InitService.cjMobile);
+        if (target == null) {
+            target = loginRepository.findAll().stream()
+                    .min((o1, o2) -> new Random().nextInt())
+                    .orElseThrow(IllegalStateException::new);
+        }
+        loginService.setGuidable(target.getId(), true);
+
+        RechargeCardBatch batch = rechargeCardService.newBatch(null
+                , target.getId(), "caijiang@mingshz.com"
+                , 20);
+        return new Object[]{batch.getCardSet()};
     }
 
     @Autowired

@@ -165,7 +165,7 @@ public class WechatOrderCase extends TogetherTest {
     }
 
     private void recharge() throws Exception {
-        RechargeCard rechargeCard = mockRechargeCard(null, null);
+        RechargeCard rechargeCard = mockRechargeCard();
         DepositBody postData = new DepositBody();
         postData.setCdKey(rechargeCard.getCode());
         mockMvc.perform(post(DEPOSIT)

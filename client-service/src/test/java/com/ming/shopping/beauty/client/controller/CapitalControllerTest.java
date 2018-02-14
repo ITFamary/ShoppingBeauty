@@ -108,7 +108,7 @@ public class CapitalControllerTest extends ClientConfigTest {
                         + "&msg=")));
         //3、正确的充值卡
         BigDecimal current = loginService.findBalance(mockLogin.getUser().getId());
-        RechargeCard rechargeCard = mockRechargeCard(null, null);
+        RechargeCard rechargeCard = mockRechargeCard();
         postData.setCdKey(rechargeCard.getCode());
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)

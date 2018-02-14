@@ -19,4 +19,6 @@ public interface RechargeCardRepository extends JpaRepository<RechargeCard, Long
      */
     @Query("SELECT rc FROM RechargeCard rc WHERE rc.code IN (SELECT rc.code FROM RechargeCard rc GROUP BY rc.code HAVING count(rc.code)>1)")
     List<RechargeCard> repetitiveCode();
+
+    List<RechargeCard> findByBatch_EmailAddress(String email);
 }

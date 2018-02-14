@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.text.MessageFormat;
+import java.util.Map;
 
 /**
  * @author lxf
@@ -37,17 +38,18 @@ public class ManageRechargeCardController {
      *
      * @param login       操作员
      * @param guideUserId 推荐者
-     * @param num         生成的数量
      */
     @PostMapping("/recharge/{guideId}")
     @ResponseBody
     public ApiResult massProduction(@AuthenticationPrincipal Login login, @PathVariable("guideId") long guideUserId
-            , @RequestBody Integer num) {
+            , @RequestBody Map<String, Object> data) {
+        int number = (int) data.get("num");
+        String emailAddress = (String) data.get("email");
         final Login one = loginService.findOne(guideUserId);
-        if (one != null) {
+        if (one != null && one.isGuidable()) {
             //生成卡
             try {
-                rechargeCardService.newCard(num, guideUserId, login.getId());
+                rechargeCardService.newBatch(login, guideUserId, emailAddress, number);
             } catch (Exception e) {
                 log.warn("on newCard", e);
                 return ApiResult.withOk("生成失败");
@@ -55,7 +57,7 @@ public class ManageRechargeCardController {
         } else
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), guideUserId), null));
-        return ApiResult.withOk("总数:" + num);
+        return ApiResult.withOk("总数:" + number);
     }
 
 

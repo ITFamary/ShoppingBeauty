@@ -72,15 +72,7 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
         Login root = mockRoot();
         updateAllRunWith(root);
         //生成充值卡
-        mockMvc.perform(post("/recharge" + "/" + mockRepresent.getId())
-                .content(objectMapper.writeValueAsString(1))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isOk());
-        final RechargeCard rechargeCard = rechargeCardRepository.findAll().stream()
-                .filter(c -> !c.isUsed())
-                .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("rechargeCard是null生成充值卡失败"));
+        final RechargeCard rechargeCard = mockRechargeCard(mockRepresent.getLogin());
         //充值卡充值
         //以充值人运行
         BigDecimal balance = getCurrentBalance(merchant.getLogin(), login);
