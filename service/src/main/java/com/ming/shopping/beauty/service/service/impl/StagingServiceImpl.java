@@ -85,7 +85,7 @@ public class StagingServiceImpl implements StagingService {
 
 
     @Override
-    public void initStagingEnv() throws IOException {
+    public void initStagingEnv() throws IOException, ClassNotFoundException {
         int count = 20;
         if (loginRepository.count() <= count) {
             // 在staging 中 建立足够多的测试帐号
@@ -106,7 +106,7 @@ public class StagingServiceImpl implements StagingService {
 
     @Override
     @PostConstruct
-    public void init() throws IOException {
+    public void init() throws IOException, ClassNotFoundException {
         if (environment.acceptsProfiles("staging")) {
             initStagingEnv();
         }
@@ -143,7 +143,7 @@ public class StagingServiceImpl implements StagingService {
     }
 
     @Override
-    public Object[] registerStagingData() throws IOException {
+    public Object[] registerStagingData() throws IOException, ClassNotFoundException {
         // 默认直接给蒋才，不过嘛 若是尚未存在一个这么个用户，那么就随便找一个用户 并且切换为可推荐的
         Login target = loginRepository.findByLoginName(InitService.cjMobile);
         if (target == null) {

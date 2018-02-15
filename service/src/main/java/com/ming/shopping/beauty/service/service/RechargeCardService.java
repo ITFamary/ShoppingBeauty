@@ -5,6 +5,9 @@ import com.ming.shopping.beauty.service.entity.item.RechargeCard;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 /**
  * @author helloztt
  */
@@ -18,7 +21,16 @@ public interface RechargeCardService {
      * @return 批次
      */
     @Transactional
-    RechargeCardBatch newBatch(Login operator, long guideId, String emailAddress, int num);
+    RechargeCardBatch newBatch(Login operator, long guideId, String emailAddress, int num) throws ClassNotFoundException;
+
+    /**
+     * 生成报表
+     *
+     * @param batch  批次
+     * @param output 输出目标
+     * @throws IOException
+     */
+    void batchReport(RechargeCardBatch batch, OutputStream output) throws IOException;
 
     /**
      * 校验卡密

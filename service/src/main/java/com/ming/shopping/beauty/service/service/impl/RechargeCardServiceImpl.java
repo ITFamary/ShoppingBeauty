@@ -1,6 +1,7 @@
 package com.ming.shopping.beauty.service.service.impl;
 
 import com.ming.shopping.beauty.service.aop.BusinessSafe;
+import com.ming.shopping.beauty.service.config.ServiceConfig;
 import com.ming.shopping.beauty.service.entity.business.RechargeCardBatch;
 import com.ming.shopping.beauty.service.entity.item.RechargeCard;
 import com.ming.shopping.beauty.service.entity.item.RechargeCard_;
@@ -15,12 +16,31 @@ import com.ming.shopping.beauty.service.repository.RechargeCardRepository;
 import com.ming.shopping.beauty.service.repository.UserRepository;
 import com.ming.shopping.beauty.service.service.RechargeCardService;
 import com.ming.shopping.beauty.service.service.SystemService;
+import me.jiangcai.lib.notice.Content;
+import me.jiangcai.lib.notice.NoticeService;
+import me.jiangcai.lib.notice.To;
+import me.jiangcai.lib.notice.email.EmailAddress;
+import me.jiangcai.poi.template.IllegalTemplateException;
+import me.jiangcai.poi.template.POITemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.env.Environment;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.activation.DataSource;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -40,9 +60,18 @@ public class RechargeCardServiceImpl implements RechargeCardService {
     private RechargeCardBatchRepository rechargeCardBatchRepository;
     @Autowired
     private SystemService systemService;
+    @Autowired
+    private NoticeService noticeService;
+    @Autowired
+    private ConversionService conversionService;
+    @Autowired
+    private Environment environment;
+    @Autowired
+    private POITemplateService poiTemplateService;
 
     @Override
-    public RechargeCardBatch newBatch(Login operator, long guideId, String emailAddress, int num) {
+    public RechargeCardBatch newBatch(Login operator, long guideId, String emailAddress, int num)
+            throws ClassNotFoundException {
         RechargeCardBatch batch = new RechargeCardBatch();
         batch.setManager(operator);
         batch.setCreateTime(LocalDateTime.now());
@@ -59,8 +88,110 @@ public class RechargeCardServiceImpl implements RechargeCardService {
         return batch;
     }
 
-    private void sendToUser(RechargeCardBatch batch) {
-        // TODO 发送给用户
+    @Override
+    public void batchReport(RechargeCardBatch batch, OutputStream output) throws IOException {
+        try {
+            poiTemplateService.export(
+                    output
+                    , () -> new ArrayList<>(batch.getCardSet())
+                    , null
+                    , null, null, null
+                    , new ClassPathResource("/recharge-card-batch-report.xml"), null
+            );
+        } catch (IllegalTemplateException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private void sendToUser(RechargeCardBatch batch) throws ClassNotFoundException {
+        To dist = new To() {
+            @Override
+            public String mobilePhone() {
+                return batch.getGuideUser().getUsername();
+            }
+
+            @Override
+            public Set<EmailAddress> emailTo() {
+                String name = batch.getGuideUser().getWechatUser() != null
+                        ? batch.getGuideUser().getWechatUser().getNickname() : batch.getGuideUser().getUsername();
+                return Collections.singleton(
+                        new EmailAddress(name, batch.getEmailAddress())
+                );
+            }
+        };
+
+        Content content = new Content() {
+            @Override
+            public String asText() {
+                return "卡密已经发往您的邮箱:" + batch.getEmailAddress() + "，请注意查收；若该邮箱非你所有请联系客服。";
+            }
+
+            @Override
+            public List<DataSource> embedAttachments() {
+                return null;
+            }
+
+            @Override
+            public List<DataSource> otherAttachments() {
+                return Collections.singletonList(new DataSource() {
+                    @Override
+                    public InputStream getInputStream() throws IOException {
+                        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                        batchReport(batch, buffer);
+                        buffer.flush();
+                        return new ByteArrayInputStream(buffer.toByteArray());
+                    }
+
+                    @Override
+                    public OutputStream getOutputStream() {
+                        throw new IllegalStateException("not supported");
+                    }
+
+                    @Override
+                    public String getContentType() {
+                        return "application/vnd.ms-excel";
+//                        return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                    }
+
+                    @Override
+                    public String getName() {
+                        return conversionService.convert(batch.getCreateTime(), String.class) + "生成的充值卡.xls";
+                    }
+                });
+            }
+
+            @Override
+            public String asHtml(Map<String, String> map) {
+                return "<p>您好，</p><p>您本次申请的充值卡已下发，请查看附件。</p>";
+            }
+
+            @Override
+            public String asTitle() {
+                return conversionService.convert(batch.getCreateTime(), String.class) + "为" +
+                        (batch.getGuideUser().getWechatUser() == null ? batch.getGuideUser().getUsername()
+                                : batch.getGuideUser().getWechatUser().getNickname()) + "生成的充值卡的信息";
+            }
+
+            @Override
+            public String signName() {
+                return null;
+            }
+
+            @Override
+            public String templateName() {
+                return null;
+            }
+
+            @Override
+            public Map<String, ?> templateParameters() {
+                return null;
+            }
+        };
+
+        if (!environment.acceptsProfiles(ServiceConfig.PROFILE_UNIT_TEST) || environment.acceptsProfiles("emulation")) {
+            noticeService.send("me.jiangcai.lib.notice.EmailNoticeSupplier", dist, content);
+            noticeService.send(environment.getProperty("com.huotu.notice.supplier"), dist, content);
+        }
     }
 
     private Set<RechargeCard> newCardSet(RechargeCardBatch batch, int num, Integer amount) {

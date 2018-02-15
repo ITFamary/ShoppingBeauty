@@ -62,6 +62,7 @@ public class InitService implements VersionUpgrade<Version> {
             Login login = loginService.newUser(cjMobile, "将", Gender.male, null, null
                     , null, null);
             login.addLevel(ManageLevel.root);
+            login.setGuidable(true);
             loginRepository.save(login);
         }
 

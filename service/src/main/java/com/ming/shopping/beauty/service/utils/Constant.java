@@ -3,9 +3,11 @@ package com.ming.shopping.beauty.service.utils;
 import com.huotu.verification.VerificationType;
 import me.jiangcai.lib.notice.Content;
 
+import javax.activation.DataSource;
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -56,6 +58,26 @@ public class Constant {
             @Override
             public String asText() {
                 return type.message(code);
+            }
+
+            @Override
+            public List<DataSource> embedAttachments() {
+                return null;
+            }
+
+            @Override
+            public List<DataSource> otherAttachments() {
+                return null;
+            }
+
+            @Override
+            public String asHtml(Map<String, String> attachmentRefs) {
+                return null;
+            }
+
+            @Override
+            public String asTitle() {
+                return null;
             }
 
             @Override
