@@ -58,14 +58,18 @@ public class InitService implements VersionUpgrade<Version> {
      * 定义一些超级管理员
      */
     private void initSuperManage() {
-        if (loginRepository.findByLoginName(cjMobile) == null) {
-            Login login = loginService.newUser(cjMobile, "将", Gender.male, null, null
+        addRoot(cjMobile, "蒋");
+        addRoot("13588049877", "叶");
+    }
+
+    private void addRoot(String mobile, String lastName) {
+        if (loginRepository.findByLoginName(mobile) == null) {
+            Login login = loginService.newUser(mobile, lastName, Gender.male, null, null
                     , null, null);
             login.addLevel(ManageLevel.root);
             login.setGuidable(true);
             loginRepository.save(login);
         }
-
     }
 
     private void database() throws SQLException {
