@@ -18,10 +18,11 @@ public interface RechargeCardService {
      * @param guideId      发展者
      * @param emailAddress 发展者的email地址；它可以接收到卡密信息
      * @param num          数量
+     * @param silence      保持安静，即便发送异常也别出声。
      * @return 批次
      */
     @Transactional
-    RechargeCardBatch newBatch(Login operator, long guideId, String emailAddress, int num) throws ClassNotFoundException;
+    RechargeCardBatch newBatch(Login operator, long guideId, String emailAddress, int num, boolean silence) throws ClassNotFoundException;
 
     RechargeCardBatch findBatch(long id);
 
@@ -38,9 +39,10 @@ public interface RechargeCardService {
      * 发送卡密信息给引导者
      *
      * @param batch 批次
+     * @param silence
      * @throws ClassNotFoundException
      */
-    void sendToUser(RechargeCardBatch batch) throws ClassNotFoundException;
+    void sendToUser(RechargeCardBatch batch, boolean silence) throws ClassNotFoundException;
 
     /**
      * 校验卡密

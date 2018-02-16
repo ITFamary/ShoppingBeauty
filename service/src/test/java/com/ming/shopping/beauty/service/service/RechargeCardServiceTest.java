@@ -23,7 +23,7 @@ public class RechargeCardServiceTest extends CoreServiceTest {
         File file = new File("target/card_report.xls");
         try (FileOutputStream outputStream = new FileOutputStream(file)) {
             RechargeCardBatch batch = rechargeCardService.newBatch(null, loginService.findOne(InitService.cjMobile).getId()
-                    , "caijiang@mingshz.com", 20);
+                    , "caijiang@mingshz.com", 20, false);
             rechargeCardService.batchReport(batch, outputStream);
             outputStream.flush();
         }

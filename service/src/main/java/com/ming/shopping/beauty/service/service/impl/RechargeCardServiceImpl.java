@@ -20,8 +20,11 @@ import me.jiangcai.lib.notice.Content;
 import me.jiangcai.lib.notice.NoticeService;
 import me.jiangcai.lib.notice.To;
 import me.jiangcai.lib.notice.email.EmailAddress;
+import me.jiangcai.lib.notice.exception.NoticeException;
 import me.jiangcai.poi.template.IllegalTemplateException;
 import me.jiangcai.poi.template.POITemplateService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.env.Environment;
@@ -50,6 +53,7 @@ import java.util.stream.Stream;
  */
 @Service
 public class RechargeCardServiceImpl implements RechargeCardService {
+    private static final Log log = LogFactory.getLog(RechargeCardServiceImpl.class);
     @Autowired
     private RechargeCardRepository rechargeCardRepository;
     @Autowired
@@ -75,7 +79,7 @@ public class RechargeCardServiceImpl implements RechargeCardService {
     }
 
     @Override
-    public RechargeCardBatch newBatch(Login operator, long guideId, String emailAddress, int num)
+    public RechargeCardBatch newBatch(Login operator, long guideId, String emailAddress, int num, boolean silence)
             throws ClassNotFoundException {
         RechargeCardBatch batch = new RechargeCardBatch();
         batch.setManager(operator);
@@ -88,7 +92,7 @@ public class RechargeCardServiceImpl implements RechargeCardService {
         // 生成特定数量的卡密
         batch.setCardSet(newCardSet(batch, num, defaultAmount));
 
-        sendToUser(batch);
+        sendToUser(batch, silence);
 
         return batch;
     }
@@ -109,7 +113,7 @@ public class RechargeCardServiceImpl implements RechargeCardService {
     }
 
     @Override
-    public void sendToUser(RechargeCardBatch batch) throws ClassNotFoundException {
+    public void sendToUser(RechargeCardBatch batch, boolean silence) throws ClassNotFoundException {
         To dist = new To() {
             @Override
             public String mobilePhone() {
@@ -194,10 +198,18 @@ public class RechargeCardServiceImpl implements RechargeCardService {
             }
         };
 
-        if (!environment.acceptsProfiles(ServiceConfig.PROFILE_UNIT_TEST) || environment.acceptsProfiles("emulation")) {
-            noticeService.send("me.jiangcai.lib.notice.EmailNoticeSupplier", dist, content);
-            noticeService.send(environment.getProperty("com.huotu.notice.supplier"), dist, content);
+        try {
+            if (!environment.acceptsProfiles(ServiceConfig.PROFILE_UNIT_TEST) || environment.acceptsProfiles("emulation")) {
+                noticeService.send("me.jiangcai.lib.notice.EmailNoticeSupplier", dist, content);
+                noticeService.send(environment.getProperty("com.huotu.notice.supplier"), dist, content);
+            }
+        } catch (NoticeException ex) {
+            if (silence)
+                log.warn("", ex);
+            else
+                throw ex;
         }
+
     }
 
     private Set<RechargeCard> newCardSet(RechargeCardBatch batch, int num, Integer amount) {

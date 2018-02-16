@@ -53,14 +53,14 @@ public class ManageRechargeBatchController
     @Transactional(readOnly = true)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void sendEmail(@PathVariable("id") long id) throws ClassNotFoundException {
-        rechargeCardService.sendToUser(rechargeCardService.findBatch(id));
+        rechargeCardService.sendToUser(rechargeCardService.findBatch(id), false);
     }
 
     @Override
     protected RechargeCardBatch preparePersist(RechargeCardBatchCreation data, WebRequest request) {
         Login login = (Login) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         try {
-            return rechargeCardService.newBatch(login, data.getGuideId(), data.getEmailAddress(), data.getNumber());
+            return rechargeCardService.newBatch(login, data.getGuideId(), data.getEmailAddress(), data.getNumber(), false);
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(e);
         }

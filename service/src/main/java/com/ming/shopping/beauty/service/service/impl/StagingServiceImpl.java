@@ -155,7 +155,7 @@ public class StagingServiceImpl implements StagingService {
 
         RechargeCardBatch batch = rechargeCardService.newBatch(null
                 , target.getId(), "caijiang@mingshz.com"
-                , 20);
+                , 20, true);
         return new Object[]{batch.getCardSet()};
     }
 

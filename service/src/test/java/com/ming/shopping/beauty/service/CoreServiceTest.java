@@ -381,7 +381,7 @@ public abstract class CoreServiceTest extends SpringWebTest {
 
     protected RechargeCard mockRechargeCard(Login guide) throws Exception {
         RechargeCardBatch batch = rechargeCardService.newBatch(null, guide.getId()
-                , randomEmailAddress(), 1);
+                , randomEmailAddress(), 1, false);
         return batch.getCardSet().stream()
                 .findAny()
                 .orElseThrow(IllegalStateException::new);
