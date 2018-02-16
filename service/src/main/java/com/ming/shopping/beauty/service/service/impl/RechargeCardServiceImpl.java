@@ -70,6 +70,11 @@ public class RechargeCardServiceImpl implements RechargeCardService {
     private POITemplateService poiTemplateService;
 
     @Override
+    public RechargeCardBatch findBatch(long id) {
+        return rechargeCardBatchRepository.findOne(id);
+    }
+
+    @Override
     public RechargeCardBatch newBatch(Login operator, long guideId, String emailAddress, int num)
             throws ClassNotFoundException {
         RechargeCardBatch batch = new RechargeCardBatch();
@@ -103,7 +108,8 @@ public class RechargeCardServiceImpl implements RechargeCardService {
         }
     }
 
-    private void sendToUser(RechargeCardBatch batch) throws ClassNotFoundException {
+    @Override
+    public void sendToUser(RechargeCardBatch batch) throws ClassNotFoundException {
         To dist = new To() {
             @Override
             public String mobilePhone() {

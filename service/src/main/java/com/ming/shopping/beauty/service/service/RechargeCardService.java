@@ -23,6 +23,8 @@ public interface RechargeCardService {
     @Transactional
     RechargeCardBatch newBatch(Login operator, long guideId, String emailAddress, int num) throws ClassNotFoundException;
 
+    RechargeCardBatch findBatch(long id);
+
     /**
      * 生成报表
      *
@@ -31,6 +33,14 @@ public interface RechargeCardService {
      * @throws IOException
      */
     void batchReport(RechargeCardBatch batch, OutputStream output) throws IOException;
+
+    /**
+     * 发送卡密信息给引导者
+     *
+     * @param batch 批次
+     * @throws ClassNotFoundException
+     */
+    void sendToUser(RechargeCardBatch batch) throws ClassNotFoundException;
 
     /**
      * 校验卡密
