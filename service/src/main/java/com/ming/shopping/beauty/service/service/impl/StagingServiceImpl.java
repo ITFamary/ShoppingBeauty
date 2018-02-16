@@ -22,6 +22,7 @@ import com.ming.shopping.beauty.service.service.RepresentService;
 import com.ming.shopping.beauty.service.service.StagingService;
 import com.ming.shopping.beauty.service.service.StoreItemService;
 import com.ming.shopping.beauty.service.service.StoreService;
+import com.ming.shopping.beauty.service.service.impl.support.AbstractLoginService;
 import me.jiangcai.jpa.entity.support.Address;
 import me.jiangcai.lib.resource.service.ResourceService;
 import me.jiangcai.wx.model.Gender;
@@ -42,7 +43,7 @@ import java.util.UUID;
  * @author CJ
  */
 @Service
-public class StagingServiceImpl implements StagingService {
+public class StagingServiceImpl extends AbstractLoginService implements StagingService {
 
     @Autowired
     private LoginRepository loginRepository;
@@ -147,9 +148,7 @@ public class StagingServiceImpl implements StagingService {
         // 默认直接给蒋才，不过嘛 若是尚未存在一个这么个用户，那么就随便找一个用户 并且切换为可推荐的
         Login target = loginRepository.findByLoginName(InitService.cjMobile);
         if (target == null) {
-            target = loginRepository.findAll().stream()
-                    .min((o1, o2) -> new Random().nextInt())
-                    .orElseThrow(IllegalStateException::new);
+            target = addRoot(InitService.cjMobile, "蒋");
         }
         loginService.setGuidable(target.getId(), true);
 

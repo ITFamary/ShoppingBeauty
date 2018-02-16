@@ -1,14 +1,11 @@
 package com.ming.shopping.beauty.service.service;
 
 import com.ming.shopping.beauty.service.Version;
-import com.ming.shopping.beauty.service.entity.login.Login;
-import com.ming.shopping.beauty.service.entity.support.ManageLevel;
-import com.ming.shopping.beauty.service.repository.LoginRepository;
+import com.ming.shopping.beauty.service.service.impl.support.AbstractLoginService;
 import me.jiangcai.lib.jdbc.ConnectionProvider;
 import me.jiangcai.lib.jdbc.JdbcService;
 import me.jiangcai.lib.upgrade.VersionUpgrade;
 import me.jiangcai.lib.upgrade.service.UpgradeService;
-import me.jiangcai.wx.model.Gender;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +27,7 @@ import java.sql.Statement;
  * @author helloztt
  */
 @Service
-public class InitService implements VersionUpgrade<Version> {
+public class InitService extends AbstractLoginService implements VersionUpgrade<Version> {
     private static final Log log = LogFactory.getLog(InitService.class);
     public static final String cjMobile = "18606509616";
 
@@ -39,11 +36,7 @@ public class InitService implements VersionUpgrade<Version> {
     @Autowired
     private ApplicationContext applicationContext;
     @Autowired
-    private LoginRepository loginRepository;
-    @Autowired
     private UpgradeService upgradeService;
-    @Autowired
-    private LoginService loginService;
 
     @PostConstruct
     @Transactional(rollbackFor = RuntimeException.class)
@@ -62,15 +55,6 @@ public class InitService implements VersionUpgrade<Version> {
         addRoot("13588049877", "叶");
     }
 
-    private void addRoot(String mobile, String lastName) {
-        if (loginRepository.findByLoginName(mobile) == null) {
-            Login login = loginService.newUser(mobile, lastName, Gender.male, null, null
-                    , null, null);
-            login.addLevel(ManageLevel.root);
-            login.setGuidable(true);
-            loginRepository.save(login);
-        }
-    }
 
     private void database() throws SQLException {
         jdbcService.runJdbcWork(connection -> {

@@ -93,6 +93,8 @@ public class ManageRechargeBatchController
                 , FieldBuilder.asName(RechargeCardBatch.class, "manager")
                         .addSelect(rechargeCardBatchRoot -> rechargeCardBatchRoot.join(RechargeCardBatch_.manager, JoinType.LEFT))
                         .addFormat((guideUser, type) -> {
+                            if (guideUser == null)
+                                return null;
                             Login guide = (Login) guideUser;
                             return guide.getHumanReadName();
                         })
