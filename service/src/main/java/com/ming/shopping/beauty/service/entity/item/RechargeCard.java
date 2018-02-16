@@ -5,6 +5,7 @@ import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.utils.Constant;
 import lombok.Getter;
 import lombok.Setter;
+import me.jiangcai.crud.CrudFriendly;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -26,7 +27,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"code"})})
-public class RechargeCard implements Cloneable {
+public class RechargeCard implements Cloneable, CrudFriendly<Long> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

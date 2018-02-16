@@ -8,11 +8,20 @@ import me.jiangcai.wx.model.Gender;
 import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.util.StringUtils;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.From;
 import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Predicate;
 import java.math.BigDecimal;
 import java.util.Set;
 
@@ -72,5 +81,9 @@ public class User {
      */
     public boolean isActive() {
         return !StringUtils.isEmpty(cardNo);
+    }
+
+    public static Predicate nameMatch(From<?, User> from, CriteriaBuilder cb, String input) {
+        return Login.nameMatch(from.join(User_.login, JoinType.LEFT), cb, input);
     }
 }

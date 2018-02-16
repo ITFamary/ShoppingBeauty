@@ -28,6 +28,7 @@ import org.springframework.web.context.request.WebRequest;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Root;
 import java.util.Arrays;
 import java.util.List;
@@ -90,7 +91,7 @@ public class ManageRechargeBatchController
                         })
                         .build()
                 , FieldBuilder.asName(RechargeCardBatch.class, "manager")
-                        .addSelect(rechargeCardBatchRoot -> rechargeCardBatchRoot.get(RechargeCardBatch_.manager))
+                        .addSelect(rechargeCardBatchRoot -> rechargeCardBatchRoot.join(RechargeCardBatch_.manager, JoinType.LEFT))
                         .addFormat((guideUser, type) -> {
                             Login guide = (Login) guideUser;
                             return guide.getHumanReadName();

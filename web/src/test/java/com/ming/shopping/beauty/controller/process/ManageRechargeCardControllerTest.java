@@ -6,7 +6,6 @@ import com.ming.shopping.beauty.service.service.SystemService;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * @author lxf
  */
-@ActiveProfiles("emulation")
+//@ActiveProfiles("emulation")
 public class ManageRechargeCardControllerTest extends TogetherTest {
 
     @Autowired

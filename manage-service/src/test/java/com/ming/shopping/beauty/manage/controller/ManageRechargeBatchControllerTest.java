@@ -4,6 +4,7 @@ import com.ming.shopping.beauty.manage.ManageConfigTest;
 import com.ming.shopping.beauty.service.entity.item.RechargeCard;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.repository.RechargeCardRepository;
+import com.ming.shopping.beauty.service.service.RechargeCardService;
 import com.ming.shopping.beauty.service.service.SystemService;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -25,6 +27,8 @@ public class ManageRechargeBatchControllerTest extends ManageConfigTest {
     private RechargeCardRepository rechargeCardRepository;
     @Autowired
     private SystemService systemService;
+    @Autowired
+    private RechargeCardService rechargeCardService;
 
 
     /**
@@ -62,9 +66,34 @@ public class ManageRechargeBatchControllerTest extends ManageConfigTest {
             System.out.println(r.getCode());
         }
 
-        mockMvc.perform(get("/rechargeBatch"))
-                .andDo(print());
+        mockMvc.perform(get("/rechargeBatch")).andExpect(status().isOk());
 
+        mockMvc.perform(
+                get("/rechargeCard")
+        )
+                .andExpect(status().isOk());
+        // 找一个没用过的
+        RechargeCard card = rechargeCardRepository.findAll().stream()
+                .filter(rechargeCard -> !rechargeCard.isUsed())
+                .min(new RandomComparator()).orElseThrow(IllegalStateException::new);
+
+        // 根据code准确定位
+        mockMvc.perform(
+                get("/rechargeCard")
+                        .param("code", card.getCode())
+        )
+                .andExpect(jsonPath("$.list.length()").value(1))
+                .andExpect(status().isOk());
+
+        // 根据使用用户精准寻找
+        Login demoLogin = mockLogin();
+        rechargeCardService.useCard(card.getCode(), demoLogin.getId());
+
+        mockMvc.perform(
+                get("/rechargeCard")
+                        .param("user", demoLogin.getLoginName())
+        ).andExpect(jsonPath("$.list.length()").value(1))
+                .andExpect(status().isOk());
 
     }
 

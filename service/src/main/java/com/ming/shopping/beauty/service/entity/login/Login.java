@@ -245,4 +245,11 @@ public class Login implements UserDetails, CrudFriendly<Long> {
             return loginName;
         return wechatUser.getNickname();
     }
+
+    public static Predicate nameMatch(From<?, Login> from, CriteriaBuilder cb, String input) {
+        return cb.or(
+                cb.like(from.join(Login_.wechatUser, JoinType.LEFT).get("nickname"), "%" + input + "%")
+                , cb.like(from.get(Login_.loginName), "%" + input + "%")
+        );
+    }
 }
