@@ -32,17 +32,23 @@
     <Parameter name="huotao.weixin.apiKey" value="1sapeoif78366vbcxbzjs8ew8182838d"/>
     <Parameter name="huotao.weixin.url" value="11"/>
     <Parameter name="huotao.weixin.token" value="11"/>
+
+    <!--SMS-->
     <!--创蓝？ 可以通过com.huotu.notice.supplier 调整为阿里云-->
     <Parameter name="com.huotu.sms.cl.account" value=""/>
     <Parameter name="com.huotu.sms.cl.password" value=""/>
-
     <Parameter name="com.huotu.notice.supplier" value="me.jiangcai.lib.notice.ZjyNoticeSupplier"/>
     <Parameter name="me.jiangcai.zjy.username" value="meiyueyzm"/>
     <Parameter name="me.jiangcai.zjy.password" value="meiyue6629"/>
     <Parameter name="me.jiangcai.zyj.cid" value="445"/>
     <Parameter name="me.jiangcai.zyj.key" value="d7f3cb7dcd0e4c9ab58075619eaa2689"/>
 
-    <!--shopping-beauty-staging-->
-    <!--ILoveShopping@@@@1234-->
+    <!--邮件通知-->
+    <Parameter name="me.jiangcai.lib.notice.email.smtp.host" value="smtp.mxhichina.com"/>
+    <Parameter name="me.jiangcai.lib.notice.email.smtp.sslPort" value="465"/>
+    <Parameter name="me.jiangcai.lib.notice.email.smtp.username" value="shopping-beauty-staging@mingshz.com"/>
+    <Parameter name="me.jiangcai.lib.notice.email.smtp.password" value="ILoveShopping@@@@1234"/>
+    <Parameter name="me.jiangcai.lib.notice.email.from.email" value="shopping-beauty-staging@mingshz.com"/>
+    <Parameter name="me.jiangcai.lib.notice.email.from.name" value="锋尚来美！这是演习！"/>
 
 </Context>

@@ -17,22 +17,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * @author lxf
+ * @author CJ
  */
-public class ManageRechargeCardControllerTest extends ManageConfigTest{
+public class ManageRechargeBatchControllerTest extends ManageConfigTest {
 
     @Autowired
     private RechargeCardRepository rechargeCardRepository;
     @Autowired
     private SystemService systemService;
 
-    private final String BASE_URI = "/recharge";
 
     /**
      * 测试生成批量卡片
      */
     @Test
-    public void go()throws Exception{
+    public void go() throws Exception {
         Integer defaultAmount = systemService.currentCardAmount();
 
         Login manage = mockRoot();
@@ -41,14 +40,16 @@ public class ManageRechargeCardControllerTest extends ManageConfigTest{
         final Integer num = 10;
         Login guide = mockGuidableLogin();
         Map<String, Object> data = new HashMap<>();
-        data.put("num", num);
+        data.put("number", num);
         final String email = randomEmailAddress();
-        data.put("email", email);
+        data.put("emailAddress", email);
+        data.put("guideId", guide.getId());
+
         //批量生成充值卡
-        mockMvc.perform(post(BASE_URI+"/"+guide.getId())
+        mockMvc.perform(post("/rechargeBatch")
                 .content(objectMapper.writeValueAsString(data))
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         //应该是10个
         assertThat(rechargeCardRepository.count())
@@ -61,6 +62,10 @@ public class ManageRechargeCardControllerTest extends ManageConfigTest{
             System.out.println(r.getCode());
         }
 
+        mockMvc.perform(get("/rechargeBatch"))
+                .andDo(print());
+
 
     }
+
 }

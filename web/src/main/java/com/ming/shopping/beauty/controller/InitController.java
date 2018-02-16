@@ -44,6 +44,7 @@ public class InitController {
                 , null, true, Double.class
                 , env.acceptsProfiles("staging") ? 0D : 5000D));
         initModel.setVersion(state.getBuildVersion() + "-" + state.getCommitId());
+        initModel.setSystemEmailAddress(env.getProperty("me.jiangcai.lib.notice.email.from.email"));
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON_UTF8)
                 .body((mapper.writeValueAsString(initModel)));
     }
@@ -52,5 +53,6 @@ public class InitController {
     class InitModel {
         private Double minRechargeAmount;
         private String version;
+        private String systemEmailAddress;
     }
 }

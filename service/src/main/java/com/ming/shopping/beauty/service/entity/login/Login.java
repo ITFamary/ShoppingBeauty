@@ -183,11 +183,11 @@ public class Login implements UserDetails, CrudFriendly<Long> {
         );
     }
 
-    public static Expression<BigDecimal> getCurrentBalanceExpr(From<?, Login> from, CriteriaBuilder cb){
-        Join<Login,User> userJoin = from.join(Login_.user, JoinType.LEFT);
-        return cb.<Boolean,BigDecimal>selectCase(cb.isNull(userJoin))
-                .when(true,BigDecimal.ZERO)
-                .otherwise(User.getCurrentBalanceExpr(userJoin,cb));
+    public static Expression<BigDecimal> getCurrentBalanceExpr(From<?, Login> from, CriteriaBuilder cb) {
+        Join<Login, User> userJoin = from.join(Login_.user, JoinType.LEFT);
+        return cb.<Boolean, BigDecimal>selectCase(cb.isNull(userJoin))
+                .when(true, BigDecimal.ZERO)
+                .otherwise(User.getCurrentBalanceExpr(userJoin, cb));
     }
 
     public static Collection<? extends GrantedAuthority> getGrantedAuthorities(Set<ManageLevel> levelSet) {
@@ -240,4 +240,9 @@ public class Login implements UserDetails, CrudFriendly<Long> {
     }
 
 
+    public String getHumanReadName() {
+        if (wechatUser == null)
+            return loginName;
+        return wechatUser.getNickname();
+    }
 }
