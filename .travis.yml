@@ -11,5 +11,6 @@ services:
 before_script:
   - echo -e "[mysqld]\nlower_case_table_names = 1" | sudo tee -a /etc/mysql/my.cnf
   - sudo service mysql restart
+  - mysql -e "create database if not exist shopping default charset utf8 COLLATE utf8_general_ci;"
 
 script: mvn -Djpa_sql_log=INFO test
