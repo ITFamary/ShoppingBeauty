@@ -66,7 +66,7 @@ public class ClientItemControllerTest extends ClientConfigTest {
 
 
         int size = storeItemRepository.findAll((root, query, cb) ->
-                cb.isFalse(root.get(StoreItem_.deleted))
+                StoreItem.saleable(root,cb)
         ).size();
         Login user = mockLogin();
         updateAllRunWith(user);
