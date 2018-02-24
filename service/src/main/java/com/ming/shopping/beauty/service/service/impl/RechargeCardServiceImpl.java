@@ -172,7 +172,13 @@ public class RechargeCardServiceImpl implements RechargeCardService {
 
             @Override
             public String asHtml(Map<String, String> map) {
-                return "<p>您好，</p><p>您本次申请的充值卡已下发，请查看附件。</p>";
+                StringBuilder sb = new StringBuilder("<p>您好，</p><p>您本次申请的充值卡已下发，请查看附件（仅支持电脑端打开）。</p>");
+                sb.append("<table>")
+                        .append("<tr><th>卡号</th><th>金额</th>");
+                batch.getCardSet().forEach(rc->sb.append("<tr><td>").append(rc.getCode())
+                        .append("</td><td>").append(rc.getAmount()).append("</td></tr>"));
+                sb.append("</table>");
+                return sb.toString();
             }
 
             @Override
