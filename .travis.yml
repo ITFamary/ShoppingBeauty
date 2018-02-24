@@ -5,4 +5,11 @@ cache:
   - .autoconf
   - $HOME/.m2
 
+services:
+  - mysql
+
+before_script:
+  - echo -e "[mysqld]\nlower_case_table_names = 1" | sudo tee -a /etc/mysql/my.cnf
+  - sudo service mysql restart
+
 script: mvn -Djpa_sql_log=INFO test
