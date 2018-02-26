@@ -65,7 +65,6 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
         mockMvc.perform(put("/capital/payment/{orderId}", mainOrder.getOrderId())
                 .content(objectMapper.writeValueAsString(mainOrder.getFinalAmount()))
                 .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().is4xxClientError());
 
         //root运行
@@ -75,7 +74,6 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
         mockMvc.perform(post("/recharge" + "/" + mockRepresent.getId())
                 .content(objectMapper.writeValueAsString(1))
                 .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isOk());
         final RechargeCard rechargeCard = rechargeCardRepository.findAll().stream()
                 .filter(c -> !c.isUsed())
@@ -91,7 +89,6 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
         mockMvc.perform(post("/capital/deposit")
                 .header(HttpHeaders.ACCEPT, MediaType.TEXT_HTML)
                 .param("cdKey", depositBody.getCdKey()))
-                .andDo(print())
                 .andExpect(status().isFound());
 
         final BigDecimal currentBalance2 = getCurrentBalance(merchant.getLogin(), login);
@@ -140,6 +137,7 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
         updateAllRunWith(root);
         //查看结算单列表
         String contentAsString2 = mockMvc.perform(get("/settlementSheet"))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
@@ -158,7 +156,6 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
         mockMvc.perform(put("/settlementSheet/{id}/statusMerchant",settlementSheet.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(srb)))
-                .andDo(print())
                 .andExpect(status().isNoContent());
 
         SettlementSheet one = settlementSheetRepository.findOne(settlementSheet.getId());

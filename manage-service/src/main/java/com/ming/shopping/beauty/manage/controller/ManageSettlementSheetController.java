@@ -233,7 +233,7 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
         SettlementSheet sheet = settlementSheetService.findSheet(id);
         if (sheet.getSettlementStatus().equals(SettlementStatus.REJECT) || sheet.getSettlementStatus().equals(SettlementStatus.REVOKE)) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
-                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "结算单id"), null));
+                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "结算单已撤销或被打回"), null));
         }
         return new RowDefinition<MainOrder>() {
             @Override
@@ -323,9 +323,12 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
                 queryList.add(cb.equal(root.get(SettlementSheet_.id), Long.valueOf(queryData.get("id").toString())));
             }
             if (queryData.get("status") != null) {
+                if(StringUtils.isNotBlank(queryData.get("status").toString())){
                 queryList.add(cb.equal(root.get(SettlementSheet_.settlementStatus),
                         SettlementStatus.valueOf(queryData.get("status").toString())));
+                }
             }
+            queryList.add(cb.isFalse(root.get((SettlementSheet_.detect))));
             return cb.and(queryList.toArray(new Predicate[queryList.size()]));
         };
     }
