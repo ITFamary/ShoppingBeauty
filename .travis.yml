@@ -13,4 +13,4 @@ before_script:
   - sudo service mysql restart
   - mysql -e "create database if not exists shopping default charset utf8 COLLATE utf8_general_ci;"
 
-script: mvn -Djpa_sql_log=INFO test
+script: mvn -Djpa_sql_log=INFO -Dspring.profiles.active=CI test
