@@ -48,14 +48,17 @@ public class ExceptionController {
     public ResponseEntity noHandlerFound(ApiResultException exception, HttpServletRequest request, HttpServletResponse response) throws IOException, URISyntaxException {
         //如果没有返回提示，获取原始message
         String errorMsg = null;
+        Integer errorCode = null;
         if (exception.getApiResult() == null) {
             try {
                 errorMsg = HttpStatus.valueOf(exception.getHttpStatus()).getReasonPhrase();
+                errorCode = exception.getHttpStatus();
             } catch (IllegalArgumentException ex) {
                 //说明是自定义的
             }
         } else {
             errorMsg = exception.getApiResult().getMessage();
+            errorCode = exception.getApiResult().getCode();
         }
         if (isAjaxRequestOrBackJson(request)) {
             log.debug(objectMapper.writeValueAsString(exception.getApiResult()));
@@ -64,7 +67,7 @@ public class ExceptionController {
                     .body(objectMapper.writeValueAsString(exception.getApiResult()))
                     ;
         } else {
-            String errorUrl = systemService.toMobileUrl("/error?status=" + exception.getHttpStatus() + "&message=" + errorMsg);
+            String errorUrl = systemService.toErrorUrl(errorCode, errorMsg);
             //替换域名为请求时的域名
             if (request.getHeader("X-Forwarded-Host") != null) {
                 errorUrl = errorUrl.replaceFirst("[a-zA-Z.0-9]+", request.getHeader("X-Forwarded-Host"));
@@ -126,10 +129,8 @@ public class ExceptionController {
      */
     private boolean isAjaxRequestOrBackJson(HttpServletRequest request) {
         String accept = request.getHeader("accept");
-        if (!StringUtils.isEmpty(accept) && (
+        return !(!StringUtils.isEmpty(accept) && (
                 accept.toLowerCase().contains(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                        || accept.toLowerCase().contains(MediaType.TEXT_HTML_VALUE)))
-            return false;
-        return true;
+                        || accept.toLowerCase().contains(MediaType.TEXT_HTML_VALUE)));
     }
 }

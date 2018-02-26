@@ -6,12 +6,15 @@ import com.ming.shopping.beauty.service.config.SecurityConfig;
 import com.ming.shopping.beauty.service.config.ServiceConfig;
 import com.ming.shopping.beauty.service.utils.TestDataSource;
 import me.jiangcai.lib.test.config.H2DataSourceConfig;
-import me.jiangcai.wx.WeixinSpringConfig;
 import me.jiangcai.wx.test.WeixinTestConfig;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -22,7 +25,16 @@ import org.springframework.validation.Validator;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.servlet.HandlerExceptionResolver;
-import org.springframework.web.servlet.config.annotation.*;
+import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
+import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
+import org.springframework.web.servlet.config.annotation.ViewResolverRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.sql.DataSource;
 import java.util.List;
@@ -42,23 +54,24 @@ public class CoreServiceTestConfig extends H2DataSourceConfig implements WebMvcC
 
     @Bean
     public DataSource dataSource() {
-        if (environment.acceptsProfiles(ServiceConfig.PROFILE_MYSQL)) {
-            DriverManagerDataSource dataSource;
-            if (environment.acceptsProfiles(ServiceConfig.PROFILE_JDBC))
-                dataSource = new TestDataSource();
-            else
-                dataSource = new DriverManagerDataSource();
-
-            dataSource.setDriverClassName("com.mysql.jdbc.Driver");
-            // ?profileSQL=true
-            dataSource.setUrl("jdbc:mysql://localhost/shopping");
-            dataSource.setUsername("root");
-            return dataSource;
-        }
         if (environment.acceptsProfiles("h2file")) {
             return fileDataSource("shopping");
         }
-        return memDataSource("com/ming/shopping","MySQL");
+        DriverManagerDataSource dataSource;
+        if (environment.acceptsProfiles(ServiceConfig.PROFILE_JDBC))
+            dataSource = new TestDataSource();
+        else
+            dataSource = new DriverManagerDataSource();
+
+        // 只有ci的时候给它这个，本地测试可能原来其他更牛逼的技术所建立的临时mysql数据库
+        if ("true".equalsIgnoreCase(System.getProperty("CIMode"))) {
+            dataSource.setDriverClassName("com.mysql.jdbc.Driver");
+            // ?profileSQL=true
+            dataSource.setUrl("jdbc:mysql://127.0.0.1/shopping?useUnicode=true&characterEncoding=utf8");
+            dataSource.setUsername("root");
+            return dataSource;
+        }
+        throw new IllegalStateException("暂不支持本地内建MYSQL的测试");
     }
 
     @Override

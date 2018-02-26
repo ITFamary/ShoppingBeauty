@@ -1,6 +1,8 @@
 package com.ming.shopping.beauty.client.controller;
 
 import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.entity.login.Store;
+import com.ming.shopping.beauty.service.entity.support.ManageLevel;
 import com.ming.shopping.beauty.service.exception.ApiResultException;
 import com.ming.shopping.beauty.service.model.HttpStatusCustom;
 import com.ming.shopping.beauty.service.model.request.NewOrderBody;
@@ -42,13 +44,14 @@ public class ClientMainOrderController {
     @PostMapping("/order")
     @ResponseBody
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("hasAnyRole('" + Login.ROLE_STORE_REPRESENT + "')")
+    @PreAuthorize("hasAnyRole('" + Login.ROLE_STORE_REPRESENT + "','" + Login.ROLE_STORE_ROOT + "')")
     public void newOrder(@AuthenticationPrincipal Login login, @RequestBody NewOrderBody postData) {
-        mainOrderService.supplementOrder(postData.getOrderId(), login.getRepresent(), postData.getItems());
+        mainOrderService.supplementOrder(postData.getOrderId(), login, storeFromLogin(login), postData.getItems());
     }
 
     /**
      * MainOrder列表
+     *
      * @param login
      * @return 查询结果
      */
@@ -57,16 +60,23 @@ public class ClientMainOrderController {
     public void orderList(@AuthenticationPrincipal Login login
             , OrderSearcherBody postData, NativeWebRequest webRequest) throws IOException {
         if ("store".equalsIgnoreCase(postData.getOrderType())) {
-            if (login.getRepresent() == null) {
-                throw new ApiResultException(HttpStatusCustom.SC_FORBIDDEN);
-            }
-            postData.setStoreId(login.getRepresent().getStore().getId());
+            Store store = storeFromLogin(login);
+            postData.setStoreId(store.getId());
         } else {
             postData.setUserId(login.getId());
         }
         Page orderList = mainOrderService.findAll(postData);
         RowDramatizer dramatizer = new AntDesignPaginationDramatizer();
         dramatizer.writeResponse(orderList, mainOrderService.orderListField(), webRequest);
+    }
+
+    private Store storeFromLogin(Login login) {
+        if (login.getStore() != null && login.getLevelSet().contains(ManageLevel.storeRoot)) {
+            return login.getStore();
+        } else if (login.getRepresent() != null) {
+            return login.getRepresent().getStore();
+        } else
+            throw new ApiResultException(HttpStatusCustom.SC_FORBIDDEN);
     }
 
     @GetMapping("/orders/{orderId}")
@@ -77,6 +87,6 @@ public class ClientMainOrderController {
         search.setOrderId(orderId);
         Page orderList = mainOrderService.findAll(search);
         RowDramatizer dramatizer = new SingleRowDramatizer();
-        dramatizer.writeResponse(orderList.getContent(),mainOrderService.orderListField(), webRequest);
+        dramatizer.writeResponse(orderList.getContent(), mainOrderService.orderListField(), webRequest);
     }
 }

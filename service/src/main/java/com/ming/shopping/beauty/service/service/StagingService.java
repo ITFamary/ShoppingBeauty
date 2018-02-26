@@ -1,11 +1,7 @@
 package com.ming.shopping.beauty.service.service;
 
-import com.ming.shopping.beauty.service.entity.item.RechargeCard;
-import org.springframework.transaction.annotation.Transactional;
-
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.List;
 
 /**
  * @author CJ
@@ -16,10 +12,10 @@ public interface StagingService {
      *
      * @throws IOException
      */
-    void initStagingEnv() throws IOException;
+    void initStagingEnv() throws IOException, ClassNotFoundException;
 
     @PostConstruct
-    void init() throws IOException;
+    void init() throws IOException, ClassNotFoundException;
 
     /**
      * 一个商户，一个门店，一个门店代表
@@ -34,4 +30,12 @@ public interface StagingService {
      * @throws IOException
      */
     Object[] generateStagingData() throws IOException;
+
+    /**
+     * 注册登录流程需要的数据
+     * 20张充值卡
+     * @return
+     * @throws IOException
+     */
+    Object[] registerStagingData() throws IOException, ClassNotFoundException;
 }

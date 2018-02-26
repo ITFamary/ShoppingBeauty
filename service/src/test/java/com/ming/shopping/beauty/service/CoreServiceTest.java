@@ -3,6 +3,7 @@ package com.ming.shopping.beauty.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.ming.shopping.beauty.service.config.ServiceConfig;
+import com.ming.shopping.beauty.service.entity.business.RechargeCardBatch;
 import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.item.RechargeCard;
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
@@ -283,7 +284,7 @@ public abstract class CoreServiceTest extends SpringWebTest {
         Login login = mockLogin();
         Store store = storeService.addStore(login.getId(), merchant.getId()
                 , randomString(), randomMobile(), randomString(), mockAddress("模拟生成门店的地址"));
-        storeService.freezeOrEnable(store.getId(),true);
+        storeService.freezeOrEnable(store.getId(), true);
         return storeService.findStore(store.getId());
     }
 
@@ -308,7 +309,7 @@ public abstract class CoreServiceTest extends SpringWebTest {
         Item item = itemService.addItem(merchant, randomTmpImagePath(), randomString(), randomString()
                 , price, salesPrice, costPrice, randomString(), randomString(), random.nextBoolean());
         itemService.auditItem(item.getId(), AuditStatus.AUDIT_PASS, null);
-        itemService.freezeOrEnable(item.getId(),true);
+        itemService.freezeOrEnable(item.getId(), true);
         return itemService.findOne(item.getId());
     }
 
@@ -321,7 +322,7 @@ public abstract class CoreServiceTest extends SpringWebTest {
      */
     protected StoreItem mockStoreItem(Store store, Item item) {
         StoreItem storeItem = storeItemService.addStoreItem(store.getId(), item.getId(), null, random.nextBoolean());
-        storeItemService.freezeOrEnable(true,storeItem.getId());
+        storeItemService.freezeOrEnable(true, storeItem.getId());
         return storeItemService.findStoreItem(item.getId(), store);
     }
 
@@ -336,12 +337,12 @@ public abstract class CoreServiceTest extends SpringWebTest {
      */
     protected MainOrder mockMainOrder(User user, Represent represent, StoreItem storeItem, Integer amount) {
         MainOrder emptyOrder = mainOrderService.newEmptyOrder(user);
-        return mainOrderService.supplementOrder(emptyOrder.getOrderId(), represent, storeItem, amount);
+        return mainOrderService.supplementOrder(emptyOrder.getOrderId(), represent.getLogin(), represent.getStore(), storeItem, amount);
     }
 
     protected MainOrder mockMainOrder(User user, Represent represent, Map<StoreItem, Integer> amounts) {
         MainOrder emptyOrder = mainOrderService.newEmptyOrder(user);
-        return mainOrderService.supplementOrder(emptyOrder.getOrderId(), represent, amounts);
+        return mainOrderService.supplementOrder(emptyOrder.getOrderId(), represent.getLogin(), represent.getStore(), amounts);
     }
 
     protected MainOrder mockMainOrder(User user, Represent represent) {
@@ -367,8 +368,23 @@ public abstract class CoreServiceTest extends SpringWebTest {
         return data;
     }
 
-    protected RechargeCard mockRechargeCard(Long guideId, Long manageId) {
-        return rechargeCardService.newCard(guideId, manageId);
+    @SuppressWarnings("WeakerAccess")
+    protected Login mockGuidableLogin() throws Exception {
+        Login login = mockLogin();
+        loginService.setGuidable(login.getId(), true);
+        return login;
+    }
+
+    protected RechargeCard mockRechargeCard() throws Exception {
+        return mockRechargeCard(mockGuidableLogin());
+    }
+
+    protected RechargeCard mockRechargeCard(Login guide) throws Exception {
+        RechargeCardBatch batch = rechargeCardService.newBatch(null, guide.getId()
+                , randomEmailAddress(), 1, false);
+        return batch.getCardSet().stream()
+                .findAny()
+                .orElseThrow(IllegalStateException::new);
     }
 
     /**

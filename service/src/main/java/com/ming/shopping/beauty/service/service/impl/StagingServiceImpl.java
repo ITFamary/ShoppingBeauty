@@ -1,5 +1,6 @@
 package com.ming.shopping.beauty.service.service.impl;
 
+import com.ming.shopping.beauty.service.entity.business.RechargeCardBatch;
 import com.ming.shopping.beauty.service.entity.item.Item;
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
 import com.ming.shopping.beauty.service.entity.login.Login;
@@ -12,6 +13,7 @@ import com.ming.shopping.beauty.service.repository.LoginRepository;
 import com.ming.shopping.beauty.service.repository.RechargeCardRepository;
 import com.ming.shopping.beauty.service.repository.StoreItemRepository;
 import com.ming.shopping.beauty.service.repository.UserRepository;
+import com.ming.shopping.beauty.service.service.InitService;
 import com.ming.shopping.beauty.service.service.ItemService;
 import com.ming.shopping.beauty.service.service.LoginService;
 import com.ming.shopping.beauty.service.service.MerchantService;
@@ -20,6 +22,7 @@ import com.ming.shopping.beauty.service.service.RepresentService;
 import com.ming.shopping.beauty.service.service.StagingService;
 import com.ming.shopping.beauty.service.service.StoreItemService;
 import com.ming.shopping.beauty.service.service.StoreService;
+import com.ming.shopping.beauty.service.service.impl.support.AbstractLoginService;
 import me.jiangcai.jpa.entity.support.Address;
 import me.jiangcai.lib.resource.service.ResourceService;
 import me.jiangcai.wx.model.Gender;
@@ -40,7 +43,7 @@ import java.util.UUID;
  * @author CJ
  */
 @Service
-public class StagingServiceImpl implements StagingService {
+public class StagingServiceImpl extends AbstractLoginService implements StagingService {
 
     @Autowired
     private LoginRepository loginRepository;
@@ -83,7 +86,7 @@ public class StagingServiceImpl implements StagingService {
 
 
     @Override
-    public void initStagingEnv() throws IOException {
+    public void initStagingEnv() throws IOException, ClassNotFoundException {
         int count = 20;
         if (loginRepository.count() <= count) {
             // 在staging 中 建立足够多的测试帐号
@@ -95,7 +98,7 @@ public class StagingServiceImpl implements StagingService {
         }
         if (rechargeCardRepository.count() < count) {
             //在 staging 中建立足够多的充值卡
-            rechargeCardService.newCard(count, null, null);
+            registerStagingData();
         }
     }
 
@@ -104,7 +107,7 @@ public class StagingServiceImpl implements StagingService {
 
     @Override
     @PostConstruct
-    public void init() throws IOException {
+    public void init() throws IOException, ClassNotFoundException {
         if (environment.acceptsProfiles("staging")) {
             initStagingEnv();
         }
@@ -138,6 +141,21 @@ public class StagingServiceImpl implements StagingService {
         return new Object[]{
                 merchant, store, represent, items
         };
+    }
+
+    @Override
+    public Object[] registerStagingData() throws IOException, ClassNotFoundException {
+        // 默认直接给蒋才，不过嘛 若是尚未存在一个这么个用户，那么就随便找一个用户 并且切换为可推荐的
+        Login target = loginRepository.findByLoginName(InitService.cjMobile);
+        if (target == null) {
+            target = addRoot(InitService.cjMobile, "蒋");
+        }
+        loginService.setGuidable(target.getId(), true);
+
+        RechargeCardBatch batch = rechargeCardService.newBatch(null
+                , target.getId(), "caijiang@mingshz.com"
+                , 20, true);
+        return new Object[]{batch.getCardSet()};
     }
 
     @Autowired

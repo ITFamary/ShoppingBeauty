@@ -21,6 +21,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.From;
 import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Predicate;
 import java.math.BigDecimal;
 import java.util.Set;
 
@@ -67,6 +68,14 @@ public class User {
     @Column(length = CARD_NO_LEN)
     private String cardNo;
 
+    public static Expression<BigDecimal> getCurrentBalanceExpr(From<?, User> from, CriteriaBuilder cb) {
+        return cb.sum(cb.sum(from.join("flows", JoinType.LEFT).get("changed")), from.get(User_.currentAmount));
+    }
+
+    public static String makeCardNo() {
+        return RandomStringUtils.randomNumeric(CARD_NO_LEN);
+    }
+
     /**
      * 是否激活（充钱了才算激活）
      */
@@ -74,11 +83,7 @@ public class User {
         return !StringUtils.isEmpty(cardNo);
     }
 
-    public static Expression<BigDecimal> getCurrentBalanceExpr(From<?, User> from, CriteriaBuilder cb) {
-        return cb.sum(cb.sum(from.join("flows", JoinType.LEFT).get("changed")), from.get(User_.currentAmount));
-    }
-
-    public static String makeCardNo() {
-        return RandomStringUtils.randomAlphanumeric(CARD_NO_LEN);
+    public static Predicate nameMatch(From<?, User> from, CriteriaBuilder cb, String input) {
+        return Login.nameMatch(from.join(User_.login, JoinType.LEFT), cb, input);
     }
 }

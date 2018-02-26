@@ -3,8 +3,11 @@ package com.ming.shopping.beauty.service.utils;
 import com.huotu.verification.VerificationType;
 import me.jiangcai.lib.notice.Content;
 
+import javax.activation.DataSource;
 import java.math.BigDecimal;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,6 +27,11 @@ public class Constant {
     public static final String DATE_NULLABLE_COLUMN_DEFINITION = "datetime";
     public static final int FLOAT_COLUMN_SCALE = 2;
     public static final int FLOAT_COLUMN_PRECISION = 12;
+
+    public static final String DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    public static final String DATE_FORMAT = "yyyy-MM-dd";
+    public static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
+    public static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DATETIME_FORMAT);
     /**
      * 银行家舍入发
      */
@@ -50,6 +58,26 @@ public class Constant {
             @Override
             public String asText() {
                 return type.message(code);
+            }
+
+            @Override
+            public List<DataSource> embedAttachments() {
+                return null;
+            }
+
+            @Override
+            public List<DataSource> otherAttachments() {
+                return null;
+            }
+
+            @Override
+            public String asHtml(Map<String, String> attachmentRefs) {
+                return null;
+            }
+
+            @Override
+            public String asTitle() {
+                return null;
             }
 
             @Override

@@ -3,7 +3,7 @@ package com.ming.shopping.beauty.client.controller;
 import com.ming.shopping.beauty.client.ClientConfigTest;
 import com.ming.shopping.beauty.service.entity.item.RechargeCard;
 import com.ming.shopping.beauty.service.entity.login.Login;
-import com.ming.shopping.beauty.service.model.HttpStatusCustom;
+import com.ming.shopping.beauty.service.model.ResultCodeEnum;
 import com.ming.shopping.beauty.service.model.request.DepositBody;
 import org.assertj.core.data.Offset;
 import org.junit.Test;
@@ -78,16 +78,16 @@ public class CapitalControllerTest extends ClientConfigTest {
                 .session(loginSession)
                 .header(HttpHeaders.ACCEPT, MediaType.TEXT_HTML))
                 .andExpect(status().isFound())
-                .andExpect(header().string("Location", new Contains("/error?status=" + HttpStatusCustom.SC_DATA_NOT_VALIDATE
-                        + "&message=")));
+                .andExpect(header().string("Location", new Contains( "code=" + ResultCodeEnum.NO_MONEY_CARD.getCode()
+                        + "&msg=")));
         postData.setDepositSum(BigDecimal.ONE);
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
                 .header(HttpHeaders.ACCEPT, MediaType.TEXT_HTML)
                 .param("depositSum", postData.getDepositSum().toString()))
                 .andExpect(status().isFound())
-                .andExpect(header().string("Location", new Contains("/error?status=" + HttpStatusCustom.SC_DATA_NOT_VALIDATE
-                        + "&message=")));
+                .andExpect(header().string("Location", new Contains("code=" + ResultCodeEnum.RECHARGE_MONEY_NOT_ENOUGH.getCode()
+                        + "&msg=")));
         postData.setDepositSum(null);
         postData.setCdKey("123");
         mockMvc.perform(post(DEPOSIT)
@@ -95,8 +95,8 @@ public class CapitalControllerTest extends ClientConfigTest {
                 .header(HttpHeaders.ACCEPT, MediaType.TEXT_HTML)
                 .param("cdKey", postData.getCdKey()))
                 .andExpect(status().isFound())
-                .andExpect(header().string("Location", new Contains("/error?status=" + HttpStatusCustom.SC_DATA_NOT_VALIDATE
-                        + "&message=")));
+                .andExpect(header().string("Location", new Contains("code=" + ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
+                        + "&msg=")));
         //2、错误的充值卡
         postData.setCdKey(String.format("%20d", 0));
         mockMvc.perform(post(DEPOSIT)
@@ -104,11 +104,11 @@ public class CapitalControllerTest extends ClientConfigTest {
                 .header(HttpHeaders.ACCEPT, MediaType.TEXT_HTML)
                 .param("cdKey", postData.getCdKey()))
                 .andExpect(status().isFound())
-                .andExpect(header().string("Location", new Contains("/error?status=" + HttpStatusCustom.SC_DATA_NOT_VALIDATE
-                        + "&message=")));
+                .andExpect(header().string("Location", new Contains("code=" + ResultCodeEnum.CARD_NOT_EXIST.getCode()
+                        + "&msg=")));
         //3、正确的充值卡
         BigDecimal current = loginService.findBalance(mockLogin.getUser().getId());
-        RechargeCard rechargeCard = mockRechargeCard(null, null);
+        RechargeCard rechargeCard = mockRechargeCard();
         postData.setCdKey(rechargeCard.getCode());
         mockMvc.perform(post(DEPOSIT)
                 .session(loginSession)
@@ -126,8 +126,8 @@ public class CapitalControllerTest extends ClientConfigTest {
                 .header(HttpHeaders.ACCEPT, MediaType.TEXT_HTML)
                 .param("cdKey", postData.getCdKey()))
                 .andExpect(status().isFound())
-                .andExpect(header().string("Location", new Contains("/error?status=" + HttpStatusCustom.SC_DATA_NOT_VALIDATE
-                        + "&message=")));
+                .andExpect(header().string("Location", new Contains("code=" + ResultCodeEnum.CARD_ALREADY_USED.getCode()
+                        + "&msg=")));
         //5、查询流水
         mockMvc.perform(get(FLOW)
                 .session(loginSession))

@@ -1,10 +1,11 @@
 package com.ming.shopping.beauty.service.entity.item;
 
-import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.entity.business.RechargeCardBatch;
 import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.utils.Constant;
 import lombok.Getter;
 import lombok.Setter;
+import me.jiangcai.crud.CrudFriendly;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -26,7 +27,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"code"})})
-public class RechargeCard implements Cloneable {
+public class RechargeCard implements Cloneable, CrudFriendly<Long> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -42,28 +43,18 @@ public class RechargeCard implements Cloneable {
 
     @ManyToOne
     private User user;
-
-    @ManyToOne
-    private Login guideUser;
-
-    @ManyToOne
-    private Login manager;
-
     /**
      * 金额
      */
     @Column(precision = Constant.FLOAT_COLUMN_PRECISION)
     private BigDecimal amount;
     /**
-     * 生成时间
-     */
-    @Column(columnDefinition = Constant.DATE_COLUMN_DEFINITION)
-    private LocalDateTime createTime;
-    /**
      * 兑换时间
      */
     @Column(columnDefinition = Constant.DATE_NULLABLE_COLUMN_DEFINITION)
     private LocalDateTime usedTime;
+    @ManyToOne
+    private RechargeCardBatch batch;
 
     @Override
     public Object clone() {

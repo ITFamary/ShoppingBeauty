@@ -31,6 +31,7 @@ public class UserControllerTest extends ClientConfigTest {
         //激活用户的数据
         mockMvc.perform(get(BASE_URL)
                 .session(activeUserSession))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.balance").value(NumberMatcher.numberGreatThan(0)));
 

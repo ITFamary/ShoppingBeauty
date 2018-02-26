@@ -1,7 +1,8 @@
 package com.ming.shopping.beauty.service.service;
 
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
-import com.ming.shopping.beauty.service.entity.login.Represent;
+import com.ming.shopping.beauty.service.entity.login.Login;
+import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.model.request.ItemNum;
@@ -37,35 +38,38 @@ public interface MainOrderService {
     /**
      * 生成订单
      *
-     * @param orderId   订单编号
-     * @param represent 门店代表
-     * @param items     下单门店项目及数量
+     * @param orderId 订单编号
+     * @param login   负责下单的店方代表
+     * @param store   特定门店
+     * @param items   下单门店项目及数量
      * @return
      */
-    MainOrder supplementOrder(long orderId, Represent represent, ItemNum[] items);
+    MainOrder supplementOrder(long orderId, Login login, Store store, ItemNum[] items);
 
     /**
      * 生成订单
      *
-     * @param orderId   扫二维码生成的订单
-     * @param represent 门店代表
-     * @param amounts   下单的门店数量
+     * @param orderId 扫二维码生成的订单
+     * @param login   负责下单的店方代表
+     * @param store   特定门店
+     * @param amounts 下单的门店数量
      * @return
      */
     @Transactional
-    MainOrder supplementOrder(long orderId, Represent represent, Map<StoreItem, Integer> amounts);
+    MainOrder supplementOrder(long orderId, Login login, Store store, Map<StoreItem, Integer> amounts);
 
     /**
      * 生成订单
      *
      * @param orderId   扫二维码生成的订单
-     * @param represent 门店代表
+     * @param login     负责下单的店方代表
+     * @param store     特定门店
      * @param storeItem 门店项目
      * @param amount    下单数量
      * @return
      */
     @Transactional
-    MainOrder supplementOrder(long orderId, Represent represent, StoreItem storeItem, int amount);
+    MainOrder supplementOrder(long orderId, Login login, Store store, StoreItem storeItem, int amount);
 
     /**
      * 支付订单
@@ -82,7 +86,7 @@ public interface MainOrderService {
      * @param orderSearcher
      * @return
      */
-    Page  findAll(OrderSearcherBody orderSearcher);
+    Page findAll(OrderSearcherBody orderSearcher);
 
     /**
      * 查询订单字段及定义

@@ -3,6 +3,7 @@ package com.ming.shopping.beauty.service.model.response;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ming.shopping.beauty.service.entity.support.OrderStatus;
+import com.ming.shopping.beauty.service.utils.Constant;
 import lombok.Data;
 import me.jiangcai.wx.model.Gender;
 
@@ -17,7 +18,7 @@ public class OrderResponse {
 
     private long orderId;
     @JsonProperty("completeTime")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constant.DATETIME_FORMAT)
     private LocalDateTime createTime;
     private String orderStatus;
     private int orderStatusCode;

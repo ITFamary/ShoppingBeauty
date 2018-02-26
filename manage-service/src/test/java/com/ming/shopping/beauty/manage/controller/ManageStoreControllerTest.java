@@ -92,7 +92,8 @@ public class ManageStoreControllerTest extends ManageConfigTest {
                 .andReturn().getResponse().getHeader("Location");
         Store store = storeService.findStore(willStore.getId());
         assertThat(store != null).isTrue();
-        //再添加一个
+        //再添加一个,需要保证时间不同
+        Thread.sleep(1000);
         Store store1 = mockStore(merchant);
         //不带参数，获取门店列表,第一条记录必定是最新添加的
         mockMvc.perform(get(BASE_URL))

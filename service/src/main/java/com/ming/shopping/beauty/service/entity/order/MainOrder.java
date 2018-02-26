@@ -1,6 +1,6 @@
 package com.ming.shopping.beauty.service.entity.order;
 
-import com.ming.shopping.beauty.service.entity.login.Represent;
+import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.entity.settlement.SettlementSheet;
@@ -9,7 +9,14 @@ import com.ming.shopping.beauty.service.utils.Constant;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -41,9 +48,9 @@ public class MainOrder {
      * 下单门店代表
      */
     @ManyToOne
-    private Represent represent;
+    private Login login;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "mainOrder")
     private List<OrderItem> orderItemList;
     /**
      * 实际应付金额

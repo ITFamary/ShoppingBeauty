@@ -13,7 +13,6 @@ import com.ming.shopping.beauty.service.model.request.LoginOrRegisterBody;
 import com.ming.shopping.beauty.service.service.LoginRequestService;
 import com.ming.shopping.beauty.service.service.LoginService;
 import com.ming.shopping.beauty.service.service.SystemService;
-import com.ming.shopping.beauty.service.utils.LoginAuthentication;
 import me.jiangcai.crud.row.RowService;
 import me.jiangcai.wx.OpenId;
 import me.jiangcai.wx.model.WeixinUserDetail;
@@ -24,11 +23,6 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.context.HttpRequestResponseHolder;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
@@ -57,11 +51,9 @@ import java.util.Map;
  * @author helloztt
  */
 @Controller
-public class IndexController {
+public class IndexController extends AbstractLoginController {
 
     private static final Log log = LogFactory.getLog(IndexController.class);
-    private final SecurityContextRepository httpSessionSecurityContextRepository
-            = new HttpSessionSecurityContextRepository();
     @Autowired
     private LoginService loginService;
     @Autowired
@@ -69,9 +61,8 @@ public class IndexController {
     @Autowired
     private SystemService systemService;
     @Autowired
-    private QRController qrController;
-    @Autowired
     private ConversionService conversionService;
+
 
     /**
      * 微信授权
@@ -219,7 +210,7 @@ public class IndexController {
         if (!(current instanceof Login)) {
             throw new ClientAuthRequiredException();
         }
-        Login login = (Login) current;
+        Login login = loginService.findOne(((Login) current).getId());
 
         if (StringUtils.isEmpty(login.getLoginName())) {
             //说明没有这个角色或者是个空的角色
@@ -277,7 +268,7 @@ public class IndexController {
         }
     }
 
-    @GetMapping(SystemService.LOGINOUT)
+    @GetMapping(SystemService.LOGIN_OUT)
     @ResponseStatus(HttpStatus.OK)
     public void logout(@AuthenticationPrincipal Object principal, HttpServletRequest request) {
         // TODO: 2018/1/31 单元测试
@@ -294,20 +285,6 @@ public class IndexController {
         modelAndView.addObject("status", status);
         modelAndView.addObject("message", message);
         return modelAndView;
-    }
-
-    private void loginToSecurity(Login login, HttpServletRequest request, HttpServletResponse response) {
-        //对 login 执行登录
-
-        HttpRequestResponseHolder holder = new HttpRequestResponseHolder(request, response);
-        SecurityContext context = httpSessionSecurityContextRepository.loadContext(holder);
-
-        LoginAuthentication authentication = new LoginAuthentication(login.getId(), loginService);
-        context.setAuthentication(authentication);
-//
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        httpSessionSecurityContextRepository.saveContext(context, holder.getRequest(), holder.getResponse());
     }
 
 

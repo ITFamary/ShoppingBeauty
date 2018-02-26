@@ -2,7 +2,6 @@ package com.ming.shopping.beauty.client;
 
 import com.ming.shopping.beauty.client.config.ClientConfig;
 import com.ming.shopping.beauty.service.CoreServiceTest;
-import com.ming.shopping.beauty.service.entity.item.RechargeCard;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.model.request.LoginOrRegisterBody;
 import com.ming.shopping.beauty.service.service.RechargeCardService;
@@ -14,8 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.ContextConfiguration;
-
-import java.util.List;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -51,12 +48,11 @@ public abstract class ClientConfigTest extends CoreServiceTest {
         unActiveUserSession = register(unActiveUser);
         mockUnActiveUser = loginService.findOne(unActiveUser.getMobile());
 
-        List<RechargeCard> card = rechargeCardService.newCard(1,null,null);
         activeUser.setMobile(randomMobile());
         activeUser.setAuthCode("1234");
         activeUser.setSurname(randomChinese(1) );
         activeUser.setGender(randomEnum(Gender.class));
-        activeUser.setCdKey(card.get(0).getCode());
+        activeUser.setCdKey(mockRechargeCard().getCode());
         activeUserSession = register(activeUser);
         mockActiveUser = loginService.findOne(activeUser.getMobile());
 

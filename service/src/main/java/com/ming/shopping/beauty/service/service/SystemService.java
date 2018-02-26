@@ -1,5 +1,11 @@
 package com.ming.shopping.beauty.service.service;
 
+import com.ming.shopping.beauty.service.utils.Constant;
+import org.springframework.util.StringUtils;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
 /**
  * 系统服务；它不依赖任何玩意儿
  *
@@ -10,9 +16,14 @@ public interface SystemService {
      * 一些请求地址
      */
     String LOGIN = "/auth";
-    String LOGINOUT = "/logout";
+    String LOGIN_OUT = "/logout";
     String TO_LOGIN = "/toLogin";
     String AUTH = "/auth";
+
+    /**
+     * @return 当前充值卡面额
+     */
+    Integer currentCardAmount();
 
     /**
      * @param uri 传入uri通常/开头
@@ -59,5 +70,23 @@ public interface SystemService {
      */
     default String toMobileItemUrl() {
         return toMobileUrl("/#/items");
+    }
+
+    /**
+     * @param errorMsg 错误信息
+     * @return 错误页面
+     * @throws UnsupportedEncodingException
+     */
+    default String toErrorUrl(Integer code, String errorMsg) throws UnsupportedEncodingException {
+        if (StringUtils.isEmpty(errorMsg)) {
+            errorMsg = "请求错误";
+        }
+        StringBuilder sb = new StringBuilder("/#/result?");
+        //前端用不到这个code ,仅为了方便单元测试
+        if (code != null) {
+            sb.append("code=").append(code).append("&");
+        }
+        sb.append("msg=").append(URLEncoder.encode(errorMsg, Constant.UTF8_ENCODIND));
+        return toMobileUrl(sb.toString());
     }
 }

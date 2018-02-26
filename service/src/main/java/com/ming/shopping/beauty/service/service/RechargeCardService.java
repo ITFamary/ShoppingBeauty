@@ -1,8 +1,12 @@
 package com.ming.shopping.beauty.service.service;
 
+import com.ming.shopping.beauty.service.entity.business.RechargeCardBatch;
 import com.ming.shopping.beauty.service.entity.item.RechargeCard;
+import com.ming.shopping.beauty.service.entity.login.Login;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * @author helloztt
@@ -10,23 +14,35 @@ import java.util.List;
 public interface RechargeCardService {
 
     /**
-     * 新增卡密
-     *
-     * @param guideId  推荐人
-     * @param manageId 操作员
-     * @return
+     * @param operator     操作者；可以为null
+     * @param guideId      发展者
+     * @param emailAddress 发展者的email地址；它可以接收到卡密信息
+     * @param num          数量
+     * @param silence      保持安静，即便发送异常也别出声。
+     * @return 批次
      */
-    RechargeCard newCard(Long guideId, Long manageId);
+    @Transactional
+    RechargeCardBatch newBatch(Login operator, long guideId, String emailAddress, int num, boolean silence) throws ClassNotFoundException;
+
+    RechargeCardBatch findBatch(long id);
 
     /**
-     * 批量新增卡密
+     * 生成报表
      *
-     * @param num      数量
-     * @param guideId  推荐人
-     * @param manageId 操作员
-     * @return
+     * @param batch  批次
+     * @param output 输出目标
+     * @throws IOException
      */
-    List<RechargeCard> newCard(int num, Long guideId, Long manageId);
+    void batchReport(RechargeCardBatch batch, OutputStream output) throws IOException;
+
+    /**
+     * 发送卡密信息给引导者
+     *
+     * @param batch 批次
+     * @param silence
+     * @throws ClassNotFoundException
+     */
+    void sendToUser(RechargeCardBatch batch, boolean silence) throws ClassNotFoundException;
 
     /**
      * 校验卡密

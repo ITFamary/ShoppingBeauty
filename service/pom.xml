@@ -77,6 +77,16 @@
             <artifactId>upgrade</artifactId>
             <version>${jiangcai.version}</version>
         </dependency>
+        <dependency>
+            <groupId>me.jiangcai.lib.notice</groupId>
+            <artifactId>notice-api</artifactId>
+            <version>4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>me.jiangcai.lib</groupId>
+            <artifactId>poi-template</artifactId>
+            <version>${jiangcai.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

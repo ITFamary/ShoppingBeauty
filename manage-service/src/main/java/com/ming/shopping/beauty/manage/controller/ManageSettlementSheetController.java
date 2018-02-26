@@ -24,6 +24,7 @@ import me.jiangcai.crud.utils.MapUtils;
 import me.jiangcai.lib.sys.SystemStringConfig;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,12 +34,10 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.criteria.*;
 import javax.servlet.http.HttpServletRequest;
-import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -57,6 +56,8 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
     private SettlementSheetService settlementSheetService;
     @Autowired
     private MerchantService merchantService;
+    @Autowired
+    private ConversionService conversionService;
 
     /**
      * 结算单列表
@@ -144,7 +145,7 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
                     break;
                 case "ALREADY_PAID":
                     //已经支付
-                    if(putData.getAmount() == null){
+                    if (putData.getAmount() == null) {
                         throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
                                 , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "amount"), null));
                     }
@@ -297,9 +298,7 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
                 , FieldBuilder.asName(SettlementSheet.class, "actualAmount")
                         .build()
                 , FieldBuilder.asName(SettlementSheet.class, "createTime")
-                        .addFormat((data, type) -> {
-                            return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(((LocalDateTime) data));
-                        })
+                        .addFormat((data, type) -> conversionService.convert(data, String.class))
                         .build()
                 , FieldBuilder.asName(SettlementSheet.class, "settlementAmount")
                         .addBiSelect((settlementSheetRoot, criteriaBuilder) -> criteriaBuilder.sum(settlementSheetRoot.get("mainOrderSet").get("settlementAmount")))

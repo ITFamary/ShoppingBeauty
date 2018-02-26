@@ -3,9 +3,9 @@ package com.ming.shopping.beauty.service.service.impl;
 import com.ming.shopping.beauty.service.aop.BusinessSafe;
 import com.ming.shopping.beauty.service.entity.item.Item_;
 import com.ming.shopping.beauty.service.entity.item.StoreItem;
+import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Login_;
-import com.ming.shopping.beauty.service.entity.login.Represent;
-import com.ming.shopping.beauty.service.entity.login.Represent_;
+import com.ming.shopping.beauty.service.entity.login.Store;
 import com.ming.shopping.beauty.service.entity.login.Store_;
 import com.ming.shopping.beauty.service.entity.login.User;
 import com.ming.shopping.beauty.service.entity.login.User_;
@@ -21,7 +21,6 @@ import com.ming.shopping.beauty.service.model.request.ItemNum;
 import com.ming.shopping.beauty.service.model.request.OrderSearcherBody;
 import com.ming.shopping.beauty.service.repository.MainOrderRepository;
 import com.ming.shopping.beauty.service.repository.OrderItemRepository;
-import com.ming.shopping.beauty.service.service.ItemService;
 import com.ming.shopping.beauty.service.service.MainOrderService;
 import com.ming.shopping.beauty.service.service.StoreItemService;
 import com.ming.shopping.beauty.service.utils.Utils;
@@ -51,6 +50,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,8 +68,6 @@ public class MainOrderServiceImpl implements MainOrderService {
     private RowService rowService;
     @Autowired
     private ConversionService conversionService;
-    @Autowired
-    private ItemService itemService;
     @Autowired
     private OrderItemRepository orderItemRepository;
     @Autowired
@@ -105,29 +103,29 @@ public class MainOrderServiceImpl implements MainOrderService {
     @Override
     @BusinessSafe
     @Transactional(rollbackFor = RuntimeException.class)
-    public MainOrder supplementOrder(long orderId, Represent represent, ItemNum[] items) {
+    public MainOrder supplementOrder(long orderId, Login login, Store store, ItemNum[] items) {
         Map<StoreItem, Integer> amounts = new HashMap<>(items.length);
         for (ItemNum storeItemNum : items) {
-            StoreItem item = storeItemService.findStoreItem(storeItemNum.getStoreItemId(), represent.getStore());
+            StoreItem item = storeItemService.findStoreItem(storeItemNum.getStoreItemId(), login.getStore());
             if (!amounts.containsKey(item)) {
                 amounts.put(item, storeItemNum.getNum());
             }
         }
-        return supplementOrder(orderId, represent, amounts);
+        return supplementOrder(orderId, login, store, amounts);
     }
 
     @Override
     @BusinessSafe
     @Transactional(rollbackFor = RuntimeException.class)
-    public MainOrder supplementOrder(long orderId, Represent represent, Map<StoreItem, Integer> amounts) {
+    public MainOrder supplementOrder(long orderId, Login login, Store store, Map<StoreItem, Integer> amounts) {
         //门店代表扫码后，把List<OrderItem>塞到了这个订单里，并修改MainOrder
         MainOrder mainOrder = mainOrderRepository.getOne(orderId);
         //判断订单是不是空的
         if (!OrderStatus.EMPTY.equals(mainOrder.getOrderStatus())) {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.ORDER_NOT_EMPTY));
         }
-        mainOrder.setRepresent(represent);
-        mainOrder.setStore(represent.getStore());
+        mainOrder.setLogin(login);
+        mainOrder.setStore(store);
 
         BigDecimal costPrice = BigDecimal.ZERO;
         BigDecimal finalPrice = BigDecimal.ZERO;
@@ -165,10 +163,10 @@ public class MainOrderServiceImpl implements MainOrderService {
     @Override
     @BusinessSafe
     @Transactional(rollbackFor = RuntimeException.class)
-    public MainOrder supplementOrder(long orderId, Represent represent, StoreItem storeItem, int amount) {
+    public MainOrder supplementOrder(long orderId, Login login, Store store, StoreItem storeItem, int amount) {
         Map<StoreItem, Integer> amounts = new HashMap<>(1);
         amounts.put(storeItem, amount);
-        return supplementOrder(orderId, represent, amounts);
+        return supplementOrder(orderId, login, store, amounts);
     }
 
     @Override
@@ -179,6 +177,7 @@ public class MainOrderServiceImpl implements MainOrderService {
         mainOrder.setOrderStatus(OrderStatus.success);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Page findAll(OrderSearcherBody orderSearcher) {
         RowDefinition<MainOrder> orderRow = orderRowDefinition(orderSearcher);
@@ -213,7 +212,7 @@ public class MainOrderServiceImpl implements MainOrderService {
 
             @Override
             public List<Order> defaultOrder(CriteriaBuilder criteriaBuilder, Root<MainOrder> root) {
-                return Arrays.asList(
+                return Collections.singletonList(
                         criteriaBuilder.desc(root.get(MainOrder_.orderId))
                 );
             }
@@ -228,16 +227,19 @@ public class MainOrderServiceImpl implements MainOrderService {
             public Specification<MainOrder> specification() {
                 return (root, cq, cb) -> {
                     List<Predicate> conditions = new ArrayList<>();
+                    // 无论如何都不会把根本没下过的订单给发出去
                     if (orderSearcher.getOrderId() != null && orderSearcher.getOrderId() > 0L) {
                         conditions.add(cb.equal(root.get(MainOrder_.orderId), orderSearcher.getOrderId()));
+                    } else {
+                        conditions.add(cb.notEqual(root.get(MainOrder_.orderStatus), OrderStatus.EMPTY));
                     }
                     if (orderSearcher.getUserId() != null && orderSearcher.getUserId() > 0L) {
                         conditions.add(cb.equal(root.join(MainOrder_.payer, JoinType.LEFT)
                                 .get(User_.id), orderSearcher.getUserId()));
                     }
                     if (orderSearcher.getRepresentId() != null && orderSearcher.getRepresentId() > 0L) {
-                        conditions.add(cb.equal(root.join(MainOrder_.represent, JoinType.LEFT)
-                                .get(Represent_.id), orderSearcher.getRepresentId()));
+                        conditions.add(cb.equal(root.join(MainOrder_.login, JoinType.LEFT)
+                                .get(Login_.id), orderSearcher.getRepresentId()));
                     }
                     if (orderSearcher.getStoreId() != null && orderSearcher.getStoreId() > 0L) {
                         conditions.add(cb.equal(root.join(MainOrder_.store, JoinType.LEFT)
@@ -315,7 +317,7 @@ public class MainOrderServiceImpl implements MainOrderService {
                                 .join(User_.login, JoinType.LEFT).get(Login_.loginName))
                         .build()
                 , FieldBuilder.asName(MainOrder.class, "items")
-                        .addSelect(mainOrderRoot -> mainOrderRoot.get(MainOrder_.orderId))
+                        .addBiSelect((root, cb) -> cb.nullLiteral(List.class))
                         .addFormat((list, type) -> {
                             //返回数据List 格式化
                             if (list == null) {

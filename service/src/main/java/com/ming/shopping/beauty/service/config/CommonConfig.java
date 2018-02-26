@@ -11,6 +11,7 @@ import me.jiangcai.lib.sys.SystemStringConfig;
 import me.jiangcai.lib.thread.ThreadConfig;
 import me.jiangcai.lib.upgrade.UpgradeSpringConfig;
 import me.jiangcai.payment.PaymentConfig;
+import me.jiangcai.poi.template.POITemplateConfig;
 import me.jiangcai.wx.WeixinSpringConfig;
 import me.jiangcai.wx.pay.WeixinPayHookConfig;
 import me.jiangcai.wx.pay.model.WeixinPayUrl;
@@ -28,6 +29,7 @@ import org.springframework.context.support.ResourceBundleMessageSource;
  */
 @Configuration
 @Import({WebResourceSpringConfig.class, JdbcSpringConfig.class
+        , POITemplateConfig.class
         , WechatVerifyConfig.class
         , UpgradeSpringConfig.class
         , VerificationCodeConfig.class
