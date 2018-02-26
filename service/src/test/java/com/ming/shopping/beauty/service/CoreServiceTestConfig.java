@@ -63,10 +63,8 @@ public class CoreServiceTestConfig extends H2DataSourceConfig implements WebMvcC
         else
             dataSource = new DriverManagerDataSource();
 
-        System.getProperties().list(System.out);
-
         // 只有ci的时候给它这个，本地测试可能原来其他更牛逼的技术所建立的临时mysql数据库
-        if (environment.acceptsProfiles("CI")) {
+        if ("true".equalsIgnoreCase(System.getProperty("CIMode"))) {
             dataSource.setDriverClassName("com.mysql.jdbc.Driver");
             // ?profileSQL=true
             dataSource.setUrl("jdbc:mysql://127.0.0.1/shopping");
