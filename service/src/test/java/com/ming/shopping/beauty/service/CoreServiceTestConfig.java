@@ -67,7 +67,7 @@ public class CoreServiceTestConfig extends H2DataSourceConfig implements WebMvcC
         if ("true".equalsIgnoreCase(System.getProperty("CIMode"))) {
             dataSource.setDriverClassName("com.mysql.jdbc.Driver");
             // ?profileSQL=true
-            dataSource.setUrl("jdbc:mysql://127.0.0.1/shopping");
+            dataSource.setUrl("jdbc:mysql://127.0.0.1/shopping?useUnicode=true&characterEncoding=utf8");
             dataSource.setUsername("root");
             return dataSource;
         }
