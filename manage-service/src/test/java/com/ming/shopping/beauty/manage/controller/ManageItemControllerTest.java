@@ -84,6 +84,8 @@ public class ManageItemControllerTest extends ManageConfigTest {
         ib.setName("测试编辑名字");
 //        重新给资源
         ib.setImagePath(randomTmpImagePath());
+        // 编辑之前设置为非激活状态
+        setEnable(ib.getId(), false);
         //编辑
         mockMvc.perform(put("/item")
                 .content(objectMapper.writeValueAsString(ib))
@@ -196,6 +198,19 @@ public class ManageItemControllerTest extends ManageConfigTest {
         assertThat("AUDIT_PASS".equals(item.getAuditStatus().toString())).isTrue();
     }
 
+    private void setEnable(long id, boolean enabled) throws Exception {
+        Map<String, Object> putData = new HashMap<>();
+
+        List<Long> items = new ArrayList<>();
+        items.add(id);
+        putData.put("items", items);
+        putData.put("enabled", enabled);
+        mockMvc.perform(put("/itemUpdater/enabled")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(putData)))
+                .andExpect(status().isOk());
+    }
+
     @Test
     public void putTest() throws Exception {
 
@@ -207,31 +222,20 @@ public class ManageItemControllerTest extends ManageConfigTest {
         Item item2 = mockItem(merchant);
 
         //单个上架/下架
-        Map<String, Object> putData = new HashMap<>();
-
-        List<Long> items = new ArrayList<>();
-        items.add(item.getId());
-        putData.put("items", items);
-        putData.put("enabled", true);
-        mockMvc.perform(put("/itemUpdater/enabled")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(putData)))
-                .andDo(print())
-                .andExpect(status().isOk());
+        setEnable(item.getId(), true);
         Item one = itemRepository.getOne(item.getId());
         assertThat(one.isEnabled()).isTrue();
-
-        putData.put("enabled", false);
-        mockMvc.perform(put("/itemUpdater/enabled")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(putData)))
-                .andDo(print())
-                .andExpect(status().isOk());
+        setEnable(item.getId(), false);
 
         one = itemRepository.getOne(item.getId());
         assertThat(one.isEnabled()).isFalse();
 
         //批量操作 成功三个
+        Map<String, Object> putData = new HashMap<>();
+
+        List<Long> items = new ArrayList<>();
+        putData.put("items", items);
+        items.add(item.getId());
         items.add(item1.getId());
         items.add(item2.getId());
         putData.put("enabled", true);
@@ -309,7 +313,7 @@ public class ManageItemControllerTest extends ManageConfigTest {
         Merchant merchant = mockMerchant();
         Item item = mockItem(merchant);
         int i = 1;
-        while(i < 3){
+        while (i < 3) {
             i++;
             mockItem(merchant);
         }
@@ -322,25 +326,26 @@ public class ManageItemControllerTest extends ManageConfigTest {
         //条件
         //还是所有的  一共3个
         mockMvc.perform(get("/item")
-                .param("itemName"," ")
-                .param("itemType"," ")
-                .param("merchantName"," "))
+                .param("itemName", " ")
+                .param("itemType", " ")
+                .param("merchantName", " "))
                 .andDo(print())
                 .andExpect(jsonPath("$.pagination.total").value(new GreaterOrEqual(3)));
 
         //设置一个name条件
         mockMvc.perform(get("/item")
-                .param("itemName",item.getName()))
+                .param("itemName", item.getName()))
                 .andDo(print())
                 .andExpect(jsonPath("$.pagination.total").value(1));
 
 
         mockMvc.perform(get("/item")
-                .param("merchantName",merchant.getName()))
+                .param("merchantName", merchant.getName()))
                 .andDo(print())
                 .andExpect(jsonPath("$.pagination.total").value(3));
 
     }
+
     /**
      * 用于测试, 项目审核/状态改变/提交审核
      */
