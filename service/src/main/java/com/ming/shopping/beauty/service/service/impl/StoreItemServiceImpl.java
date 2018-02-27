@@ -75,7 +75,12 @@ public class StoreItemServiceImpl implements StoreItemService {
         Store store = storeService.findStore(storeId);
         Item item = itemService.findOne(itemId);
         //要判断这个项目是否门店中已经存在,如果存在则不可以
-        List<StoreItem> byItem = storeItemRepository.findByItem(item);
+        List<StoreItem> byItem = storeItemRepository.findAll((root, query, cb) ->
+            cb.and(
+                    cb.equal(root.get(StoreItem_.store).get(Store_.id),storeId)
+                    ,cb.equal(root.get(StoreItem_.item).get(Item_.id),itemId)
+            )
+        );
         if(byItem.size() > 0)
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.REPEAT_ADD_ITEM));
 
