@@ -8,6 +8,7 @@ import com.ming.shopping.beauty.service.model.request.NewMerchantBody;
 import com.ming.shopping.beauty.service.repository.MerchantRepository;
 import com.ming.shopping.beauty.service.service.LoginService;
 import com.ming.shopping.beauty.service.service.MerchantService;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.internal.matchers.GreaterThan;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -194,7 +195,12 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
         assertThat(idList.containsAll(oldList)).isEqualTo(true);
     }
 
+    /**
+     * 启用操作员功能已废弃
+     * @throws Exception
+     */
     @Test
+    @Ignore
     public void addMerchantManage() throws Exception {
         //添加一个商户
         Merchant merchant = mockMerchant();
