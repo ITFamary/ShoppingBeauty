@@ -254,8 +254,11 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
         //创建一个项目
         Item item = mockItem(merchant);
         //添加两个门店项目
+        //再创建一个门店,一个项目只能在一个门店中存在一个门店项目
+        Store store1 = mockStore(merchant);
+
         StoreItem storeItem = mockStoreItem(store, item);
-        StoreItem storeItem1 = mockStoreItem(store, item);
+        StoreItem storeItem1 = mockStoreItem(store1, item);
 
         StoreItem one = storeItemRepository.getOne(storeItem.getId());
         StoreItem two = storeItemRepository.getOne(storeItem1.getId());
@@ -277,7 +280,7 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
                 .andExpect(status().isOk());
 
         List<StoreItem> byItem = storeItemRepository.findByItem(item);
-        if(byItem.size() == 1){
+        if(byItem.size() != 2){
             throw new RuntimeException("storeItem的数量不对");
         }
         for (StoreItem s : byItem) {
