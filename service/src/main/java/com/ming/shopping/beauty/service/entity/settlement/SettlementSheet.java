@@ -36,7 +36,7 @@ public class SettlementSheet implements CrudFriendly<Long> {
     /**
      * 关联的订单
      */
-    @OneToMany
+    @OneToMany(mappedBy = "settlementSheet")
     private Set<MainOrder> mainOrderSet;
 
     /**

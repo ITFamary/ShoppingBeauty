@@ -49,7 +49,7 @@ public class SettlementSheetServiceImpl implements SettlementSheetService {
         //默认获取7天前的订单
         LocalDateTime weekAgo = systemStringService.getCustomSystemString(
                 "shopping.service.order.how.long", null, true, LocalDateTime.class, LocalDateTime.now().minusDays(7));
-        
+
         List<MainOrder> okList = mainOrderRepository.findAll((root, query, cb) ->
                 cb.and(
                         cb.equal(root.join(MainOrder_.store).join(Store_.merchant).get(Merchant_.id), merchant.getId()),
@@ -73,33 +73,33 @@ public class SettlementSheetServiceImpl implements SettlementSheetService {
 
     @Override
     @Transactional
-    public void submitSheet(SettlementSheet settlementSheet,String comment) {
+    public void submitSheet(SettlementSheet settlementSheet, String comment) {
         SettlementSheet one = settlementSheetRepository.findOne(settlementSheet.getId());
-        if(one.getSettlementStatus().equals(SettlementStatus.UNSUBMIT) || one.getSettlementStatus().equals(SettlementStatus.REJECT)){
+        if (one.getSettlementStatus().equals(SettlementStatus.UNSUBMIT) || one.getSettlementStatus().equals(SettlementStatus.REJECT)) {
             one.setSettlementStatus(SettlementStatus.TO_AUDIT);
-            if(comment != null){
+            if (comment != null) {
                 one.setComment(comment);
             }
             settlementSheetRepository.save(one);
-        }else{
+        } else {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.SHEET_STATUS_ERROR));
         }
     }
 
     @Override
     @Transactional
-    public void rejectSheet(SettlementSheet settlementSheet,String comment) {
+    public void rejectSheet(SettlementSheet settlementSheet, String comment) {
         SettlementSheet one = settlementSheetRepository.findOne(settlementSheet.getId());
-        if(one.getSettlementStatus().equals(SettlementStatus.TO_AUDIT)){
+        if (one.getSettlementStatus().equals(SettlementStatus.TO_AUDIT)) {
             one.setSettlementStatus(SettlementStatus.REJECT);
             //必须要有备注
-            if(!StringUtils.isBlank(comment)){
+            if (!StringUtils.isBlank(comment)) {
                 one.setComment(comment);
-            }else{
+            } else {
                 throw new ApiResultException(ApiResult.withError(ResultCodeEnum.REJECT_NOT_COMMENT));
             }
             settlementSheetRepository.save(one);
-        }else{
+        } else {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.SHEET_STATUS_ERROR));
         }
     }
@@ -108,10 +108,10 @@ public class SettlementSheetServiceImpl implements SettlementSheetService {
     @Transactional
     public void revokeSheet(SettlementSheet settlementSheet) {
         SettlementSheet one = settlementSheetRepository.findOne(settlementSheet.getId());
-        if(one.getSettlementStatus().equals(SettlementStatus.UNSUBMIT)){
+        if (one.getSettlementStatus().equals(SettlementStatus.UNSUBMIT)) {
             one.setSettlementStatus(SettlementStatus.REVOKE);
             settlementSheetRepository.save(one);
-        }else{
+        } else {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.SHEET_STATUS_ERROR));
         }
     }
@@ -120,13 +120,13 @@ public class SettlementSheetServiceImpl implements SettlementSheetService {
     @Transactional
     public void approvalSheet(SettlementSheet settlementSheet, String comment) {
         SettlementSheet one = settlementSheetRepository.findOne(settlementSheet.getId());
-        if(one.getSettlementStatus().equals(SettlementStatus.TO_AUDIT)){
+        if (one.getSettlementStatus().equals(SettlementStatus.TO_AUDIT)) {
             one.setSettlementStatus(SettlementStatus.APPROVAL);
-            if(comment != null){
+            if (comment != null) {
                 one.setComment(comment);
             }
             settlementSheetRepository.save(one);
-        }else{
+        } else {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.SHEET_STATUS_ERROR));
         }
     }
@@ -135,12 +135,12 @@ public class SettlementSheetServiceImpl implements SettlementSheetService {
     @Transactional
     public void alreadyPaid(SettlementSheet settlementSheet, BigDecimal amount) {
         SettlementSheet one = settlementSheetRepository.findOne(settlementSheet.getId());
-        if(one.getSettlementStatus().equals(SettlementStatus.APPROVAL)){
+        if (one.getSettlementStatus().equals(SettlementStatus.APPROVAL)) {
             one.setSettlementStatus(SettlementStatus.ALREADY_PAID);
             one.setTransferTime(LocalDateTime.now());
             one.setActualAmount(amount);
             settlementSheetRepository.save(one);
-        }else{
+        } else {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.SHEET_STATUS_ERROR));
         }
     }
@@ -149,23 +149,18 @@ public class SettlementSheetServiceImpl implements SettlementSheetService {
     @Transactional
     public void completeSheet(SettlementSheet settlementSheet) {
         SettlementSheet one = settlementSheetRepository.findOne(settlementSheet.getId());
-        if(one.getSettlementStatus().equals(SettlementStatus.ALREADY_PAID)){
+        if (one.getSettlementStatus().equals(SettlementStatus.ALREADY_PAID)) {
             one.setSettlementStatus(SettlementStatus.COMPLETE);
             settlementSheetRepository.save(one);
-        }else{
+        } else {
             throw new ApiResultException(ApiResult.withError(ResultCodeEnum.SHEET_STATUS_ERROR));
         }
     }
 
     @Override
-    public void putEnabled(SettlementSheet settlementSheet,boolean delete) {
+    public void putDelete(SettlementSheet settlementSheet, boolean delete) {
         SettlementSheet one = settlementSheetRepository.findOne(settlementSheet.getId());
-        if(one.getSettlementStatus().equals(SettlementStatus.REJECT)
-                || one.getSettlementStatus().equals(SettlementStatus.REVOKE)){
-            one.setDetect(delete);
-            settlementSheetRepository.save(one);
-        }else{
-            throw new ApiResultException(ApiResult.withError(ResultCodeEnum.SHEET_STATUS_ERROR));
-        }
+        one.setDetect(delete);
+        settlementSheetRepository.save(one);
     }
 }

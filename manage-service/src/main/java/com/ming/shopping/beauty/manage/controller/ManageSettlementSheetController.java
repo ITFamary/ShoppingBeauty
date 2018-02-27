@@ -3,6 +3,7 @@ package com.ming.shopping.beauty.manage.controller;
 import com.ming.shopping.beauty.service.entity.login.Login;
 import com.ming.shopping.beauty.service.entity.login.Merchant;
 import com.ming.shopping.beauty.service.entity.login.Merchant_;
+import com.ming.shopping.beauty.service.entity.login.Store_;
 import com.ming.shopping.beauty.service.entity.order.MainOrder;
 import com.ming.shopping.beauty.service.entity.order.MainOrder_;
 import com.ming.shopping.beauty.service.entity.settlement.SettlementSheet;
@@ -49,7 +50,8 @@ import java.util.Map;
 @RequestMapping("/settlementSheet")
 @Controller
 @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
-@PreAuthorize("hasAnyRole('ROOT','" + SystemStringConfig.MANAGER_ROLE + "','" + Login.ROLE_PLATFORM_SETTLEMENT + "')")
+@PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "'" +
+        ",'" + SystemStringConfig.MANAGER_ROLE + "','" + Login.ROLE_PLATFORM_SETTLEMENT + "')")
 public class ManageSettlementSheetController extends AbstractCrudController<SettlementSheet, Long, SettlementSheet> {
 
     @Autowired
@@ -66,6 +68,7 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
      * @return
      */
     @Override
+    @GetMapping
     public RowDefinition<SettlementSheet> list(HttpServletRequest request) {
         Map<String, Object> queryData = MapUtils.changeIt(request.getParameterMap());
         return new RowDefinition<SettlementSheet>() {
@@ -114,6 +117,12 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
                 .build();
     }
 
+    /**
+     * 平台管理员修改结算单状态.
+     *
+     * @param id      被修改的结算单id
+     * @param putData 请求的数据
+     */
     @PutMapping("/{id}/statusManage")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_PLATFORM_SETTLEMENT + "')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -161,6 +170,12 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
         }
     }
 
+    /**
+     * 商户方修改结算单状态.
+     *
+     * @param id      被修改的结算单id
+     * @param putData 请求的数据
+     */
     @PutMapping("/{id}/statusMerchant")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "','" + Login.ROLE_MERCHANT_SETTLEMENT + "')")
@@ -204,10 +219,11 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
     /**
      * 结算单是否在列表中展示出来
      *
-     * @param id
+     * @param id 被删除的结算单
      */
-    @PutMapping("{id}/delete")
-    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
+    @PutMapping("/{id}/delete")
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "'," +
+            "'" + Login.ROLE_MERCHANT_SETTLEMENT + "','" + Login.ROLE_PLATFORM_SETTLEMENT + "')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void putEnabled(@PathVariable("id") Long id, @RequestBody Boolean delete) {
         if (id == null) {
@@ -219,7 +235,7 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
                     , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "delete"), null));
         }
         SettlementSheet sheet = settlementSheetService.findSheet(id);
-        settlementSheetService.putEnabled(sheet, delete);
+        settlementSheetService.putDelete(sheet, delete);
     }
 
 
@@ -230,6 +246,8 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
      * @return
      */
     @GetMapping("/{id}/store")
+    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "'," +
+            "'" + Login.ROLE_MERCHANT_SETTLEMENT + "','" + Login.ROLE_PLATFORM_SETTLEMENT + "')")
     public RowDefinition<MainOrder> getDetailForStore(@PathVariable("id") Long id) {
         SettlementSheet sheet = settlementSheetService.findSheet(id);
         if (sheet.getSettlementStatus().equals(SettlementStatus.REJECT) || sheet.getSettlementStatus().equals(SettlementStatus.REVOKE)) {
@@ -265,7 +283,7 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
                                 .build()
                         , FieldBuilder
                                 .asName(MainOrder.class, "storeName")
-                                .addSelect(mainOrderRoot -> mainOrderRoot.get(MainOrder_.store))
+                                .addSelect(mainOrderRoot -> mainOrderRoot.get(MainOrder_.store).get(Store_.name))
                                 .build()
                 );
             }
@@ -322,9 +340,15 @@ public class ManageSettlementSheetController extends AbstractCrudController<Sett
                 queryList.add(cb.equal(root.get(SettlementSheet_.id), Long.valueOf(queryData.get("id").toString())));
             }
             if (queryData.get("status") != null) {
-                if(StringUtils.isNotBlank(queryData.get("status").toString())){
-                queryList.add(cb.equal(root.get(SettlementSheet_.settlementStatus),
-                        SettlementStatus.valueOf(queryData.get("status").toString())));
+                if (StringUtils.isNotBlank(queryData.get("status").toString())) {
+                    queryList.add(cb.equal(root.get(SettlementSheet_.settlementStatus),
+                            SettlementStatus.valueOf(queryData.get("status").toString())));
+                }
+            }
+            if(queryData.get("merchantId") != null){
+                if(StringUtils.isNotBlank(queryData.get("merchantId").toString())){
+                    queryList.add(cb.equal(root.get(SettlementSheet_.merchant).get(Merchant_.id)
+                            ,Long.valueOf(queryData.get("merchantId").toString())));
                 }
             }
             queryList.add(cb.isFalse(root.get((SettlementSheet_.detect))));

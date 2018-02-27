@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class ManageSettlementSheetControllerTest extends TogetherTest {
@@ -155,6 +156,10 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
         assertThat(one.getComment()).isEqualTo("我是一个备注");
         assertThat(one.getSettlementStatus()).isEqualTo(SettlementStatus.TO_AUDIT);
 
+        //管理员查看结算单列表和结算单详情
+        mockMvc.perform(get("/settlementSheet/{id}/store",settlementSheet.getId()))
+                .andDo(print())
+                .andExpect(status().isOk());
 
         updateAllRunWith(root);
         //打回  "打回申请的备注"
@@ -215,6 +220,18 @@ public class ManageSettlementSheetControllerTest extends TogetherTest {
 
         one = settlementSheetRepository.findOne(settlementSheet.getId());
         assertThat(one.getSettlementStatus()).isEqualTo(SettlementStatus.COMPLETE);
+
+        //将结算单删除
+        mockMvc.perform(put("/settlementSheet/{id}/delete",one.getId())
+                .content(objectMapper.writeValueAsString(true))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+
+        //再来查看列表 就不会有刚才产生的结算单了
+        mockMvc.perform(get("/settlementSheet"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.list").isEmpty());
     }
 
     private BigDecimal getCurrentBalance(Login watcher, Login login) throws Exception {

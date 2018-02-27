@@ -68,7 +68,7 @@ public class Merchant implements CrudFriendly<Long> {
     /**
      * 商户拥有的门店.
      */
-    @OneToMany
+    @OneToMany(mappedBy = "merchant")
     @OrderBy("createTime desc")
     private List<Store> stores;
 
