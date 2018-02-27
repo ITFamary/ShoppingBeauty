@@ -40,7 +40,7 @@ public class ManageStoreItemUpdateController {
     @ResponseBody
     public ApiResult batchRecommended(@RequestBody Map<String, Object> putData) {
         final String recommended = "recommended";
-        final String storeItems = "storeItems";
+        final String storeItems = "items";
         //失败的个数
         int count = 0;
         List<Long> itemList = ManageItemUpdateController.toIdList(putData, storeItems);
@@ -72,7 +72,7 @@ public class ManageStoreItemUpdateController {
     @ResponseBody
     public ApiResult batchEnable(@RequestBody Map<String, Object> putData) {
         final String enabled = "enabled";
-        final String storeItems = "storeItems";
+        final String storeItems = "items";
         //失败的个数
         int count = 0;
         List<Long> itemList = ManageItemUpdateController.toIdList(putData, storeItems);
