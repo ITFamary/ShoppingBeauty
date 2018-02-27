@@ -71,7 +71,8 @@ public class CoreServiceTestConfig extends H2DataSourceConfig implements WebMvcC
             dataSource.setUsername("root");
             return dataSource;
         }
-        throw new IllegalStateException("暂不支持本地内建MYSQL的测试");
+        return memDataSource("shopping", "MySQL");
+//        throw new IllegalStateException("暂不支持本地内建MYSQL的测试");
     }
 
     @Override
