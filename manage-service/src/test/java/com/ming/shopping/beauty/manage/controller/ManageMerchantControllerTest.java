@@ -160,8 +160,7 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
     }
 
 
-/*
-    目前商户管理员这里跟原来有变动,先注释掉
+
     @Test
     public void merchantManageList() throws Exception {
         //添加一个商户
@@ -197,7 +196,6 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
 
     @Test
     public void addMerchantManage() throws Exception {
-        //添加门店操作员
         //添加一个商户
         Merchant merchant = mockMerchant();
         //启用商户
@@ -233,9 +231,9 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
                 .andDo(print());
 
         //查看详情
-        manageDetail(willMerchantManage.getId(), merchant.getMerchantId());
+        //manageDetail(willMerchantManage.getId(), merchant.getId());
     }
-*/
+
 
     private void manageDetail(long id, long merchantId) throws Exception {
 //        mockMvc.perform(get("/merchant/"+merchantId+"/manage/"+id))
