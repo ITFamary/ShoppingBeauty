@@ -290,7 +290,7 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
      * @param manageId
      * @param enable
      */
-    @PutMapping("/{merchantId}/manage/{manageId}/enabled")
+    @PutMapping("/{merchantId}/manage/{manageId}/enable")
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void enableMerchantManage(@PathVariable long merchantId, @PathVariable long manageId, @RequestBody Boolean enable) {

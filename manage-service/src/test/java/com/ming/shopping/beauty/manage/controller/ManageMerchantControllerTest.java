@@ -160,8 +160,7 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
     }
 
 
-/*
-    目前商户管理员这里跟原来有变动,先注释掉
+
     @Test
     public void merchantManageList() throws Exception {
         //添加一个商户
@@ -197,7 +196,6 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
 
     @Test
     public void addMerchantManage() throws Exception {
-        //添加门店操作员
         //添加一个商户
         Merchant merchant = mockMerchant();
         //启用商户
@@ -214,28 +212,18 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
         assertThat(manage != null).isTrue();
         //禁用操作员
         boolean enable = false;
-        mockMvc.perform(put("/merchant/" + merchant.getId() + "/manage/" + willMerchantManage.getId() + "/enabled")
+        mockMvc.perform(put("/merchant/" + merchant.getId() + "/manage/" + willMerchantManage.getId() + "/enable")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(enable)))
                 .andDo(print())
                 .andExpect(status().isNoContent());
-        Login login = loginService.findOne(willMerchantManage.getId());
-        Merchant merchantManage = login.getMerchant();
+        Merchant merchantManage = merchantRepository.findOne(willMerchantManage.getId());
         //没被启用
         assertThat(merchantManage.isEnabled())
                 .isFalse();
 
-        //查看商户列表,倒序排列
-        mockMvc.perform(get("/merchant/" + merchant.getId() + "/manage"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.pagination.total").value(new GreaterThan(0)))
-                .andExpect(jsonPath("$.list[0].id").value(willMerchantManage.getId()))
-                .andDo(print());
-
-        //查看详情
-        manageDetail(willMerchantManage.getId(), merchant.getMerchantId());
     }
-*/
+
 
     private void manageDetail(long id, long merchantId) throws Exception {
 //        mockMvc.perform(get("/merchant/"+merchantId+"/manage/"+id))
