@@ -141,7 +141,7 @@ public class ManageStoreController extends AbstractCrudController<Store, Long, S
             storeService.freezeOrEnable(loginId, enable);
         } else {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
-                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), enable), null));
+                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "enable为null"), null));
         }
     }
 

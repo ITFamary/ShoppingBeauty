@@ -165,7 +165,7 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
     @Test
     public void enableGo() throws Exception {
         final String enabled = "enabled";
-        final String storeItems = "storeItems";
+        final String storeItems = "items";
         final String recommended = "recommended";
         //创建一个商户,以他来运行
         Merchant merchant = mockMerchant();
