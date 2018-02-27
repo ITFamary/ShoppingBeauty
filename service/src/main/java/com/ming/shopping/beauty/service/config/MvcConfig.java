@@ -3,6 +3,7 @@ package com.ming.shopping.beauty.service.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ming.shopping.beauty.service.entity.support.AuditStatus;
 import com.ming.shopping.beauty.service.entity.support.ManageLevel;
+import com.ming.shopping.beauty.service.entity.support.OrderStatus;
 import com.ming.shopping.beauty.service.utils.Constant;
 import com.ming.shopping.beauty.service.utils.ImageResolver;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,6 +105,24 @@ public class MvcConfig extends WebMvcConfigurerAdapter {
 
             @Override
             protected void writeInternal(ManageLevel status, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
+                throw new HttpMessageNotWritableException("我不干");
+            }
+        });
+        converters.add(new AbstractHttpMessageConverter<OrderStatus>() {
+            @Override
+            protected boolean supports(Class<?> clazz) {
+                return OrderStatus.class.equals(clazz);
+            }
+
+            @Override
+            protected OrderStatus readInternal(Class<? extends OrderStatus> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
+                String inputString = mapper.readTree(inputMessage.getBody()).asText();
+                logger.debug("greeting AuditStatus for " + inputString);
+                return OrderStatus.valueOf(inputString);
+            }
+
+            @Override
+            protected void writeInternal(OrderStatus status, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
                 throw new HttpMessageNotWritableException("我不干");
             }
         });
