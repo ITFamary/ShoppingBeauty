@@ -344,6 +344,10 @@ public class MainOrderServiceImpl implements MainOrderService {
 
     private List<FieldDefinition<OrderItem>> orderItemListField() {
         return Arrays.asList(
+                FieldBuilder.asName(OrderItem.class, "orderId")
+                        .addSelect(orderItemRoot -> orderItemRoot.join(OrderItem_.mainOrder, JoinType.LEFT).get(MainOrder_.orderId))
+                        .build()
+                ,
                 FieldBuilder.asName(OrderItem.class, "itemId")
                         .addSelect(orderItemRoot -> orderItemRoot.get(OrderItem_.itemId))
                         .build()
