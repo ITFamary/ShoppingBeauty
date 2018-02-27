@@ -50,7 +50,7 @@ public class StoreItem implements CrudFriendly<Long> {
     /**
      * 是否上架
      */
-    private boolean enable;
+    private boolean enable = true;
     /**
      * 含义上跟enable完全不同；该值为true 则该货品不会在系统中可见！
      */
