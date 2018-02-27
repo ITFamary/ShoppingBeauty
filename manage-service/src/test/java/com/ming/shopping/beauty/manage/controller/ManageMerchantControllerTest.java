@@ -212,26 +212,16 @@ public class ManageMerchantControllerTest extends ManageConfigTest {
         assertThat(manage != null).isTrue();
         //禁用操作员
         boolean enable = false;
-        mockMvc.perform(put("/merchant/" + merchant.getId() + "/manage/" + willMerchantManage.getId() + "/enabled")
+        mockMvc.perform(put("/merchant/" + merchant.getId() + "/manage/" + willMerchantManage.getId() + "/enable")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(enable)))
                 .andDo(print())
                 .andExpect(status().isNoContent());
-        Login login = loginService.findOne(willMerchantManage.getId());
-        Merchant merchantManage = login.getMerchant();
+        Merchant merchantManage = merchantRepository.findOne(willMerchantManage.getId());
         //没被启用
         assertThat(merchantManage.isEnabled())
                 .isFalse();
 
-        //查看商户列表,倒序排列
-        mockMvc.perform(get("/merchant/" + merchant.getId() + "/manage"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.pagination.total").value(new GreaterThan(0)))
-                .andExpect(jsonPath("$.list[0].id").value(willMerchantManage.getId()))
-                .andDo(print());
-
-        //查看详情
-        //manageDetail(willMerchantManage.getId(), merchant.getId());
     }
 
 
