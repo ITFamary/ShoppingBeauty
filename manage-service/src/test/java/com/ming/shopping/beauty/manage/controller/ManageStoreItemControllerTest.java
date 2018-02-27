@@ -115,6 +115,12 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
                 .andDo(print())
                 .andExpect(status().isCreated());
 
+        //添加一个重复, 这时候会失败
+        mockMvc.perform(post("/storeItem")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(nsi)))
+                .andDo(print())
+                .andExpect(status().is(210));
 
         //再添加一个
         NewStoreItemBody nsi1 = new NewStoreItemBody();
@@ -127,8 +133,6 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
                 .content(objectMapper.writeValueAsString(nsi1)))
                 .andDo(print())
                 .andExpect(status().isCreated());
-
-        System.out.println(nsi.getSalesPrice() + "-------------------------------------------------------------" + nsi1.getSalesPrice());
 
         //查看列表
         mockMvc.perform(get("/storeItem"))

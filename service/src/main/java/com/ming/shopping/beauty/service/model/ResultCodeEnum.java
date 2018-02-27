@@ -54,6 +54,7 @@ public enum ResultCodeEnum {
     ITEM_NOT_EXIST(3001, "项目不存在或已删除"),
     STORE_ITEM_PRICE_ERROR(3002, "门店项目销售价必须大于或等于项目销售价"),
     ITEM_NOT_AUDIT(3001, "该项目没有通过审核"),
+    REPEAT_ADD_ITEM(3003,"该项目已被添加,不能重复添加"),
 
     /**
      * 订单相关：[4000,4999]

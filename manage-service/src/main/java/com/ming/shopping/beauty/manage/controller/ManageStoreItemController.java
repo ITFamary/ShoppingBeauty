@@ -77,11 +77,9 @@ public class ManageStoreItemController extends AbstractCrudController<StoreItem,
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_STORE + "','" + Login.ROLE_MERCHANT_ITEM + "','" + Login.ROLE_STORE_ROOT + "')")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity addOne(@RequestBody StoreItemCreation postData, WebRequest request) throws URISyntaxException {
-        final String storeId = "storeId";
-        final String itemId = "itemId";
         if (postData.getStoreId() == null || postData.getItemId() == null) {
             throw new ApiResultException(ApiResult.withCodeAndMessage(ResultCodeEnum.REQUEST_DATA_ERROR.getCode()
-                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), storeId + itemId), null));
+                    , MessageFormat.format(ResultCodeEnum.REQUEST_DATA_ERROR.getMessage(), "门店id或者"), null));
         }
         StoreItem storeItem = storeItemService.addStoreItem(postData.getStoreId()
                 , postData.getItemId(), postData);
