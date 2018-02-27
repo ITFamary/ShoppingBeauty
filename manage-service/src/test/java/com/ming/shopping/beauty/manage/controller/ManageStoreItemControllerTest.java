@@ -179,10 +179,11 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
         //创建一个项目
         Item item = mockItem(merchant);
         Item item1 = mockItem(merchant);
+        Item item2 = mockItem(merchant);
 
         //为门店添加了3个门店项目
         StoreItem storeItem = mockStoreItem(store, item);
-        StoreItem storeItem1 = mockStoreItem(store, item);
+        StoreItem storeItem1 = mockStoreItem(store, item2);
         StoreItem storeItem2 = mockStoreItem(store, item1);
 
         Map<String, Object> map = new HashMap<>();
@@ -198,8 +199,8 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
                 .content(objectMapper.writeValueAsString(map)))
                 .andDo(print())
                 .andExpect(status().isOk());
-        for (int i = 0; i < longs.length; i++) {
-            StoreItem one = storeItemRepository.getOne(longs[i]);
+        for (Long aLong : longs) {
+            StoreItem one = storeItemRepository.getOne(aLong);
             assertThat(one.isEnable()).isTrue();
         }
         //将它们批量下架
@@ -209,8 +210,8 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
                 .content(objectMapper.writeValueAsString(map)))
                 .andDo(print())
                 .andExpect(status().isOk());
-        for (int i = 0; i < longs.length; i++) {
-            StoreItem one = storeItemRepository.getOne(longs[i]);
+        for (Long aLong : longs) {
+            StoreItem one = storeItemRepository.getOne(aLong);
             assertThat(one.isEnable()).isFalse();
         }
 
@@ -222,8 +223,8 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
                 .content(objectMapper.writeValueAsString(map)))
                 .andDo(print())
                 .andExpect(status().isOk());
-        for (int i = 0; i < longs.length; i++) {
-            StoreItem one = storeItemRepository.getOne(longs[i]);
+        for (Long aLong : longs) {
+            StoreItem one = storeItemRepository.getOne(aLong);
             assertThat(one.isRecommended()).isTrue();
         }
 
@@ -235,8 +236,8 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
                 .content(objectMapper.writeValueAsString(map)))
                 .andDo(print())
                 .andExpect(status().isOk());
-        for (int i = 0; i < longs.length; i++) {
-            StoreItem one = storeItemRepository.getOne(longs[i]);
+        for (Long aLong : longs) {
+            StoreItem one = storeItemRepository.getOne(aLong);
             assertThat(one.isRecommended()).isFalse();
         }
     }
