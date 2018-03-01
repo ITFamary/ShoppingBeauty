@@ -115,6 +115,12 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
                 .andDo(print())
                 .andExpect(status().isCreated());
 
+        //添加一个重复, 这时候会失败
+        mockMvc.perform(post("/storeItem")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(nsi)))
+                .andDo(print())
+                .andExpect(status().is(210));
 
         //再添加一个
         NewStoreItemBody nsi1 = new NewStoreItemBody();
@@ -127,8 +133,6 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
                 .content(objectMapper.writeValueAsString(nsi1)))
                 .andDo(print())
                 .andExpect(status().isCreated());
-
-        System.out.println(nsi.getSalesPrice() + "-------------------------------------------------------------" + nsi1.getSalesPrice());
 
         //查看列表
         mockMvc.perform(get("/storeItem"))
@@ -165,7 +169,7 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
     @Test
     public void enableGo() throws Exception {
         final String enabled = "enabled";
-        final String storeItems = "storeItems";
+        final String storeItems = "items";
         final String recommended = "recommended";
         //创建一个商户,以他来运行
         Merchant merchant = mockMerchant();
@@ -175,10 +179,11 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
         //创建一个项目
         Item item = mockItem(merchant);
         Item item1 = mockItem(merchant);
+        Item item2 = mockItem(merchant);
 
         //为门店添加了3个门店项目
         StoreItem storeItem = mockStoreItem(store, item);
-        StoreItem storeItem1 = mockStoreItem(store, item);
+        StoreItem storeItem1 = mockStoreItem(store, item2);
         StoreItem storeItem2 = mockStoreItem(store, item1);
 
         Map<String, Object> map = new HashMap<>();
@@ -194,8 +199,8 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
                 .content(objectMapper.writeValueAsString(map)))
                 .andDo(print())
                 .andExpect(status().isOk());
-        for (int i = 0; i < longs.length; i++) {
-            StoreItem one = storeItemRepository.getOne(longs[i]);
+        for (Long aLong : longs) {
+            StoreItem one = storeItemRepository.getOne(aLong);
             assertThat(one.isEnable()).isTrue();
         }
         //将它们批量下架
@@ -205,8 +210,8 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
                 .content(objectMapper.writeValueAsString(map)))
                 .andDo(print())
                 .andExpect(status().isOk());
-        for (int i = 0; i < longs.length; i++) {
-            StoreItem one = storeItemRepository.getOne(longs[i]);
+        for (Long aLong : longs) {
+            StoreItem one = storeItemRepository.getOne(aLong);
             assertThat(one.isEnable()).isFalse();
         }
 
@@ -218,8 +223,8 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
                 .content(objectMapper.writeValueAsString(map)))
                 .andDo(print())
                 .andExpect(status().isOk());
-        for (int i = 0; i < longs.length; i++) {
-            StoreItem one = storeItemRepository.getOne(longs[i]);
+        for (Long aLong : longs) {
+            StoreItem one = storeItemRepository.getOne(aLong);
             assertThat(one.isRecommended()).isTrue();
         }
 
@@ -231,8 +236,8 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
                 .content(objectMapper.writeValueAsString(map)))
                 .andDo(print())
                 .andExpect(status().isOk());
-        for (int i = 0; i < longs.length; i++) {
-            StoreItem one = storeItemRepository.getOne(longs[i]);
+        for (Long aLong : longs) {
+            StoreItem one = storeItemRepository.getOne(aLong);
             assertThat(one.isRecommended()).isFalse();
         }
     }
@@ -250,8 +255,11 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
         //创建一个项目
         Item item = mockItem(merchant);
         //添加两个门店项目
+        //再创建一个门店,一个项目只能在一个门店中存在一个门店项目
+        Store store1 = mockStore(merchant);
+
         StoreItem storeItem = mockStoreItem(store, item);
-        StoreItem storeItem1 = mockStoreItem(store, item);
+        StoreItem storeItem1 = mockStoreItem(store1, item);
 
         StoreItem one = storeItemRepository.getOne(storeItem.getId());
         StoreItem two = storeItemRepository.getOne(storeItem1.getId());
@@ -273,7 +281,7 @@ public class ManageStoreItemControllerTest extends ManageConfigTest {
                 .andExpect(status().isOk());
 
         List<StoreItem> byItem = storeItemRepository.findByItem(item);
-        if(byItem.size() == 1){
+        if(byItem.size() != 2){
             throw new RuntimeException("storeItem的数量不对");
         }
         for (StoreItem s : byItem) {

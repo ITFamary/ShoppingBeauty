@@ -214,19 +214,19 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
     @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
     @RowCustom(distinct = true, dramatizer = AntDesignPaginationDramatizer.class)
     public RowDefinition listForManage(@PathVariable long merchantId) throws IOException {
-        return new RowDefinition<Merchant>() {
+        return new RowDefinition<Login>() {
             @Override
-            public Class<Merchant> entityClass() {
-                return Merchant.class;
+            public Class<Login> entityClass() {
+                return Login.class;
             }
 
             @Override
-            public List<FieldDefinition<Merchant>> fields() {
+            public List<FieldDefinition<Login>> fields() {
                 return listFieldsForManage();
             }
 
             @Override
-            public Specification<Merchant> specification() {
+            public Specification<Login> specification() {
                 return listSpecificationForManage(merchantId);
             }
         };
@@ -284,14 +284,15 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
     }
 
     /**
-     * 启用/禁用商户操作员
+     * 启用/禁用商户操作员(废弃）
      *
      * @param merchantId
      * @param manageId
      * @param enable
      */
-    @PutMapping("/{merchantId}/manage/{manageId}/enabled")
-    @PreAuthorize("hasAnyRole('ROOT','" + Login.ROLE_MERCHANT_ROOT + "')")
+    @Deprecated
+    @PutMapping("/{merchantId}/manage/{manageId}/enable")
+    @PreAuthorize("denyAll()")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void enableMerchantManage(@PathVariable long merchantId, @PathVariable long manageId, @RequestBody Boolean enable) {
         if (enable != null) {
@@ -347,23 +348,23 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
         };
     }
 
-    protected List<FieldDefinition<Merchant>> listFieldsForManage() {
+    protected List<FieldDefinition<Login>> listFieldsForManage() {
         return Arrays.asList(
                 new ManageField() {
 
                     @Override
-                    public Selection<?> select(CriteriaBuilder criteriaBuilder, CriteriaQuery<?> query, Root<Merchant> root) {
+                    public Selection<?> select(CriteriaBuilder criteriaBuilder, CriteriaQuery<?> query, Root<Login> root) {
                         return root;
                     }
 
                     @Override
-                    protected Object export(Merchant manage, Function<List, ?> exportMe) {
+                    protected Object export(Login manage, Function<List, ?> exportMe) {
                         return manage.getId();
                     }
 
                     @Override
-                    public Expression<?> order(Root<Merchant> root, CriteriaBuilder criteriaBuilder) {
-                        return root.get(Merchant_.id);
+                    public Expression<?> order(Root<Login> root, CriteriaBuilder criteriaBuilder) {
+                        return root.get(Login_.id);
                     }
 
                     @Override
@@ -373,8 +374,8 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
                 },
                 new ManageField() {
                     @Override
-                    protected Object export(Merchant manage, Function<List, ?> exportMe) {
-                        return manage.getLogin().getLoginName();
+                    protected Object export(Login manage, Function<List, ?> exportMe) {
+                        return manage.getLoginName();
                     }
 
                     @Override
@@ -384,7 +385,7 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
                 },
                 new ManageField() {
                     @Override
-                    protected Object export(Merchant manage, Function<List, ?> exportMe) {
+                    protected Object export(Login manage, Function<List, ?> exportMe) {
                         return manage.isEnabled();
                     }
 
@@ -395,8 +396,8 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
                 },
                 new ManageField() {
                     @Override
-                    protected Object export(Merchant manage, Function<List, ?> exportMe) {
-                        Set<ManageLevel> levelSet = manage.getLogin().getLevelSet();
+                    protected Object export(Login manage, Function<List, ?> exportMe) {
+                        Set<ManageLevel> levelSet = manage.getLevelSet();
                         if (CollectionUtils.isEmpty(levelSet)) {
                             return null;
                         }
@@ -410,7 +411,7 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
                 },
                 new ManageField() {
                     @Override
-                    protected Object export(Merchant manage, Function<List, ?> exportMe) {
+                    protected Object export(Login manage, Function<List, ?> exportMe) {
                         return conversionService.convert(manage.getCreateTime(), String.class);
                     }
 
@@ -422,9 +423,9 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
         );
     }
 
-    protected Specification<Merchant> listSpecificationForManage(long merchantId) {
+    protected Specification<Login> listSpecificationForManage(long merchantId) {
         return (root, cq, cb) ->
-                cb.equal(root.get(Merchant_.id), merchantId);
+                cb.equal(root.join(Login_.merchant,JoinType.LEFT).get(Merchant_.id), merchantId);
     }
 
     @Override
@@ -446,21 +447,21 @@ public class ManageMerchantController extends AbstractCrudController<Merchant, L
         return null;
     }
 
-    private abstract class ManageField implements FieldDefinition<Merchant> {
+    private abstract class ManageField implements FieldDefinition<Login> {
         @Override
-        public Selection<?> select(CriteriaBuilder criteriaBuilder, CriteriaQuery<?> query, Root<Merchant> root) {
+        public Selection<?> select(CriteriaBuilder criteriaBuilder, CriteriaQuery<?> query, Root<Login> root) {
             return null;
         }
 
         @Override
         public Object export(Object origin, MediaType mediaType, Function<List, ?> exportMe) {
-            return export((Merchant) origin, exportMe);
+            return export((Login) origin, exportMe);
         }
 
-        protected abstract Object export(Merchant manage, Function<List, ?> exportMe);
+        protected abstract Object export(Login manage, Function<List, ?> exportMe);
 
         @Override
-        public Expression<?> order(Root<Merchant> root, CriteriaBuilder criteriaBuilder) {
+        public Expression<?> order(Root<Login> root, CriteriaBuilder criteriaBuilder) {
             return null;
         }
     }

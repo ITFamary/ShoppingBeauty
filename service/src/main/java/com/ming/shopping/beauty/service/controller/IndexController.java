@@ -210,7 +210,7 @@ public class IndexController extends AbstractLoginController {
         if (!(current instanceof Login)) {
             throw new ClientAuthRequiredException();
         }
-        Login login = (Login) current;
+        Login login = loginService.findOne(((Login) current).getId());
 
         if (StringUtils.isEmpty(login.getLoginName())) {
             //说明没有这个角色或者是个空的角色

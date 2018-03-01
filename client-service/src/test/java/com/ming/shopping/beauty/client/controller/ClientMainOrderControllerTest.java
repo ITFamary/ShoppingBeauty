@@ -118,6 +118,20 @@ public class ClientMainOrderControllerTest extends ClientConfigTest {
                     .session(activeUserSession))
                     .andExpect(jsonPath("$.orderId").value(orderId));
         }
+
+        //根据orderStatus 查找订单
+        response = mockMvc.perform(get("/orders")
+                .session(activeUserSession)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(searcherBody))
+                .param("orderStatus","forPay"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.list").value(matchModels(new MainOrderModel(mainOrderService))))
+                .andReturn().getResponse().getContentAsString();
+        orderList = objectMapper.readTree(response).get("list");
+        for(JsonNode order : orderList){
+            assertThat(order.get("orderStatusMsg").textValue()).isEqualTo(OrderStatus.forPay.toString());
+        }
     }
 
     @Test

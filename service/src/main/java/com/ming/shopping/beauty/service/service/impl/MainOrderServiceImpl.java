@@ -38,6 +38,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.JoinType;
@@ -181,7 +182,7 @@ public class MainOrderServiceImpl implements MainOrderService {
     @Override
     public Page findAll(OrderSearcherBody orderSearcher) {
         RowDefinition<MainOrder> orderRow = orderRowDefinition(orderSearcher);
-        final int startPosition = (orderSearcher.getPage() - 1) * orderSearcher.getPageSize();
+        final int startPosition = (orderSearcher.getCurrent() - 1) * orderSearcher.getPageSize();
         Page<Object[]> page = (Page<Object[]>) rowService.queryFields(orderRow, true, null
                 , new PageRequest(startPosition / orderSearcher.getPageSize(), orderSearcher.getPageSize()));
         if (!CollectionUtils.isEmpty(page.getContent())) {
@@ -244,6 +245,12 @@ public class MainOrderServiceImpl implements MainOrderService {
                     if (orderSearcher.getStoreId() != null && orderSearcher.getStoreId() > 0L) {
                         conditions.add(cb.equal(root.join(MainOrder_.store, JoinType.LEFT)
                                 .get(Store_.id), orderSearcher.getStoreId()));
+                    }
+                    if (!StringUtils.isEmpty(orderSearcher.getOrderStatus())) {
+                        conditions.add(cb.equal(root.get(MainOrder_.orderStatus), orderSearcher.getOrderStatus()));
+                    }
+                    if (orderSearcher.getLastOrderId() != null && orderSearcher.getLastOrderId() > 0) {
+                        conditions.add(cb.greaterThan(root.get(MainOrder_.orderId), orderSearcher.getLastOrderId()));
                     }
                     return cb.and(conditions.toArray(new Predicate[conditions.size()]));
                 };
@@ -321,7 +328,7 @@ public class MainOrderServiceImpl implements MainOrderService {
                         .addFormat((list, type) -> {
                             //返回数据List 格式化
                             if (list == null) {
-                                return null;
+                                return new Array[0];
                             }
                             List<Object> subRows = new ArrayList<>();
                             List<FieldDefinition<OrderItem>> subRowField = orderItemListField();
@@ -344,6 +351,10 @@ public class MainOrderServiceImpl implements MainOrderService {
 
     private List<FieldDefinition<OrderItem>> orderItemListField() {
         return Arrays.asList(
+                FieldBuilder.asName(OrderItem.class, "orderId")
+                        .addSelect(orderItemRoot -> orderItemRoot.join(OrderItem_.mainOrder, JoinType.LEFT).get(MainOrder_.orderId))
+                        .build()
+                ,
                 FieldBuilder.asName(OrderItem.class, "itemId")
                         .addSelect(orderItemRoot -> orderItemRoot.get(OrderItem_.itemId))
                         .build()

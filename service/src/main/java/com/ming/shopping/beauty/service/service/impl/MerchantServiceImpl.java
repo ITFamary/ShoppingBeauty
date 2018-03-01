@@ -61,7 +61,10 @@ public class MerchantServiceImpl implements MerchantService {
         }
         if (login.getLevelSet().contains(ManageLevel.merchantRoot))
             throw new IllegalArgumentException("它已经是一个商户主了。");
-
+        //用户的权限可不能丢
+        if (login.getLevelSet().contains(ManageLevel.user)) {
+            set.add(ManageLevel.user);
+        }
         login.setMerchant(merchant);
         login.setLevelSet(set);
     }

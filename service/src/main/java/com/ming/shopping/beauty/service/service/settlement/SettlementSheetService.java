@@ -78,5 +78,5 @@ public interface SettlementSheetService {
      * @param delete
      */
     @Transactional
-    void putEnabled(SettlementSheet settlementSheet,boolean delete);
+    void putDelete(SettlementSheet settlementSheet,boolean delete);
 }
